@@ -16,15 +16,11 @@ namespace ShoeShop.Data.Initialization {
 
         public static async Task Initialize(ApplicationContext context, IUserStore<ApplicationUser> userStore, UserManager<ApplicationUser> userManager, IRoleStore<ApplicationRole> roleStore, RoleManager<ApplicationRole> roleManager) {
 
-            await context.Database.EnsureDeletedAsync();
-
-            if (await context.Database.EnsureCreatedAsync()) {
+            await context.Database.EnsureCreatedAsync();
+            
+            // Проверяем, есть ли уже админ
+            if (!await roleManager.RoleExistsAsync(Admin)) {
                 await CreateUsers(userStore, userManager, roleStore, roleManager);
-                await CreateProducts(context);
-
-                IList<ApplicationUser> users = await userManager.GetUsersInRoleAsync(Customer);
-                Product[] products = await context.Products.Include(p => p.Images).ToArrayAsync();
-                await CreateOrders(context, users.ToArray(), products);
             }
         }
 
@@ -34,13 +30,10 @@ namespace ShoeShop.Data.Initialization {
 
             List<Product> productList = new List<Product>();
 
+            // TODO: Обновить после добавления категорий
+            /*
             foreach (ProductDto productDto in products ?? Enumerable.Empty<ProductDto>()) {
-                Product product = Product.Create(productDto.Name, productDto.IsSale, productDto.Price, productDto.Sizes, productDto.DateAdded, productDto.Description, productDto.Content);
-
-                //for (int i = 0; i < productDto.Images?.Length; i++) {
-                //    ImageDto imageDto = productDto.Images[i];
-                //    product.AddImage(imageDto.Path, $"{i.ToString("D2")} - {imageDto.Alt}");
-                //}
+                Product product = Product.Create(productDto.Name, productDto.IsSale, productDto.Price, productDto.Sizes, productDto.DateAdded, productDto.Description, productDto.Content, categoryId);
 
                 foreach (ImageDto imageDto in productDto.Images ?? Enumerable.Empty<ImageDto>()) {
                     product.AddImage(imageDto.Path, imageDto.Alt);
@@ -48,6 +41,7 @@ namespace ShoeShop.Data.Initialization {
 
                 context.Products.Add(product);
             }
+            */
 
             int count = await context.SaveChangesAsync();
         }
@@ -96,7 +90,8 @@ namespace ShoeShop.Data.Initialization {
                     for (int x = 0; x < productCount; x++) {
                         int productIndex = random.Next(0, products.Length);
                         Product product = products[productIndex];
-                        orderDetails.Add(OrderDetail.Create(product.Id, product.Images[0].Path, product.Name, product.Price));
+                        string imagePath = product.Images?.Count > 0 ? product.Images[0].Path : "images/no-image.jpg";
+                        orderDetails.Add(OrderDetail.Create(product.Id, imagePath, product.Name, product.Price, random.Next(36, 46)));
                     }
 
                     OrderStatus[] orderStatuses = Enum.GetValues<OrderStatus>();

@@ -20,13 +20,19 @@ namespace ShoeShop.Services {
             if (request != null && request.Cookies.ContainsKey(Name)) {
                 string? basket = request.Cookies[Name];
                 if (basket != null) {
-                    basketShopping = JsonSerializer.Deserialize<BasketShopping>(basket);
+                    try {
+                        basketShopping = JsonSerializer.Deserialize<BasketShopping>(basket);
+                    } catch {
+                        // Очищаем старые cookies при ошибке десериализации
+                        Clear();
+                        basketShopping = null;
+                    }
                 }
             }
 
             if (basketShopping == null) {
                 basketShopping = new BasketShopping();
-                basketShopping.Products = new List<Guid>();
+                basketShopping.Products = new List<BasketItem>();
             }
 
             return basketShopping;

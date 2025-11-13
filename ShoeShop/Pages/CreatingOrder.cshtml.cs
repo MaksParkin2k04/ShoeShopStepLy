@@ -22,22 +22,37 @@ namespace ShoeShop.Pages {
 
         public async Task OnGetAsync() {
             BasketShopping bs = basketShopping.GetBasketShopping();
-            Products = await repository.GetProducts(bs.Products);
+            Guid[] productIds = bs.Products.Select(p => p.ProductId).ToArray();
+            Products = await repository.GetProducts(productIds);
         }
 
         public async Task<IActionResult> OnPostAsync(string name, string city, string street, string house, string apartment, string phone, string coment, Guid[] products) {
 
-            IEnumerable<Product> prod = await repository.GetProducts(products);
+            BasketShopping bs = basketShopping.GetBasketShopping();
+            if (bs.Products == null || bs.Products.Count == 0) {
+                return RedirectToPage("/BasketShopping");
+            }
+
+            Guid[] productIds = bs.Products.Select(p => p.ProductId).ToArray();
+            IEnumerable<Product> prod = await repository.GetProducts(productIds);
 
             List<OrderDetail> orderDetails = new List<OrderDetail>();
-            foreach (Product product in prod) {
-                orderDetails.Add(OrderDetail.Create(product.Id, product.Images[0].Path, product.Name, product.Price));
+            foreach (BasketItem basketItem in bs.Products) {
+                Product? product = prod.FirstOrDefault(p => p.Id == basketItem.ProductId);
+                if (product != null) {
+                    string imagePath = product.Images?.Count > 0 ? product.Images[0].Path : "images/no-image.jpg";
+                    orderDetails.Add(OrderDetail.Create(product.Id, imagePath, product.Name ?? "", product.Price, basketItem.Size));
+                }
+            }
+
+            if (orderDetails.Count == 0) {
+                return RedirectToPage("/BasketShopping");
             }
 
             ApplicationUser? user = await userManager.GetUserAsync(User);
 
-            OrderRecipient recipient = OrderRecipient.Create(name, city, street, house, apartment, phone);
-            Order order = Order.Create(user!.Id, DateTime.Now, coment, recipient, orderDetails);
+            OrderRecipient recipient = OrderRecipient.Create(name ?? "", city ?? "", street ?? "", house ?? "", apartment ?? "", phone ?? "");
+            Order order = Order.Create(user!.Id, DateTime.Now, coment ?? "", recipient, orderDetails);
 
             await repository.CreateOrder(order);
             basketShopping.Clear();

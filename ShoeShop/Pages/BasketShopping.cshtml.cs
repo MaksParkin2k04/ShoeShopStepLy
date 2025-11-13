@@ -16,28 +16,51 @@ namespace ShoeShop.Pages {
 
         public IEnumerable<Product>? Products { get; private set; }
 
+        public List<BasketProductInfo> BasketItems { get; private set; } = new List<BasketProductInfo>();
+
         public async Task OnGet() {
             BasketShopping bs = basketShopping.GetBasketShopping();
 
-            List<Product> list = new List<Product>();
-            Product[] products = (await repository.GetProducts(bs.Products.ToArray())).ToArray();
+            List<BasketProductInfo> list = new List<BasketProductInfo>();
+            Guid[] productIds = bs.Products.Select(p => p.ProductId).ToArray();
+            Product[] products = (await repository.GetProducts(productIds)).ToArray();
+            List<BasketItem> validItems = new List<BasketItem>();
 
-            foreach (Guid id in bs.Products) {
-                list.Add(products.First(p => p.Id == id));
+            foreach (BasketItem item in bs.Products) {
+                Product? product = products.FirstOrDefault(p => p.Id == item.ProductId);
+                if (product != null) {
+                    list.Add(new BasketProductInfo { Product = product, Size = item.Size });
+                    validItems.Add(item);
+                }
             }
 
-            Products = list.ToArray();
+            // Обновляем корзину, удаляя несуществующие товары
+            if (validItems.Count != bs.Products.Count) {
+                bs.Products.Clear();
+                bs.Products.AddRange(validItems);
+                basketShopping.SetBasketShopping(bs);
+            }
+
+            BasketItems = list;
         }
 
         public void OnPost() {
         }
 
-        public IActionResult OnPostDeleteProduct(Guid productId) {
+        public IActionResult OnPostDeleteProduct(Guid productId, int size) {
             BasketShopping bs = basketShopping.GetBasketShopping();
-            bs.Products.Remove(productId);
-            basketShopping.SetBasketShopping(bs);
+            BasketItem? item = bs.Products.FirstOrDefault(p => p.ProductId == productId && p.Size == size);
+            if (item != null) {
+                bs.Products.Remove(item);
+                basketShopping.SetBasketShopping(bs);
+            }
 
             return RedirectToPage("/BasketShopping");
         }
+    }
+
+    public class BasketProductInfo {
+        public Product Product { get; set; }
+        public int Size { get; set; }
     }
 }

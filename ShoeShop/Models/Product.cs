@@ -14,19 +14,19 @@
         /// <param name="dateAdded">Дата добавления</param>
         /// <param name="description">Краткое описание товара</param>
         /// <param name="content">Описание товара</param>
-        private Product(Guid id, string name, bool isSale, double price, ProductSize sizes, DateTime dateAdded, string description, string content) {
+        /// <param name="categoryId">Идентификатор категории</param>
+        private Product(Guid id, string name, bool isSale, double price, ProductSize sizes, DateTime dateAdded, string description, string content, Guid categoryId) {
             Id = id;
             Name = name;
             IsSale = isSale;
             Price = price;
-            Sizes = sizes;
+            _sizes = sizes;
             DateAdded = dateAdded;
             Description = description;
             Content = content;
+            CategoryId = categoryId;
             images = new List<ProductImage>();
         }
-
-        private ProductSize sizes;
         private readonly List<ProductImage> images;
 
         /// <summary>
@@ -45,10 +45,14 @@
         /// Цена товара
         /// </summary>
         public double Price { get; private set; }
+        private ProductSize _sizes;
         /// <summary>
         /// Доступные размеры товара
         /// </summary>
-        public ProductSize Sizes { get; private set; }
+        public ProductSize Sizes { 
+            get => _sizes;
+            private set => _sizes = value;
+        }
         /// <summary>
         /// Дата добавления
         /// </summary>
@@ -65,6 +69,14 @@
         /// Изображения товара
         /// </summary>
         public IReadOnlyList<ProductImage> Images { get { return images; } }
+        /// <summary>
+        /// Идентификатор категории
+        /// </summary>
+        public Guid CategoryId { get; private set; }
+        /// <summary>
+        /// Категория товара
+        /// </summary>
+        public Category? Category { get; private set; }
 
         /// <summary>
         /// Устоновить название
@@ -95,7 +107,7 @@
         /// </summary>
         /// <param name="shoeSize">Доступные размеры товара</param>
         public void SetSizes(ProductSize size) {
-            Sizes = size;
+            _sizes = size;
             if (size == ProductSize.Not) {
                 IsSale = false;
             }
@@ -167,6 +179,14 @@
         }
 
         /// <summary>
+        /// Установить категорию
+        /// </summary>
+        /// <param name="categoryId">Идентификатор категории</param>
+        public void SetCategory(Guid categoryId) {
+            CategoryId = categoryId;
+        }
+
+        /// <summary>
         /// Создает экземпляр объекта Product
         /// </summary>
         /// <param name="name">Название товара</param>
@@ -176,9 +196,10 @@
         /// <param name="dateAdded">Дата добавления</param>
         /// <param name="description">Краткое описание товара</param>
         /// <param name="content">Описание товара</param>
+        /// <param name="categoryId">Идентификатор категории</param>
         /// <returns>Созданный объект</returns>
-        public static Product Create(string name, bool isSale, double price, ProductSize sizes, DateTime dateAdded, string description, string content) {
-            return new Product(Guid.Empty, name, isSale, price, sizes, dateAdded, description, content);
+        public static Product Create(string name, bool isSale, double price, ProductSize sizes, DateTime dateAdded, string description, string content, Guid categoryId) {
+            return new Product(Guid.NewGuid(), name, isSale, price, sizes, dateAdded, description, content, categoryId);
         }
     }
 }

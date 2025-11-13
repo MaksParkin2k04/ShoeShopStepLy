@@ -58,16 +58,49 @@
                 Обязательное поле. Стоимость от 0 до 1 000 000 рублей. Не более двух знаков после запятой.
             </div>
         </div>
-
-
-
-
-
-        <div class="mb-3 d-flex">
-            @foreach(string size in Model.GetSizes(Model.Product.Sizes)) {
-                <div class="text-center border border-1 border-info p-1 m-1" style="width: 40px; height: 40px;">@size</div>
-            }
+        <div class="mb-3">
+            <label for="categorySelect" class="form-label">Категория:</label>
+            <select id="categorySelect" name="categoryid" class="form-select form-select-lg" required>
+                <option value="">Выберите категорию</option>
+                @foreach (var category in Model.Categories)
+                {
+                    @if (Model.Product?.CategoryId == category.Id)
+                    {
+                        <option value="@category.Id" selected>@category.Name</option>
+                    }
+                    else
+                    {
+                        <option value="@category.Id">@category.Name</option>
+                    }
+                }
+            </select>
         </div>
+        <div class="mb-3">
+            <label class="form-label">Размеры:</label>
+            <div class="row">
+                @for (int size = 36; size <= 45; size++) {
+                    var sizeFlag = (ProductSize)Enum.Parse(typeof(ProductSize), $"S{size}");
+                    bool isChecked = Model.Product?.Sizes.HasFlag(sizeFlag) == true;
+                    <div class="col-md-3">
+                        @if (isChecked)
+                        {
+                            <input type="checkbox" name="sizes" value="@((ulong)sizeFlag)" id="size@(size)" checked>
+                        }
+                        else
+                        {
+                            <input type="checkbox" name="sizes" value="@((ulong)sizeFlag)" id="size@(size)">
+                        }
+                        <label for="size@(size)">@size</label>
+                    </div>
+                }
+            </div>
+        </div>
+
+
+
+
+
+
 
 
 

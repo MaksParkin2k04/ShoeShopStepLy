@@ -21,28 +21,41 @@ namespace ShoeShop.Services {
         private readonly IImageManager imageManager;
 
         public async Task<Guid> Add(EditProduct product) {
-
             product.Validate();
 
-            Product addProduct = Product.Create(product.Name, product.IsSale.Value, product.Price.Value, product.Sizes.Value,  DateTime.Now, product.Description, product.Content);
-            foreach (EditImage productImage in product.Images ?? Enumerable.Empty<EditImage>()) {
-                string fileName = Guid.NewGuid().ToString() + ".jpg";
-                string relativePath = IMAGE_FOLDER_PATH + fileName;
+            Product newProduct = Product.Create(
+                product.Name,
+                product.IsSale.Value,
+                product.Price.Value,
+                product.Sizes.Value,
+                DateTime.Now,
+                product.Description,
+                product.Content,
+                product.CategoryId ?? Guid.Empty
+            );
 
-                addProduct.AddImage(relativePath, productImage.Alt);
-            }
+            Dictionary<string, IFormFile?> dictionary = new Dictionary<string, IFormFile?>();
 
-            await repository.AddProduct(addProduct);
-
-            for (int i = 0; i < addProduct.Images?.Count; i++) {
-                ProductImage image = addProduct.Images[i];
-                using (Stream readStream = product.Images[i].Image.OpenReadStream()) {
-                    string absolutePath = Path.Combine(environment.WebRootPath, image.Path);
-                    imageManager.Create(readStream, absolutePath, IMAGE_WIDTH, IMAGE_HEIGHT);
+            foreach (EditImage editImage in product.Images ?? Enumerable.Empty<EditImage>()) {
+                if (editImage.Mode == EditImageMode.New && editImage.Image != null) {
+                    string relativePath = IMAGE_FOLDER_PATH + Guid.NewGuid().ToString() + ".jpg";
+                    newProduct.AddImage(relativePath, editImage.Alt);
+                    dictionary.Add(Path.Combine(environment.WebRootPath, relativePath), editImage.Image);
                 }
             }
 
-            return addProduct.Id;
+            await repository.AddProduct(newProduct);
+
+            foreach (string imagePath in dictionary.Keys) {
+                IFormFile? formFile = dictionary[imagePath];
+                if (formFile != null) {
+                    using (Stream stream = formFile.OpenReadStream()) {
+                        imageManager.Create(stream, imagePath, IMAGE_WIDTH, IMAGE_HEIGHT);
+                    }
+                }
+            }
+
+            return newProduct.Id;
         }
 
         public async Task<Guid> Update(EditProduct product) {
@@ -57,6 +70,12 @@ namespace ShoeShop.Services {
             oldProduct.SetPrice(product.Price.Value);
             oldProduct.SetDescription(product.Description);
             oldProduct.SetContent(product.Content);
+            if (product.Sizes.HasValue) {
+                oldProduct.SetSizes(product.Sizes.Value);
+            }
+            if (product.CategoryId.HasValue) {
+                oldProduct.SetCategory(product.CategoryId.Value);
+            }
 
             Dictionary<string, IFormFile?> dictionary = new Dictionary<string, IFormFile?>();
 

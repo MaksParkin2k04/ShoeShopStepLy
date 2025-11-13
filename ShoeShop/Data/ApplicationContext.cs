@@ -11,6 +11,7 @@ namespace ShoeShop.Data {
         public DbSet<ProductImage> ProductImages { get; private set; }
         public DbSet<Order> Orders { get; private set; }
         public DbSet<OrderDetail> OrderDetails { get; private set; }
+        public DbSet<Category> Categories { get; private set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
             base.OnModelCreating(modelBuilder);
@@ -20,7 +21,7 @@ namespace ShoeShop.Data {
             modelBuilder.Entity<Product>().Property(b => b.DateAdded).IsRequired();
             modelBuilder.Entity<Product>().Property(b => b.Description).IsRequired().HasMaxLength(120);
             modelBuilder.Entity<Product>().Property(b => b.Content).IsRequired();
-            modelBuilder.Entity<Product>().Property(b => b.Sizes).HasField("sizes");
+            modelBuilder.Entity<Product>().Property(b => b.Sizes).HasField("_sizes");
 
             modelBuilder.Entity<ProductImage>().Property(b => b.Path).IsRequired().HasMaxLength(256);
             modelBuilder.Entity<ProductImage>().Property(b => b.Alt).IsRequired().HasMaxLength(100);
@@ -28,6 +29,7 @@ namespace ShoeShop.Data {
             modelBuilder.Entity<OrderDetail>().Property(o => o.Name).IsRequired().HasMaxLength(50);
             modelBuilder.Entity<OrderDetail>().Property(o => o.Image).IsRequired().HasMaxLength(256);
             modelBuilder.Entity<OrderDetail>().Property(o => o.Price).IsRequired();
+            modelBuilder.Entity<OrderDetail>().Property(o => o.Size).IsRequired();
             modelBuilder.Entity<OrderDetail>().ToTable(o => o.HasCheckConstraint("ValidPrice", $"{nameof(OrderDetail.Price)} > 0"));
 
             modelBuilder.Entity<Order>(o => {
@@ -42,6 +44,14 @@ namespace ShoeShop.Data {
 
                 o.Navigation(o => o.Recipient).IsRequired();
             });
+
+            modelBuilder.Entity<Category>().Property(c => c.Name).IsRequired().HasMaxLength(100);
+
+            modelBuilder.Entity<Product>()
+                .HasOne(p => p.Category)
+                .WithMany()
+                .HasForeignKey(p => p.CategoryId)
+                .OnDelete(DeleteBehavior.Restrict);
 
         }
     }

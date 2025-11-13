@@ -1,5 +1,6 @@
 ﻿@page
 @model ShoeShop.Pages.Admin.AddProductModel
+@using ShoeShop.Models
 @{
 }
 
@@ -50,6 +51,38 @@
             <input id="priceInput" name="price" type="number" class="form-control  form-control-lg" placeholder="0.00" step="0.01" min="0" max="1000000" required />
             <div class="invalid-feedback">
                 Обязательное поле. Стоимость от 0 до 1 000 000 рублей. Не более двух знаков после запятой.
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="categorySelect" class="form-label">Категория:</label>
+            <select id="categorySelect" name="categoryid" class="form-select form-select-lg" required>
+                <option value="">Выберите категорию</option>
+                @foreach (var category in Model.Categories)
+                {
+                    <option value="@category.Id">@category.Name</option>
+                }
+            </select>
+            <div class="invalid-feedback">
+                Обязательное поле.
+            </div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Размеры:</label>
+            <div class="row">
+                <div class="col-md-3"><input type="checkbox" name="sizes" value="@((ulong)ProductSize.S36)" id="size36"> <label for="size36">36</label></div>
+                <div class="col-md-3"><input type="checkbox" name="sizes" value="@((ulong)ProductSize.S37)" id="size37"> <label for="size37">37</label></div>
+                <div class="col-md-3"><input type="checkbox" name="sizes" value="@((ulong)ProductSize.S38)" id="size38"> <label for="size38">38</label></div>
+                <div class="col-md-3"><input type="checkbox" name="sizes" value="@((ulong)ProductSize.S39)" id="size39"> <label for="size39">39</label></div>
+            </div>
+            <div class="row">
+                <div class="col-md-3"><input type="checkbox" name="sizes" value="@((ulong)ProductSize.S40)" id="size40"> <label for="size40">40</label></div>
+                <div class="col-md-3"><input type="checkbox" name="sizes" value="@((ulong)ProductSize.S41)" id="size41"> <label for="size41">41</label></div>
+                <div class="col-md-3"><input type="checkbox" name="sizes" value="@((ulong)ProductSize.S42)" id="size42"> <label for="size42">42</label></div>
+                <div class="col-md-3"><input type="checkbox" name="sizes" value="@((ulong)ProductSize.S43)" id="size43"> <label for="size43">43</label></div>
+            </div>
+            <div class="row">
+                <div class="col-md-3"><input type="checkbox" name="sizes" value="@((ulong)ProductSize.S44)" id="size44"> <label for="size44">44</label></div>
+                <div class="col-md-3"><input type="checkbox" name="sizes" value="@((ulong)ProductSize.S45)" id="size45"> <label for="size45">45</label></div>
             </div>
         </div>
         <div class="mb-3 d-grid gap-2">

@@ -1,0 +1,171 @@
+@page
+@using ShoeShop.Models
+@model ShoeShop.Pages.Admin.OrderDetailModel
+@{
+    ViewData["Title"] = $"Заказ #{Model.Order?.Id.ToString().Substring(0, 8)}";
+}
+
+<div class="order-detail-page">
+    @if (Model.Order == null) {
+        <div class="empty-state">
+            <div class="empty-icon">
+                <i class="fas fa-search fa-4x"></i>
+            </div>
+            <h3 class="empty-title">Заказ не найден</h3>
+            <p class="empty-text">Возможно, заказ был удален или перемещен</p>
+            <a asp-page="/Admin/Orders" class="btn btn-primary mt-3">Вернуться к заказам</a>
+        </div>
+    } else {
+        @* Header *@
+        <div class="order-detail-header">
+            <div>
+                <h1 class="order-detail-title">
+                    <i class="fas fa-receipt me-3"></i>
+                    Заказ #@Model.Order.Id.ToString().Substring(0, 8)
+                </h1>
+                <div class="order-meta">
+                    <span class="order-date">
+                        <i class="fas fa-calendar me-1"></i>
+                        @Model.Order.CreatedDate.ToString("dd.MM.yyyy HH:mm")
+                    </span>
+                </div>
+            </div>
+            <span class="status-badge large status-@Model.Order.Status.ToString().ToLower()">
+                @switch (Model.Order.Status) {
+                    case OrderStatus.Created:
+                        <i class="fas fa-plus-circle me-2"></i>
+                        <span>Создан</span>
+                        break;
+                    case OrderStatus.Processing:
+                        <i class="fas fa-clock me-2"></i>
+                        <span>В обработке</span>
+                        break;
+                    case OrderStatus.Completed:
+                        <i class="fas fa-check-circle me-2"></i>
+                        <span>Выполнен</span>
+                        break;
+                    case OrderStatus.Canceled:
+                        <i class="fas fa-times-circle me-2"></i>
+                        <span>Отменен</span>
+                        break;
+                }
+            </span>
+        </div>
+
+        <div class="order-detail-content">
+            @* Order Items *@
+            <div class="order-items-section">
+                <h3 class="section-title">
+                    <i class="fas fa-shopping-bag me-2"></i>
+                    Товары в заказе
+                </h3>
+                
+                <div class="order-items-list">
+                    @foreach (var item in Model.Order.OrderDetails ?? Enumerable.Empty<OrderDetail>()) {
+                        <div class="order-detail-item">
+                            <div class="item-image-container">
+                                <img src="~/@item.Image" alt="@item.Name" class="item-image" />
+                            </div>
+                            <div class="item-info">
+                                <h5 class="item-name">@item.Name</h5>
+                                <p class="item-size">Размер: @item.Size</p>
+                            </div>
+                            <div class="item-price">
+                                <div class="price-value">@item.Price ₽</div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <div class="order-total-section">
+                    <div class="total-row">
+                        <span>Итого:</span>
+                        <span class="total-amount">@Model.Order.OrderDetails?.Sum(d => d.Price) ₽</span>
+                    </div>
+                </div>
+            </div>
+
+            @* Delivery Info *@
+            <div class="delivery-info-section">
+                <h3 class="section-title">
+                    <i class="fas fa-truck me-2"></i>
+                    Информация о доставке
+                </h3>
+                
+                <div class="info-grid">
+                    <div class="info-group">
+                        <div class="info-label">Получатель</div>
+                        <div class="info-value">@Model.Order.Recipient?.Name</div>
+                    </div>
+                    <div class="info-group">
+                        <div class="info-label">Телефон</div>
+                        <div class="info-value">@Model.Order.Recipient?.Phone</div>
+                    </div>
+                    <div class="info-group">
+                        <div class="info-label">Город</div>
+                        <div class="info-value">@Model.Order.Recipient?.City</div>
+                    </div>
+                    <div class="info-group">
+                        <div class="info-label">Адрес</div>
+                        <div class="info-value">@Model.Order.Recipient?.Street, д. @Model.Order.Recipient?.House, кв. @Model.Order.Recipient?.Apartment</div>
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrEmpty(Model.Order.Coment)) {
+                    <div class="comment-section">
+                        <div class="info-label">Комментарий к заказу</div>
+                        <div class="comment-text">@Model.Order.Coment</div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        @* Actions *@
+        <div class="order-actions">
+            <a asp-page="/Admin/Orders" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i>
+                Вернуться к заказам
+            </a>
+            
+            @if (Model.Order.Status != OrderStatus.Completed && Model.Order.Status != OrderStatus.Canceled) {
+                <div class="dropdown">
+                    <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-edit me-2"></i>
+                        Изменить статус
+                    </button>
+                    <ul class="dropdown-menu">
+                        @if (Model.Order.Status != OrderStatus.Processing) {
+                            <li>
+                                <form asp-page="/Admin/OrderDetail" asp-page-handler="UpdateStatus" method="post" class="d-inline">
+                                    <input type="hidden" name="orderId" value="@Model.Order.Id" />
+                                    <input type="hidden" name="status" value="@((int)OrderStatus.Processing)" />
+                                    <button type="submit" class="dropdown-item">
+                                        <i class="fas fa-clock me-2"></i>В обработку
+                                    </button>
+                                </form>
+                            </li>
+                        }
+                        <li>
+                            <form asp-page="/Admin/OrderDetail" asp-page-handler="UpdateStatus" method="post" class="d-inline">
+                                <input type="hidden" name="orderId" value="@Model.Order.Id" />
+                                <input type="hidden" name="status" value="@((int)OrderStatus.Completed)" />
+                                <button type="submit" class="dropdown-item">
+                                    <i class="fas fa-check-circle me-2"></i>Выполнить
+                                </button>
+                            </form>
+                        </li>
+                        <li>
+                            <form asp-page="/Admin/OrderDetail" asp-page-handler="UpdateStatus" method="post" class="d-inline">
+                                <input type="hidden" name="orderId" value="@Model.Order.Id" />
+                                <input type="hidden" name="status" value="@((int)OrderStatus.Canceled)" />
+                                <button type="submit" class="dropdown-item text-danger">
+                                    <i class="fas fa-times-circle me-2"></i>Отменить
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            }
+        </div>
+    }
+</div>

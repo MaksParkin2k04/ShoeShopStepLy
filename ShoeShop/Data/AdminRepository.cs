@@ -13,11 +13,11 @@ namespace ShoeShop.Data {
         private readonly ApplicationContext context;
 
         public async Task<Product?> GetProduct(Guid productId) {
-            return await context.Products.Include(p => p.Images).FirstOrDefaultAsync(p => p.Id == productId);
+            return await context.Products.Include(p => p.Images).Include(p => p.Category).FirstOrDefaultAsync(p => p.Id == productId);
         }
 
         public async Task<IReadOnlyList<Product>> GetProducts(ProductSorting sorting, IsSaleFilter filter, string partProductName, int start, int count) {
-            IQueryable<Product> query = context.Products.IsSaleFilters(filter).SearchByName(partProductName).OrderProductsBy(sorting).Page(start, count).Include(p => p.Images);
+            IQueryable<Product> query = context.Products.IsSaleFilters(filter).SearchByName(partProductName).OrderProductsBy(sorting).Page(start, count).Include(p => p.Images).Include(p => p.Category);
             string sql = query.ToQueryString();
             return await query.ToArrayAsync();
         }
@@ -60,6 +60,23 @@ namespace ShoeShop.Data {
         public async Task UpdateOrder(Order order) {
             context.Update(order);
             await context.SaveChangesAsync();
+        }
+
+        public async Task<IEnumerable<Category>> GetCategories() {
+            return await context.Categories.OrderBy(c => c.Name).ToListAsync();
+        }
+
+        public async Task AddCategory(Category category) {
+            context.Categories.Add(category);
+            await context.SaveChangesAsync();
+        }
+
+        public async Task RemoveCategory(Guid categoryId) {
+            Category? category = await context.Categories.FindAsync(categoryId);
+            if (category != null) {
+                context.Categories.Remove(category);
+                await context.SaveChangesAsync();
+            }
         }
     }
 }

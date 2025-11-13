@@ -12,12 +12,14 @@
         /// <param name="image">Изображение товара</param>
         /// <param name="name">Название товара</param>
         /// <param name="price">Цена товара</param>
-        private OrderDetail(Guid id, Guid productId, string image, string name, double price) {
+        /// <param name="size">Размер товара</param>
+        private OrderDetail(Guid id, Guid productId, string image, string name, double price, int size) {
             Id = id;
             ProductId = productId;
             Image = image;
             Name = name;
             Price = price;
+            Size = size;
         }
 
         /// <summary>
@@ -40,6 +42,10 @@
         /// Цена товара
         /// </summary>
         public double Price { get; private set; }
+        /// <summary>
+        /// Размер товара
+        /// </summary>
+        public int Size { get; private set; }
 
         /// <summary>
         /// Создает еденицу заказа
@@ -48,9 +54,10 @@
         /// <param name="image">Изображение товара</param>
         /// <param name="name">Название товара</param>
         /// <param name="price">Цена товара</param>
+        /// <param name="size">Размер товара</param>
         /// <returns>Объект представляющий еденицу заказа</returns>
-        public static OrderDetail Create(Guid productId, string image, string name, double price) {
-            return new OrderDetail(Guid.NewGuid(), productId, image, name, price);
+        public static OrderDetail Create(Guid productId, string image, string name, double price, int size) {
+            return new OrderDetail(Guid.NewGuid(), productId, image, name, price, size);
         }
     }
 }

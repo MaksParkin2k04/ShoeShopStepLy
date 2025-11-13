@@ -1,0 +1,72 @@
+﻿@page
+@using ShoeShop.Models
+@model ShoeShop.Pages.Admin.CategoriesModel
+@{
+    ViewData["Title"] = "Управление категориями";
+}
+
+<div class="admin-page">
+    <div class="admin-header">
+        <h1 class="admin-title">
+            <i class="fas fa-tags me-3"></i>
+            Управление категориями
+        </h1>
+        <p class="admin-subtitle">Создание и редактирование категорий товаров</p>
+    </div>
+
+    @* Add Category Form *@
+    <div class="add-category-section mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Добавить новую категорию</h5>
+            </div>
+            <div class="card-body">
+                <form asp-page="/Admin/Categories" asp-page-handler="Add" method="post" class="row g-3">
+                    <div class="col-md-8">
+                        <input type="text" name="categoryName" class="form-control" placeholder="Название категории" required>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>
+                            Добавить
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    @* Categories List *@
+    <div class="categories-list">
+        @if (Model.Categories == null || !Model.Categories.Any()) {
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-tags fa-4x"></i>
+                </div>
+                <h3 class="empty-title">Категории не найдены</h3>
+                <p class="empty-text">Добавьте первую категорию товаров</p>
+            </div>
+        } else {
+            <div class="row g-3">
+                @foreach (Category category in Model.Categories) {
+                    <div class="col-md-6 col-lg-4">
+                        <div class="category-card">
+                            <div class="category-info">
+                                <h5 class="category-name">@category.Name</h5>
+                            </div>
+                            <div class="category-actions">
+                                <form asp-page="/Admin/Categories" asp-page-handler="Delete" method="post" class="d-inline">
+                                    <input type="hidden" name="categoryId" value="@category.Id" />
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" 
+                                            onclick="return confirm('Вы уверены, что хотите удалить категорию?')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>

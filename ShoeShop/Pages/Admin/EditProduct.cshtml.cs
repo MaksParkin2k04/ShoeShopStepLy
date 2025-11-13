@@ -18,14 +18,22 @@ namespace ShoeShop.Pages.Admin {
         private readonly IProductManager productManager;
 
         public Product? Product { get; private set; }
+        public IEnumerable<Category> Categories { get; private set; }
 
         public async Task OnGetAsync(Guid productId) {
             Product = await repository.GetProduct(productId);
-            string[] sizes = GetSizes(Product.Sizes).ToArray();
-            string ss = string.Join(", ", sizes);
+            Categories = await repository.GetCategories();
         }
 
-        public async Task<IActionResult> OnPostAsync(EditProduct product) {
+        public async Task<IActionResult> OnPostAsync(EditProduct product, ulong[] sizes) {
+            if (sizes != null && sizes.Length > 0) {
+                ProductSize combinedSizes = ProductSize.Not;
+                foreach (ulong size in sizes) {
+                    combinedSizes |= (ProductSize)size;
+                }
+                product.Sizes = combinedSizes;
+            }
+            
             Guid productId = await productManager.Update(product);
             return RedirectToPage("/Admin/EditProduct", new { productId = productId });
         }

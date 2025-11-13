@@ -19,9 +19,9 @@ namespace ShoeShop.Pages {
             Product = await repository.GetProduct(id);
         }
 
-        public IActionResult OnPost(Guid productId) {
+        public IActionResult OnPost(Guid productId, int selectedSize) {
             BasketShopping b = basketShopping.GetBasketShopping();
-            b.Products.Add(productId);
+            b.Products.Add(new BasketItem { ProductId = productId, Size = selectedSize });
             basketShopping.SetBasketShopping(b);
 
             return RedirectToPage("/Product", new { id = productId });

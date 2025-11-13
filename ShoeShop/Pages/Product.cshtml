@@ -68,6 +68,12 @@
                     <h1 class="product-title-detail">@Model.Product.Name</h1>
                     <p class="product-description-detail">@Model.Product.Description</p>
                     
+                    @if (Model.Product.Category != null) {
+                        <div class="product-category mb-3">
+                            <span class="badge bg-secondary">@Model.Product.Category.Name</span>
+                        </div>
+                    }
+                    
                     <div class="product-price-section">
                         <span class="product-price-detail">@Model.Product.Price ₽</span>
                         <span class="product-price-label">за пару</span>
@@ -78,13 +84,40 @@
                         <div class="content-text">@Model.Product.Content</div>
                     </div>
 
-                    <form asp-page="/Product" method="post" class="add-to-cart-form">
+                    <form asp-page="/Product" method="post" class="add-to-cart-form" onsubmit="return validateSize()">
                         <input type="hidden" name="productId" value="@Model.Product.Id" />
+                        
+                        @if (Model.Product.Sizes != ProductSize.Not) {
+                            <div class="product-sizes mb-4">
+                                <h5>Выберите размер:</h5>
+                                <div class="sizes-list">
+                                    @for (int size = 36; size <= 45; size++) {
+                                        var sizeFlag = (ProductSize)Enum.Parse(typeof(ProductSize), $"S{size}");
+                                        if (Model.Product.Sizes.HasFlag(sizeFlag)) {
+                                            <input type="radio" name="selectedSize" value="@size" id="size@(size)" class="size-radio" required>
+                                            <label for="size@(size)" class="size-badge">@size</label>
+                                        }
+                                    }
+                                </div>
+                            </div>
+                        }
+                        
                         <button type="submit" class="btn btn-primary btn-lg add-to-cart-btn">
                             <i class="fas fa-shopping-cart me-2"></i>
                             Добавить в корзину
                         </button>
                     </form>
+
+                    <script>
+                        function validateSize() {
+                            const selectedSize = document.querySelector('input[name="selectedSize"]:checked');
+                            if (!selectedSize) {
+                                alert('Пожалуйста, выберите размер');
+                                return false;
+                            }
+                            return true;
+                        }
+                    </script>
 
                     <div class="product-features">
                         <div class="feature-item">

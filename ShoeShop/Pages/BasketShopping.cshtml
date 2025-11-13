@@ -12,7 +12,7 @@
         <p class="page-subtitle">Проверьте выбранные товары перед оформлением заказа</p>
     </div>
 
-    @if (Model.Products == null || Model.Products.Count() == 0) {
+    @if (Model.BasketItems == null || Model.BasketItems.Count() == 0) {
         <div class="empty-cart">
             <div class="empty-cart-icon">
                 <i class="fas fa-shopping-cart fa-4x"></i>
@@ -27,11 +27,11 @@
     } else {
         <div class="cart-content">
             <div class="cart-items">
-                @foreach (Product product in Model.Products) {
+                @foreach (var item in Model.BasketItems) {
                     <div class="cart-item">
                         <div class="cart-item-image">
-                            @if (product?.Images?.Count > 0) {
-                                <img src="@product.Images[0].Path" alt="@product.Images[0].Alt" class="item-image">
+                            @if (item.Product?.Images?.Count > 0) {
+                                <img src="@item.Product.Images[0].Path" alt="@item.Product.Images[0].Alt" class="item-image">
                             } else {
                                 <div class="item-image-placeholder">
                                     <i class="fas fa-image"></i>
@@ -40,16 +40,18 @@
                         </div>
                         <div class="cart-item-info">
                             <h4 class="item-name">
-                                <a asp-page="/Product" asp-route-id="@product?.Id" class="item-link">@product?.Name</a>
+                                <a asp-page="/Product" asp-route-id="@item.Product?.Id" class="item-link">@item.Product?.Name</a>
                             </h4>
-                            <p class="item-description">@product?.Description</p>
+                            <p class="item-description">@item.Product?.Description</p>
+                            <p class="item-size">Размер: @item.Size</p>
                         </div>
                         <div class="cart-item-price">
-                            <span class="item-price">@product?.Price ₽</span>
+                            <span class="item-price">@item.Product?.Price ₽</span>
                         </div>
                         <div class="cart-item-actions">
                             <form asp-page="/BasketShopping" asp-page-handler="deleteproduct" method="post" class="remove-form">
-                                <input name="productId" type="hidden" value="@product?.Id" />
+                                <input name="productId" type="hidden" value="@item.Product?.Id" />
+                                <input name="size" type="hidden" value="@item.Size" />
                                 <button type="submit" class="btn-remove" title="Удалить из корзины">
                                     <i class="fas fa-trash"></i>
                                 </button>
@@ -63,13 +65,13 @@
                 <div class="summary-card">
                     <h3 class="summary-title">Итого к оплате</h3>
                     <div class="summary-row">
-                        <span>Товары (@Model.Products.Count() шт.)</span>
-                        <span>@Model.Products.Sum(p => p.Price) ₽</span>
+                        <span>Товары (@Model.BasketItems.Count() шт.)</span>
+                        <span>@Model.BasketItems.Sum(p => p.Product.Price) ₽</span>
                     </div>
                     <div class="summary-row">
                         <span>Доставка</span>
                         <span class="delivery-info">
-                            @if (Model.Products.Sum(p => p.Price) >= 5000) {
+                            @if (Model.BasketItems.Sum(p => p.Product.Price) >= 5000) {
                                 <span class="text-success">Бесплатно</span>
                             } else {
                                 <span>500 ₽</span>
@@ -81,8 +83,8 @@
                         <span>Общая стоимость</span>
                         <span class="total-price">
                             @{
-                                var deliveryCost = Model.Products.Sum(p => p.Price) >= 5000 ? 0 : 500;
-                                var totalCost = Model.Products.Sum(p => p.Price) + deliveryCost;
+                                var deliveryCost = Model.BasketItems.Sum(p => p.Product.Price) >= 5000 ? 0 : 500;
+                                var totalCost = Model.BasketItems.Sum(p => p.Product.Price) + deliveryCost;
                             }
                             @totalCost ₽
                         </span>

@@ -53,7 +53,7 @@ namespace ShoeShop {
 
             WebApplication app = builder.Build();
 
-            //// Инициализация базы данных
+            // Инициализация базы данных
             //using (IServiceScope scope = app.Services.CreateScope())
             //{
             //    ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();

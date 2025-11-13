@@ -6,7 +6,7 @@ namespace ShoeShop.Data {
     public class ProductRepository : IProductRepository {
 
         public async Task<IEnumerable<Product>> GetProducts(IReadOnlyCollection<Guid> productIds) {
-            return await context.Products.Where(p => productIds.Contains(p.Id)).Include(p => p.Images).ToArrayAsync();
+            return await context.Products.Where(p => productIds.Contains(p.Id)).Include(p => p.Images).Include(p => p.Category).ToArrayAsync();
         }
 
         public ProductRepository(ApplicationContext context) {
@@ -16,13 +16,13 @@ namespace ShoeShop.Data {
         private readonly ApplicationContext context;
 
         public async Task<IEnumerable<Product>> GetProducts(ProductSorting sorting, int start, int count) {
-            IQueryable<Product> query = context.Products.IsSaleFilters(IsSaleFilter.IsSale).OrderProductsBy(sorting).Page(start, count).Include(p => p.Images);
+            IQueryable<Product> query = context.Products.IsSaleFilters(IsSaleFilter.IsSale).OrderProductsBy(sorting).Page(start, count).Include(p => p.Images).Include(p => p.Category);
             string sql = query.ToQueryString();
             return await query.ToArrayAsync();
         }
 
         public async Task<Product?> GetProduct(Guid productId) {
-            return await context.Products.Include(p => p.Images).FirstOrDefaultAsync(p => p.Id == productId);
+            return await context.Products.Include(p => p.Images).Include(p => p.Category).FirstOrDefaultAsync(p => p.Id == productId);
         }
 
         public async Task<int> ProductCount() {

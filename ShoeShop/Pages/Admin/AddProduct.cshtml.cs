@@ -10,19 +10,33 @@ namespace ShoeShop.Pages.Admin {
     [Authorize(Roles = "Admin")]
     public class AddProductModel : PageModel {
 
-        public AddProductModel(IProductManager productManager) {
+        public AddProductModel(IProductManager productManager, IAdminRepository adminRepository) {
             this.productManager = productManager;
+            this.adminRepository = adminRepository;
         }
 
         private readonly IProductManager productManager;
+        private readonly IAdminRepository adminRepository;
 
         public EditProduct Product { get; private set; }
+        public IEnumerable<Category> Categories { get; private set; }
 
-        public void OnGet() {
-            Product = new EditProduct();
+        public async Task OnGet() {
+            Product = new EditProduct() {
+                Sizes = ProductSize.Not
+            };
+            Categories = await adminRepository.GetCategories();
         }
 
-        public async Task<IActionResult> OnPostAsync(EditProduct product) {
+        public async Task<IActionResult> OnPostAsync(EditProduct product, ulong[] sizes) {
+            if (sizes != null && sizes.Length > 0) {
+                ProductSize combinedSizes = ProductSize.Not;
+                foreach (ulong size in sizes) {
+                    combinedSizes |= (ProductSize)size;
+                }
+                product.Sizes = combinedSizes;
+            }
+            
             Guid addProductId = await productManager.Add(product);
             return RedirectToPage("/Admin/EditProduct", new { productId = addProductId });
         }
