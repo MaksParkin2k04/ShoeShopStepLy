@@ -215,6 +215,78 @@
     color: var(--secondary);
 }
 
+/* Stylish Pagination */
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+}
+
+.page-item {
+    list-style: none;
+}
+
+.page-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 45px;
+    height: 45px;
+    border: 1px solid #e1e1e1;
+    background: var(--white);
+    color: var(--secondary);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    border-radius: 8px;
+}
+
+.page-link:hover {
+    background: var(--primary);
+    color: var(--white);
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.page-item.active .page-link {
+    background: var(--primary);
+    color: var(--white);
+    border-color: var(--primary);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.page-item.disabled .page-link {
+    background: var(--accent);
+    color: #ccc;
+    border-color: #e1e1e1;
+    cursor: not-allowed;
+}
+
+.page-item.disabled .page-link:hover {
+    background: var(--accent);
+    color: #ccc;
+    transform: none;
+    box-shadow: none;
+}
+
+.page-item:first-child .page-link,
+.page-item:last-child .page-link {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.pagination-info {
+    text-align: center;
+    color: var(--secondary);
+    font-size: 0.9rem;
+    margin-top: 1rem;
+    font-weight: 400;
+}
+
 @media (max-width: 768px) {
     .hero-section {
         padding: 3rem 1rem;
@@ -241,5 +313,15 @@
     .product-grid {
         grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
         gap: 1.5rem;
+    }
+    
+    .page-link {
+        width: 40px;
+        height: 40px;
+        font-size: 0.8rem;
+    }
+    
+    .pagination {
+        gap: 0.3rem;
     }
 }
