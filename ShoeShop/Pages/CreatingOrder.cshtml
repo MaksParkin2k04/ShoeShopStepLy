@@ -2,67 +2,155 @@
 @using ShoeShop.Models
 @model ShoeShop.Pages.CreatingOrderModel
 @{
+    ViewData["Title"] = "Оформление заказа";
 }
-@* Заголовок *@
-<div class="d-flex flex-row-reverse p-1 mt-3">
-    <h1>Создать заказ</h1>
-</div>
 
-<div class="row">
+<div class="checkout-page">
+    @* Header *@
+    <div class="page-header">
+        <h1 class="page-title">Оформление заказа</h1>
+        <p class="page-subtitle">Заполните данные для доставки и подтвердите заказ</p>
+    </div>
+
     @if (Model.Products == null || Model.Products.Count() == 0) {
-        <p class="text-center fs-1">Товары не найдены</p>
+        <div class="empty-state">
+            <div class="empty-icon">
+                <i class="fas fa-shopping-cart fa-4x"></i>
+            </div>
+            <h3 class="empty-title">Корзина пуста</h3>
+            <p class="empty-text">Добавьте товары в корзину для оформления заказа</p>
+            <a asp-page="/Index" class="btn btn-primary btn-lg mt-3">
+                <i class="fas fa-arrow-left me-2"></i>
+                Вернуться к покупкам
+            </a>
+        </div>
     } else {
-        <form asp-page="/CreatingOrder" method="post">
-            <div class="row">
-                <div class="col">
-                    <label for="name" class="form-label">Имя получателя заказа</label>
-                    <input id="name" name="name" type="text" class="form-control" />
+        <form asp-page="/CreatingOrder" method="post" class="checkout-form">
+            <div class="checkout-content">
+                @* Order Items *@
+                <div class="order-summary-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-list me-2"></i>
+                        Ваш заказ
+                    </h3>
+                    <div class="order-items">
+                        @foreach (Product product in Model.Products) {
+                            <div class="order-item">
+                                <div class="order-item-image">
+                                    @if (product?.Images?.Count > 0) {
+                                        <img src="@product.Images[0].Path" alt="@product.Images[0].Alt" class="item-image">
+                                    } else {
+                                        <div class="item-image-placeholder">
+                                            <i class="fas fa-image"></i>
+                                        </div>
+                                    }
+                                </div>
+                                <div class="order-item-info">
+                                    <h4 class="item-name">
+                                        <a asp-page="/Product" asp-route-id="@product?.Id" class="item-link">@product?.Name</a>
+                                    </h4>
+                                    <p class="item-description">@product?.Description</p>
+                                </div>
+                                <div class="order-item-price">
+                                    <span class="item-price">@product?.Price ₽</span>
+                                </div>
+                                <input type="hidden" name="products[]" value="@product?.Id" />
+                            </div>
+                        }
+                    </div>
+                    <div class="order-total">
+                        <div class="total-row">
+                            <span>Товары (@Model.Products.Count() шт.)</span>
+                            <span>@Model.Products.Sum(p => p.Price) ₽</span>
+                        </div>
+                        <div class="total-row">
+                            <span>Доставка</span>
+                            <span class="delivery-cost">
+                                @if (Model.Products.Sum(p => p.Price) >= 5000) {
+                                    <span class="text-success">Бесплатно</span>
+                                } else {
+                                    <span>500 ₽</span>
+                                }
+                            </span>
+                        </div>
+                        <hr class="total-divider">
+                        <div class="total-final">
+                            <span>Итого к оплате</span>
+                            <span class="final-price">
+                                @{
+                                    var deliveryCost = Model.Products.Sum(p => p.Price) >= 5000 ? 0 : 500;
+                                    var totalCost = Model.Products.Sum(p => p.Price) + deliveryCost;
+                                }
+                                @totalCost ₽
+                            </span>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            <div class="row">
-                <div class="col">
-                    <label for="city" class="form-label">Город</label>
-                    <input id="city" name="city" type="text" class="form-control" />
-                </div>
-                <div class="col">
-                    <label for="street" class="form-label">Улица</label>
-                    <input id="street" name="street" type="text" class="form-control" />
-                </div>
-                <div class="col">
-                    <label for="house" class="form-label">Дом</label>
-                    <input id="house" name="house" type="text" class="form-control" />
-                </div>
-                <div class="col">
-                    <label for="apartment" class="form-label">Квартира</label>
-                    <input id="apartment" name="apartment" type="text" class="form-control" />
-                </div>
-                <div class="col">
-                    <label for="phone" class="form-label">Телефон</label>
-                    <input id="phone" name="phone" type="text" class="form-control" />
-                </div>
-            </div>
-            <div class="row">
-                <div class="row">
-                    <label for="coment" class="form-label">Коментарий к заказу</label>
-                    <textarea id="coment" name="coment" class="form-control  form-control-lg"></textarea>
-                </div>
-            </div>
 
-            <div class="row border border-2 mt-3 p-3">
-                <table>
-                    @foreach (Product product in Model.Products) {
-                        <tr>
-                            <td class=""><img src="@product?.Images?[0].Path" style="width: 10%;"></td>
-                            <td><a asp-page="/Product" asp-route-id="@product?.Id">@product?.Name</a></td>
-                            <td>@product?.Price</td>
-                            <input type="hidden" name="products[]" value="@product?.Id" />
-                        </tr>
-                    }
-                </table>
-            </div>
+                @* Delivery Form *@
+                <div class="delivery-form-section">
+                    <h3 class="section-title">
+                        <i class="fas fa-truck me-2"></i>
+                        Данные для доставки
+                    </h3>
+                    
+                    <div class="form-section">
+                        <h4 class="form-section-title">Получатель</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="name" class="form-label">Имя получателя *</label>
+                                <input id="name" name="name" type="text" class="form-control" required placeholder="Введите имя получателя" />
+                            </div>
+                            <div class="form-group">
+                                <label for="phone" class="form-label">Телефон *</label>
+                                <input id="phone" name="phone" type="tel" class="form-control" required placeholder="+7 (999) 123-45-67" />
+                            </div>
+                        </div>
+                    </div>
 
-            <div class="col-12 mt-3">
-                <button type="submit" class="btn btn-primary">Заказать</button>
+                    <div class="form-section">
+                        <h4 class="form-section-title">Адрес доставки</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="city" class="form-label">Город *</label>
+                                <input id="city" name="city" type="text" class="form-control" required placeholder="Москва" />
+                            </div>
+                            <div class="form-group">
+                                <label for="street" class="form-label">Улица *</label>
+                                <input id="street" name="street" type="text" class="form-control" required placeholder="ул. Пушкина" />
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="house" class="form-label">Дом *</label>
+                                <input id="house" name="house" type="text" class="form-control" required placeholder="д. 10" />
+                            </div>
+                            <div class="form-group">
+                                <label for="apartment" class="form-label">Квартира</label>
+                                <input id="apartment" name="apartment" type="text" class="form-control" placeholder="кв. 25" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h4 class="form-section-title">Дополнительно</h4>
+                        <div class="form-group">
+                            <label for="coment" class="form-label">Комментарий к заказу</label>
+                            <textarea id="coment" name="coment" class="form-control" rows="3" placeholder="Укажите дополнительные пожелания к заказу..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <a asp-page="/BasketShopping" class="btn btn-outline-secondary btn-lg">
+                            <i class="fas fa-arrow-left me-2"></i>
+                            Вернуться в корзину
+                        </a>
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-check me-2"></i>
+                            Подтвердить заказ
+                        </button>
+                    </div>
+                </div>
             </div>
         </form>
     }
