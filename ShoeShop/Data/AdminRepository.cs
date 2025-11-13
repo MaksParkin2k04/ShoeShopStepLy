@@ -45,7 +45,7 @@ namespace ShoeShop.Data {
         }
 
         public async Task<IReadOnlyList<Order>> GetOrders(OrderStatusFilter filter, OrderSorting sorting, int start, int count) {
-            IQueryable<Order> query = context.Orders.StatusFilter(filter).OrderByDate(sorting).Page(start, count).Include(o => o.OrderDetails);
+            IQueryable<Order> query = context.Orders.StatusFilter(filter).OrderByDate(sorting).Page(start, count);
             return await query.ToArrayAsync();
         }
 
