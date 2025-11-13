@@ -1,0 +1,69 @@
+﻿@page
+@using ShoeShop.Models
+@model ShoeShop.Pages.CreatingOrderModel
+@{
+}
+@* Заголовок *@
+<div class="d-flex flex-row-reverse p-1 mt-3">
+    <h1>Создать заказ</h1>
+</div>
+
+<div class="row">
+    @if (Model.Products == null || Model.Products.Count() == 0) {
+        <p class="text-center fs-1">Товары не найдены</p>
+    } else {
+        <form asp-page="/CreatingOrder" method="post">
+            <div class="row">
+                <div class="col">
+                    <label for="name" class="form-label">Имя получателя заказа</label>
+                    <input id="name" name="name" type="text" class="form-control" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <label for="city" class="form-label">Город</label>
+                    <input id="city" name="city" type="text" class="form-control" />
+                </div>
+                <div class="col">
+                    <label for="street" class="form-label">Улица</label>
+                    <input id="street" name="street" type="text" class="form-control" />
+                </div>
+                <div class="col">
+                    <label for="house" class="form-label">Дом</label>
+                    <input id="house" name="house" type="text" class="form-control" />
+                </div>
+                <div class="col">
+                    <label for="apartment" class="form-label">Квартира</label>
+                    <input id="apartment" name="apartment" type="text" class="form-control" />
+                </div>
+                <div class="col">
+                    <label for="phone" class="form-label">Телефон</label>
+                    <input id="phone" name="phone" type="text" class="form-control" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="row">
+                    <label for="coment" class="form-label">Коментарий к заказу</label>
+                    <textarea id="coment" name="coment" class="form-control  form-control-lg"></textarea>
+                </div>
+            </div>
+
+            <div class="row border border-2 mt-3 p-3">
+                <table>
+                    @foreach (Product product in Model.Products) {
+                        <tr>
+                            <td class=""><img src="@product?.Images?[0].Path" style="width: 10%;"></td>
+                            <td><a asp-page="/Product" asp-route-id="@product?.Id">@product?.Name</a></td>
+                            <td>@product?.Price</td>
+                            <input type="hidden" name="products[]" value="@product?.Id" />
+                        </tr>
+                    }
+                </table>
+            </div>
+
+            <div class="col-12 mt-3">
+                <button type="submit" class="btn btn-primary">Заказать</button>
+            </div>
+        </form>
+    }
+</div>

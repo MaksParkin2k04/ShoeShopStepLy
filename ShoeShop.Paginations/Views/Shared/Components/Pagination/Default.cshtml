@@ -1,0 +1,64 @@
+﻿@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@model ShoeShop.Paginations.ViewModels.PaginationViewModel
+
+@{
+    var model = Model.Route.Data;
+}
+
+@if (Model != null && Model.Pagination.HasPagination) {
+    <div class="d-flex justify-content-center">
+        <nav aria-label="...">
+            <ul class="pagination m-0">
+                @if (Model.Pagination.HasPrevious) {
+                    <li class="page-item">
+                        <a class="page-link" aria-label="Previous" asp-page="@Model.Route.Page" asp-all-route-data="@Model.Route.Data" asp-route-pageindex="@Model.Pagination.Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                } else {
+                    <li class="page-item" aria-label="Previous">
+                        <span class="page-link">&laquo;</span>
+                    </li>
+                }
+                @if (Model.Pagination.HasFirstSeparator) {
+                    <li class="page-item">
+                        <a class="page-link" asp-page="@Model.Route.Page" asp-all-route-data="@Model.Route.Data" asp-route-pageindex="@Model.Pagination.First">@Model.Pagination.First</a>
+                    </li>
+                    <li class="page-item" aria-current="page">
+                        <span class="page-link">...</span>
+                    </li>
+                }
+                @for (int index = Model.Pagination.Start; index <= Model.Pagination.End; index++) {
+                    if (index == Model.Pagination.CurrentPage) {
+                        <li class="page-item active" aria-current="page">
+                            <span class="page-link">@index</span>
+                        </li>
+                    } else {
+                        <li class="page-item">
+                            <a class="page-link" asp-page="@Model.Route.Page" asp-all-route-data="@Model.Route.Data" asp-route-pageindex="@index">@index</a>
+                        </li>
+                    }
+                }
+                @if (Model.Pagination.HasLastSeparator) {
+                    <li class="page-item" aria-current="page">
+                        <span class="page-link">...</span>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" asp-page="@Model.Route.Page" asp-all-route-data="@Model.Route.Data" asp-route-pageindex="@Model.Pagination.Last">@Model.Pagination.Last</a>
+                    </li>
+                }
+                @if (Model.Pagination.HasNext) {
+                    <li class="page-item">
+                        <a class="page-link" aria-label="Next" asp-page="@Model.Route.Page" asp-all-route-data="@Model.Route.Data" asp-route-pageindex="@Model.Pagination.Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                } else {
+                    <li class="page-item" aria-label="Next">
+                        <span class="page-link">&raquo;</span>
+                    </li>
+                }
+            </ul>
+        </nav>
+    </div>
+}

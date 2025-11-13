@@ -1,0 +1,91 @@
+﻿@page
+@using ShoeShop.Models
+@model ShoeShop.Pages.Admin.OrdersModel
+@{
+    Dictionary<string, string> statusFilterDictionary = new Dictionary<string, string>(new KeyValuePair<string, string>[] {
+        new KeyValuePair<string, string>("Аll", "Все"),
+        new KeyValuePair<string, string>("Created", "Созданные"),
+        new KeyValuePair<string, string>("Processing", "В обработке"),
+        new KeyValuePair<string, string>("Completed", "Выполненные"),
+        new KeyValuePair<string, string>("Canceled", "Отмененные")
+    });
+
+    Dictionary<string, string> orderSortingDictionary = new Dictionary<string, string>(new KeyValuePair<string, string>[] {
+        new KeyValuePair<string, string>("ByDateDesc", "Сначала новые"),
+        new KeyValuePair<string, string>("ByDateAsc", "Сначала старые")
+    });
+}
+
+@* Заголовок *@
+<div class="d-flex flex-row-reverse p-1 mt-3">
+    <h1>Список заказов</h1>
+</div>
+
+@* Форма фильтрации и сортировки *@
+<form id="sortingForm" asp-page="/Orders" method="get">
+    <div class="d-flex flex-row-reverse border border-1 p-1 mt-3">
+        <div class="ms-1">
+            <select id="filterStatus" name="filter" class="form-select" aria-label="Фильтрация" onchange="document.getElementById('sortingForm').submit()">
+                @foreach (string key in statusFilterDictionary.Keys) {
+                    if (key == Model.Filter.ToString()) {
+                        <option value="@key" selected>@statusFilterDictionary[key]</option>
+                    } else {
+                        <option value="@key">@statusFilterDictionary[key]</option>
+                    }
+                }
+            </select>
+        </div>
+
+        <div>
+            <select id="sorting" name="sorting" class="form-select" aria-label="Сортировка" onchange="document.getElementById('sortingForm').submit()">
+                @foreach (string key in orderSortingDictionary.Keys) {
+                    if (key == Model.Sorting.ToString()) {
+                        <option value="@key" selected>@orderSortingDictionary[key]</option>
+                    } else {
+                        <option value="@key">@orderSortingDictionary[key]</option>
+                    }
+                }
+            </select>
+        </div>
+    </div>
+</form>
+
+@* Панель списка заказов *@
+<div class="d-flex flex-row border border-1 p-1 mt-3">
+    @if (Model.Orders == null || Model.Orders.Count() == 0) {
+        <p class="text-center fs-1">Заказы не найдены</p>
+    } else {
+        <table class="table w-100">
+            <thead>
+                <tr>
+                    <th>Номер заказа</th>
+                    <th>Дата создания</th>
+                    <th>Имя получателя</th>
+                    <th>Статус заказа</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (Order order in Model.Orders) {
+                    <tr class="border border-2 border-top-0 border-start-0 border-end-0">
+                        <td><a asp-page="Order" asp-route-orderId="@order.Id">@order.Id</a></td>
+                        <td>@order.CreatedDate.ToString("yyyy-MM-dd HH:mm")</td>
+                        <td>@order.Recipient?.Name</td>
+                        <td>@order.Status</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+    }
+</div>
+
+@* Панель пагинации *@
+<div class="d-flex flex-row-reverse border border-1 p-1 mt-3">
+    @await Component.InvokeAsync(typeof(ShoeShop.Paginations.Components.PaginationViewComponent), new {
+            currentPage = Model.CurrentPage,
+            elementsPerPage = Model.ElementsPerPage,
+            totalElementsCount = Model.TotalElementsCount,
+            page = "/Orders",
+            routeData = new Dictionary<string, string>([new KeyValuePair<string, string>("sorting", Model.Sorting.ToString()), new KeyValuePair<string, string>("filter", Model.Filter.ToString())])
+        })
+</div>

@@ -1,0 +1,14 @@
+﻿@if (User.IsInRole("Admin"))
+{
+    <ul class="navbar-nav">
+        <li class="nav-item">
+            <a asp-page="/Admin/Orders" class="nav-link text-dark">Заказы</a>
+        </li>
+    </ul>
+
+    <ul class="navbar-nav">
+        <li class="nav-item">
+            <a asp-page="/Admin/Catalog" class="nav-link text-dark">Редактировать</a>
+        </li>
+    </ul>
+}

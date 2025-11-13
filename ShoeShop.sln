@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35312.102
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShoeShop", "ShoeShop\ShoeShop.csproj", "{7106B28E-EC4E-4CB8-B709-D51B475129BC}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ShoeShop.Paginations", "ShoeShop.Paginations\ShoeShop.Paginations.csproj", "{3DB12324-2D92-4339-9CA6-1BB1F9376291}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7106B28E-EC4E-4CB8-B709-D51B475129BC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7106B28E-EC4E-4CB8-B709-D51B475129BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7106B28E-EC4E-4CB8-B709-D51B475129BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7106B28E-EC4E-4CB8-B709-D51B475129BC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3DB12324-2D92-4339-9CA6-1BB1F9376291}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3DB12324-2D92-4339-9CA6-1BB1F9376291}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3DB12324-2D92-4339-9CA6-1BB1F9376291}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3DB12324-2D92-4339-9CA6-1BB1F9376291}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B0FB3EFA-827B-4EE9-AFC7-AA6391005EF0}
+	EndGlobalSection
+EndGlobal

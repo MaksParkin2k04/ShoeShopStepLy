@@ -1,0 +1,38 @@
+﻿@page
+@using ShoeShop.Models
+@model ShoeShop.Pages.BasketShoppingModel
+@{
+}
+
+
+@* Заголовок *@
+<div class="d-flex flex-row-reverse border border-1 p-1 mt-3">
+    <h1>Корзина покупок</h1>
+</div>
+
+@if (Model.Products == null || Model.Products.Count() == 0) {
+    <div class="row">Корзина пуста</div>
+} else {
+    <div class="row">
+        <table class="w-100">
+            @foreach (Product product in Model.Products) {
+                <tr>
+                    <td class=""><img src="@product?.Images?[0].Path" style="width: 10%;"></td>
+                    <td><a asp-page="/Product" asp-route-id="@product?.Id">@product?.Name</a></td>
+                    <td>@product?.Price</td>
+                    <td>
+                        <form asp-page="/BasketShopping" asp-page-handler="deleteproduct" method="post">
+                            <input name="productId" type="hidden" value="@product?.Id" />
+                            <input type="submit" value="X" />
+                        </form>
+                    </td>
+                </tr>
+            }
+        </table>
+        <hr />
+        <p class="fw-bold text-end">Стоимость: @Model.Products.Sum(p => p.Price)</p>
+    </div>
+    <div class="row">
+        <a asp-page="/CreatingOrder" class="btn btn-primary">Сделать заказ</a>
+    </div>
+}

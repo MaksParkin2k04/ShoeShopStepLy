@@ -1,0 +1,34 @@
+﻿@page
+@using ShoeShop.Models
+@model ShoeShop.Pages.ProductModel
+@{
+    ViewData["Title"] = Model.Product?.Name;
+}
+
+@if (Model.Product == null) {
+    <div class="row"><p class="text-center fs-1">Товар не найден</p></div>
+} else {
+
+    @* Заголовок *@
+    <div class="d-flex flex-row-reverse p-1 mt-3">
+        <h1>@Model.Product.Name</h1>
+    </div>
+
+    <div class="row border border-2 mt-3 p-3 d-flex justify-content-around">
+        @foreach (ProductImage image in Model.Product.Images ?? Enumerable.Empty<ProductImage>()) {
+            <img src="@image.Path" alt="@image.Alt" style="width: 9%;" />
+        }
+    </div>
+    <div class="row border border-2 mt-3 p-3">
+        @Model.Product.Content
+    </div>
+    <div class="row border border-2 mt-3 p-3">
+        @Model.Product.Price руб.
+    </div>
+    <div class="row border border-2 mt-3 p-3">
+        <form asp-page="/Product" method="post">
+            <input type="hidden" name="productId" value="@Model.Product.Id" />
+            <input type="submit" value="Добавить в корзину" class="btn btn-primary" />
+        </form>
+    </div>
+}
