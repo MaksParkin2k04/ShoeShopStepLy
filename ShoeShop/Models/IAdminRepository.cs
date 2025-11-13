@@ -13,5 +13,7 @@ namespace ShoeShop.Models {
 
         Task<IReadOnlyList<Order>> GetOrders(OrderStatusFilter filter, OrderSorting sorting, int start, int count);
         Task<int> OrderCount(OrderStatusFilter filter);
+        Task<Order?> GetOrder(Guid orderId);
+        Task UpdateOrder(Order order);
     }
 }

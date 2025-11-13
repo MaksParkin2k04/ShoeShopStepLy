@@ -31,5 +31,14 @@ namespace ShoeShop.Pages.Admin {
             Orders = await repository.GetOrders(filter, sorting, pageIndex - 1, 20);
             TotalElementsCount = await repository.OrderCount(filter);
         }
+
+        public async Task<IActionResult> OnPostUpdateStatusAsync(Guid orderId, int status) {
+            Order? order = await repository.GetOrder(orderId);
+            if (order != null) {
+                order.SetStatus((OrderStatus)status);
+                await repository.UpdateOrder(order);
+            }
+            return RedirectToPage();
+        }
     }
 }

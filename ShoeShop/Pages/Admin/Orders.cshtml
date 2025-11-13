@@ -157,9 +157,49 @@
                                     </span>
                                 </td>
                                 <td class="order-actions">
-                                    <a asp-page="Order" asp-route-orderId="@order.Id" class="btn btn-sm btn-outline-primary" title="Просмотреть детали">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
+                                    <div class="action-buttons">
+                                        <a asp-page="Order" asp-route-orderId="@order.Id" class="btn btn-sm btn-outline-primary" title="Просмотреть детали">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        @if (order.Status != OrderStatus.Completed && order.Status != OrderStatus.Canceled) {
+                                            <div class="dropdown">
+                                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" title="Изменить статус">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                    @if (order.Status != OrderStatus.Processing) {
+                                                        <li>
+                                                            <form asp-page="/Admin/Orders" asp-page-handler="UpdateStatus" method="post" class="d-inline">
+                                                                <input type="hidden" name="orderId" value="@order.Id" />
+                                                                <input type="hidden" name="status" value="@((int)OrderStatus.Processing)" />
+                                                                <button type="submit" class="dropdown-item">
+                                                                    <i class="fas fa-clock me-2"></i>В обработку
+                                                                </button>
+                                                            </form>
+                                                        </li>
+                                                    }
+                                                    <li>
+                                                        <form asp-page="/Admin/Orders" asp-page-handler="UpdateStatus" method="post" class="d-inline">
+                                                            <input type="hidden" name="orderId" value="@order.Id" />
+                                                            <input type="hidden" name="status" value="@((int)OrderStatus.Completed)" />
+                                                            <button type="submit" class="dropdown-item">
+                                                                <i class="fas fa-check-circle me-2"></i>Выполнить
+                                                            </button>
+                                                        </form>
+                                                    </li>
+                                                    <li>
+                                                        <form asp-page="/Admin/Orders" asp-page-handler="UpdateStatus" method="post" class="d-inline">
+                                                            <input type="hidden" name="orderId" value="@order.Id" />
+                                                            <input type="hidden" name="status" value="@((int)OrderStatus.Canceled)" />
+                                                            <button type="submit" class="dropdown-item text-danger">
+                                                                <i class="fas fa-times-circle me-2"></i>Отменить
+                                                            </button>
+                                                        </form>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        }
+                                    </div>
                                 </td>
                             </tr>
                         }

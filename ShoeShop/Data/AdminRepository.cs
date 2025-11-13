@@ -52,5 +52,14 @@ namespace ShoeShop.Data {
         public async Task<int> OrderCount(OrderStatusFilter filter) {
             return await context.Orders.StatusFilter(filter).CountAsync();
         }
+
+        public async Task<Order?> GetOrder(Guid orderId) {
+            return await context.Orders.Include(o => o.OrderDetails).FirstOrDefaultAsync(o => o.Id == orderId);
+        }
+
+        public async Task UpdateOrder(Order order) {
+            context.Update(order);
+            await context.SaveChangesAsync();
+        }
     }
 }
