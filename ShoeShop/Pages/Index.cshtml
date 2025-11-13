@@ -13,15 +13,19 @@
     });
 }
 
-@* Заголовок *@
-<div class="d-flex flex-row-reverse p-1 mt-3">
-    <h1>Каталог</h1>
+<link rel="stylesheet" href="~/styles/sportmaster-style.css" asp-append-version="true" />
+
+@* Hero Section *@
+<div class="hero-section text-center">
+    <h1 class="hero-title">Обувь</h1>
+    <p class="hero-subtitle">Качество в каждой детали</p>
 </div>
 
-@* Панель сортировки *@
-<div class="d-flex flex-row-reverse border border-1 p-1 mt-3">
-    <form id="sortingForm" asp-page="/Index" method="get" class="ms-2">
-        <select name="sort" class="form-select" aria-label="Сортировка" onchange="document.getElementById('sortingForm').submit()">
+@* Catalog Header *@
+<div class="catalog-header d-flex justify-content-between align-items-center">
+    <h2 class="catalog-title">Коллекция</h2>
+    <form id="sortingForm" asp-page="/Index" method="get">
+        <select name="sort" class="sort-select" onchange="document.getElementById('sortingForm').submit()">
             @foreach (string item in Enum.GetNames(typeof(ProductSorting))) {
                 if (Model.Sorting.ToString() == item) {
                     <option value="@item" selected>@sortDictionary[item]</option>
@@ -33,62 +37,65 @@
     </form>
 </div>
 
-@* Панель списка заказов *@
-<div class="row">
+@* Products Grid *@
+<div class="product-grid">
     @if (Model.Products == null || Model.Products.Count() == 0) {
-        <p class="text-center fs-1">Товары не найдены</p>
+        <div class="empty-state">
+            <h3>Товары не найдены</h3>
+            <p>Попробуйте изменить параметры поиска</p>
+        </div>
     }
 
     @foreach (Product product in Model.Products ?? Enumerable.Empty<Product>()) {
-        <div class="col-sm-3 mt-3">
-            <div class="card h-100">
+        <div class="product-card" onclick="window.location.href='@Url.Page("Product", new { id = product.Id })'" style="cursor: pointer;">
+            <div class="product-image">
                 <div id="carousel-@product.Id" class="carousel slide" data-bs-ride="false">
-                    <div class="carousel-indicators">
-                        @if (product.Images?.Count > 0) {
-                            <button type="button" data-bs-target="#carousel-@product.Id" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
-                            @for (int x = 1; x < product.Images.Count; x++) {
-                                <button type="button" data-bs-target="#carousel-@product.Id" data-bs-slide-to="@x" aria-label="Slide @(x + 1)"></button>
+                    @if (product.Images?.Count > 1) {
+                        <div class="carousel-indicators">
+                            @for (int x = 0; x < product.Images.Count; x++) {
+                                <button type="button" data-bs-target="#carousel-@product.Id" data-bs-slide-to="@x" class="@(x == 0 ? "active" : "")"></button>
                             }
-                        }
-                    </div>
+                        </div>
+                    }
                     <div class="carousel-inner">
                         @if (product.Images?.Count > 0) {
-                            <div class="carousel-item active">
-                                <img src="@product.Images[0].Path" class="d-block w-100" alt="@product.Images[0].Alt">
-                            </div>
-
-                            @for (int x = 1; x < product.Images.Count; x++) {
-                                <div class="carousel-item">
-                                    <img src="@product.Images[x].Path" class="d-block w-100" alt="@product.Images[x].Alt">
+                            @for (int x = 0; x < product.Images.Count; x++) {
+                                <div class="carousel-item @(x == 0 ? "active" : "")">
+                                    <img src="@product.Images[x].Path" class="product-img" alt="@product.Images[x].Alt">
                                 </div>
                             }
+                        } else {
+                            <div class="carousel-item active">
+                                <div class="d-flex align-items-center justify-content-center bg-light product-img">
+                                    <i class="fas fa-image fa-2x text-muted"></i>
+                                </div>
+                            </div>
                         }
                     </div>
-                    @* Стрелки предыдущий следующий *@
-                    <button class="carousel-control-prev" type="button" data-bs-target="#carousel-@product.Id" data-bs-slide="prev">
-                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Предыдущий</span>
-                    </button>
-                    <button class="carousel-control-next" type="button" data-bs-target="#carousel-@product.Id" data-bs-slide="next">
-                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Следующий</span>
-                    </button>
+                    @if (product.Images?.Count > 1) {
+                        <button class="carousel-control-prev" type="button" data-bs-target="#carousel-@product.Id" data-bs-slide="prev" onclick="event.stopPropagation();">
+                            <span class="carousel-control-prev-icon"></span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#carousel-@product.Id" data-bs-slide="next" onclick="event.stopPropagation();">
+                            <span class="carousel-control-next-icon"></span>
+                        </button>
+                    }
                 </div>
-                <div class="card-body">
-                    <a class="link-secondary nav-link" href="#">
-                        <p class="card-title  fs-4">@product.Name</p>
-                    </a>
-                    <p class="card-text">@product.Description</p>
-                    <p class="card-text h3 text-end">@product.Price руб.</p>
-                    <a asp-page="Product" asp-route-id="@product.Id" class="btn btn-primary">Подробнее...</a>
+            </div>
+            <div class="product-info">
+                <h3 class="product-name">@product.Name</h3>
+                <p class="product-description">@product.Description</p>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="product-price">@product.Price ₽</span>
+                    <button class="btn btn-dark btn-sm" onclick="event.stopPropagation(); addToCart(@product.Id);">В корзину</button>
                 </div>
             </div>
         </div>
     }
 </div>
 
-@* Панель пагинации *@
-<div class="d-flex flex-row-reverse border border-1 p-1 mt-3">
+@* Pagination *@
+<div class="d-flex justify-content-center mt-5">
     @await Component.InvokeAsync(typeof(ShoeShop.Paginations.Components.PaginationViewComponent), new {
             currentPage = Model.CurrentPage,
             elementsPerPage = Model.ElementsPerPage,
@@ -97,3 +104,10 @@
             routeData = new Dictionary<string, string>([new KeyValuePair<string, string>("sort", Model.Sorting.ToString())])
         })
 </div>
+
+<script>
+function addToCart(productId) {
+    console.log('Добавлен товар с ID:', productId);
+    alert('Товар добавлен в корзину!');
+}
+</script>
