@@ -6,7 +6,7 @@ using ShoeShop.Data;
 using ShoeShop.Models;
 
 namespace ShoeShop.Pages {
-    [Authorize(Roles = "Customer")]
+    [Authorize]
     public class OrdersModel : PageModel {
         public OrdersModel(UserManager<ApplicationUser> userManager, IProductRepository repository) {
             this.userManager = userManager;
