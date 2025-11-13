@@ -2,6 +2,8 @@
 @using ShoeShop.Models
 @model ShoeShop.Pages.Admin.OrdersModel
 @{
+    ViewData["Title"] = "Управление заказами";
+    
     Dictionary<string, string> statusFilterDictionary = new Dictionary<string, string>(new KeyValuePair<string, string>[] {
         new KeyValuePair<string, string>("Аll", "Все"),
         new KeyValuePair<string, string>("Created", "Созданные"),
@@ -16,76 +18,168 @@
     });
 }
 
-@* Заголовок *@
-<div class="d-flex flex-row-reverse p-1 mt-3">
-    <h1>Список заказов</h1>
-</div>
-
-@* Форма фильтрации и сортировки *@
-<form id="sortingForm" asp-page="/Orders" method="get">
-    <div class="d-flex flex-row-reverse border border-1 p-1 mt-3">
-        <div class="ms-1">
-            <select id="filterStatus" name="filter" class="form-select" aria-label="Фильтрация" onchange="document.getElementById('sortingForm').submit()">
-                @foreach (string key in statusFilterDictionary.Keys) {
-                    if (key == Model.Filter.ToString()) {
-                        <option value="@key" selected>@statusFilterDictionary[key]</option>
-                    } else {
-                        <option value="@key">@statusFilterDictionary[key]</option>
-                    }
-                }
-            </select>
+<div class="admin-page">
+    @* Header *@
+    <div class="admin-header">
+        <div class="admin-title-section">
+            <h1 class="admin-title">
+                <i class="fas fa-clipboard-list me-3"></i>
+                Управление заказами
+            </h1>
+            <p class="admin-subtitle">Просмотр и управление всеми заказами в системе</p>
         </div>
-
-        <div>
-            <select id="sorting" name="sorting" class="form-select" aria-label="Сортировка" onchange="document.getElementById('sortingForm').submit()">
-                @foreach (string key in orderSortingDictionary.Keys) {
-                    if (key == Model.Sorting.ToString()) {
-                        <option value="@key" selected>@orderSortingDictionary[key]</option>
-                    } else {
-                        <option value="@key">@orderSortingDictionary[key]</option>
-                    }
-                }
-            </select>
+        
+        @* Stats Cards *@
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon bg-primary">
+                    <i class="fas fa-shopping-bag"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-number">@(Model.Orders?.Count() ?? 0)</div>
+                    <div class="stat-label">Всего заказов</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon bg-warning">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-number">@(Model.Orders?.Count(o => o.Status == OrderStatus.Processing) ?? 0)</div>
+                    <div class="stat-label">В обработке</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon bg-success">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-number">@(Model.Orders?.Count(o => o.Status == OrderStatus.Completed) ?? 0)</div>
+                    <div class="stat-label">Выполнено</div>
+                </div>
+            </div>
         </div>
     </div>
-</form>
 
-@* Панель списка заказов *@
-<div class="d-flex flex-row border border-1 p-1 mt-3">
-    @if (Model.Orders == null || Model.Orders.Count() == 0) {
-        <p class="text-center fs-1">Заказы не найдены</p>
-    } else {
-        <table class="table w-100">
-            <thead>
-                <tr>
-                    <th>Номер заказа</th>
-                    <th>Дата создания</th>
-                    <th>Имя получателя</th>
-                    <th>Статус заказа</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (Order order in Model.Orders) {
-                    <tr class="border border-2 border-top-0 border-start-0 border-end-0">
-                        <td><a asp-page="Order" asp-route-orderId="@order.Id">@order.Id</a></td>
-                        <td>@order.CreatedDate.ToString("yyyy-MM-dd HH:mm")</td>
-                        <td>@order.Recipient?.Name</td>
-                        <td>@order.Status</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+    @* Filters *@
+    <div class="admin-filters">
+        <form id="sortingForm" asp-page="/Admin/Orders" method="get" class="filters-form">
+            <div class="filter-group">
+                <label class="filter-label">Статус заказа:</label>
+                <select id="filterStatus" name="filter" class="form-select" onchange="document.getElementById('sortingForm').submit()">
+                    @foreach (string key in statusFilterDictionary.Keys) {
+                        if (key == Model.Filter.ToString()) {
+                            <option value="@key" selected>@statusFilterDictionary[key]</option>
+                        } else {
+                            <option value="@key">@statusFilterDictionary[key]</option>
+                        }
+                    }
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label class="filter-label">Сортировка:</label>
+                <select id="sorting" name="sorting" class="form-select" onchange="document.getElementById('sortingForm').submit()">
+                    @foreach (string key in orderSortingDictionary.Keys) {
+                        if (key == Model.Sorting.ToString()) {
+                            <option value="@key" selected>@orderSortingDictionary[key]</option>
+                        } else {
+                            <option value="@key">@orderSortingDictionary[key]</option>
+                        }
+                    }
+                </select>
+            </div>
+        </form>
+    </div>
 
-    }
-</div>
+    @* Orders Table *@
+    <div class="admin-content">
+        @if (Model.Orders == null || Model.Orders.Count() == 0) {
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-inbox fa-4x"></i>
+                </div>
+                <h3 class="empty-title">Заказы не найдены</h3>
+                <p class="empty-text">Попробуйте изменить фильтры или дождитесь новых заказов</p>
+            </div>
+        } else {
+            <div class="orders-table-container">
+                <table class="table orders-table">
+                    <thead>
+                        <tr>
+                            <th>Номер заказа</th>
+                            <th>Дата создания</th>
+                            <th>Получатель</th>
+                            <th>Статус</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (Order order in Model.Orders) {
+                            <tr class="order-row">
+                                <td class="order-id">
+                                    <a asp-page="Order" asp-route-orderId="@order.Id" class="order-link">
+                                        #@order.Id.ToString().Substring(0, 8)
+                                    </a>
+                                </td>
+                                <td class="order-date">
+                                    <div class="date-info">
+                                        <div class="date-main">@order.CreatedDate.ToString("dd.MM.yyyy")</div>
+                                        <div class="date-time">@order.CreatedDate.ToString("HH:mm")</div>
+                                    </div>
+                                </td>
+                                <td class="order-recipient">
+                                    <div class="recipient-info">
+                                        <div class="recipient-name">@order.Recipient?.Name</div>
+                                        <div class="recipient-phone">@order.Recipient?.Phone</div>
+                                    </div>
+                                </td>
+                                <td class="order-status">
+                                    <span class="status-badge status-@order.Status.ToString().ToLower()">
+                                        @switch (order.Status) {
+                                            case OrderStatus.Created:
+                                                <i class="fas fa-plus-circle me-1"></i>
+                                                <span>Создан</span>
+                                                break;
+                                            case OrderStatus.Processing:
+                                                <i class="fas fa-clock me-1"></i>
+                                                <span>В обработке</span>
+                                                break;
+                                            case OrderStatus.Completed:
+                                                <i class="fas fa-check-circle me-1"></i>
+                                                <span>Выполнен</span>
+                                                break;
+                                            case OrderStatus.Canceled:
+                                                <i class="fas fa-times-circle me-1"></i>
+                                                <span>Отменен</span>
+                                                break;
+                                        }
+                                    </span>
+                                </td>
+                                <td class="order-actions">
+                                    <a asp-page="Order" asp-route-orderId="@order.Id" class="btn btn-sm btn-outline-primary" title="Просмотреть детали">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
 
-@* Панель пагинации *@
-<div class="d-flex flex-row-reverse border border-1 p-1 mt-3">
-    @await Component.InvokeAsync(typeof(ShoeShop.Paginations.Components.PaginationViewComponent), new {
-            currentPage = Model.CurrentPage,
-            elementsPerPage = Model.ElementsPerPage,
-            totalElementsCount = Model.TotalElementsCount,
-            page = "/Orders",
-            routeData = new Dictionary<string, string>([new KeyValuePair<string, string>("sorting", Model.Sorting.ToString()), new KeyValuePair<string, string>("filter", Model.Filter.ToString())])
-        })
+    @* Pagination *@
+    <div class="admin-pagination">
+        @await Component.InvokeAsync(typeof(ShoeShop.Paginations.Components.PaginationViewComponent), new {
+                currentPage = Model.CurrentPage,
+                elementsPerPage = Model.ElementsPerPage,
+                totalElementsCount = Model.TotalElementsCount,
+                page = "/Admin/Orders",
+                routeData = new Dictionary<string, string>([
+                    new KeyValuePair<string, string>("sorting", Model.Sorting.ToString()), 
+                    new KeyValuePair<string, string>("filter", Model.Filter.ToString())
+                ])
+            })
+    </div>
 </div>

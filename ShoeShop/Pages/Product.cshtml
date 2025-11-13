@@ -6,29 +6,102 @@
 }
 
 @if (Model.Product == null) {
-    <div class="row"><p class="text-center fs-1">Товар не найден</p></div>
+    <div class="empty-state">
+        <div class="empty-icon">
+            <i class="fas fa-search fa-4x"></i>
+        </div>
+        <h3 class="empty-title">Товар не найден</h3>
+        <p class="empty-text">Возможно, товар был удален или перемещен</p>
+        <a asp-page="/Index" class="btn btn-primary mt-3">Вернуться к каталогу</a>
+    </div>
 } else {
+    <div class="product-detail">
+        @* Breadcrumb *@
+        <nav class="breadcrumb-nav mb-4">
+            <a asp-page="/Index" class="breadcrumb-link">Главная</a>
+            <span class="breadcrumb-separator">/</span>
+            <span class="breadcrumb-current">@Model.Product.Name</span>
+        </nav>
 
-    @* Заголовок *@
-    <div class="d-flex flex-row-reverse p-1 mt-3">
-        <h1>@Model.Product.Name</h1>
-    </div>
+        <div class="row g-5">
+            @* Product Images *@
+            <div class="col-lg-6">
+                <div class="product-gallery">
+                    @if (Model.Product.Images?.Count > 0) {
+                        <div id="productCarousel" class="carousel slide" data-bs-ride="false">
+                            <div class="carousel-inner">
+                                @for (int i = 0; i < Model.Product.Images.Count; i++) {
+                                    <div class="carousel-item @(i == 0 ? "active" : "")">
+                                        <img src="@Model.Product.Images[i].Path" class="gallery-main-image" alt="@Model.Product.Images[i].Alt">
+                                    </div>
+                                }
+                            </div>
+                            @if (Model.Product.Images.Count > 1) {
+                                <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
+                                    <span class="carousel-control-prev-icon"></span>
+                                </button>
+                                <button class="carousel-control-next" type="button" data-bs-target="#productCarousel" data-bs-slide="next">
+                                    <span class="carousel-control-next-icon"></span>
+                                </button>
+                            }
+                        </div>
+                        @if (Model.Product.Images.Count > 1) {
+                            <div class="gallery-thumbnails">
+                                @for (int i = 0; i < Model.Product.Images.Count; i++) {
+                                    <img src="@Model.Product.Images[i].Path" class="gallery-thumb @(i == 0 ? "active" : "")" 
+                                         data-bs-target="#productCarousel" data-bs-slide-to="@i" alt="@Model.Product.Images[i].Alt">
+                                }
+                            </div>
+                        }
+                    } else {
+                        <div class="gallery-placeholder">
+                            <i class="fas fa-image fa-4x"></i>
+                            <p>Изображение недоступно</p>
+                        </div>
+                    }
+                </div>
+            </div>
 
-    <div class="row border border-2 mt-3 p-3 d-flex justify-content-around">
-        @foreach (ProductImage image in Model.Product.Images ?? Enumerable.Empty<ProductImage>()) {
-            <img src="@image.Path" alt="@image.Alt" style="width: 9%;" />
-        }
-    </div>
-    <div class="row border border-2 mt-3 p-3">
-        @Model.Product.Content
-    </div>
-    <div class="row border border-2 mt-3 p-3">
-        @Model.Product.Price руб.
-    </div>
-    <div class="row border border-2 mt-3 p-3">
-        <form asp-page="/Product" method="post">
-            <input type="hidden" name="productId" value="@Model.Product.Id" />
-            <input type="submit" value="Добавить в корзину" class="btn btn-primary" />
-        </form>
+            @* Product Info *@
+            <div class="col-lg-6">
+                <div class="product-info-detail">
+                    <h1 class="product-title-detail">@Model.Product.Name</h1>
+                    <p class="product-description-detail">@Model.Product.Description</p>
+                    
+                    <div class="product-price-section">
+                        <span class="product-price-detail">@Model.Product.Price ₽</span>
+                        <span class="product-price-label">за пару</span>
+                    </div>
+
+                    <div class="product-content">
+                        <h4>Описание</h4>
+                        <div class="content-text">@Model.Product.Content</div>
+                    </div>
+
+                    <form asp-page="/Product" method="post" class="add-to-cart-form">
+                        <input type="hidden" name="productId" value="@Model.Product.Id" />
+                        <button type="submit" class="btn btn-primary btn-lg add-to-cart-btn">
+                            <i class="fas fa-shopping-cart me-2"></i>
+                            Добавить в корзину
+                        </button>
+                    </form>
+
+                    <div class="product-features">
+                        <div class="feature-item">
+                            <i class="fas fa-truck"></i>
+                            <span>Бесплатная доставка от 5000 ₽</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-undo"></i>
+                            <span>Возврат в течение 30 дней</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>Гарантия качества</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 }

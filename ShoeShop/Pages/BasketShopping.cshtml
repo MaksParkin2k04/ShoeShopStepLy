@@ -2,37 +2,97 @@
 @using ShoeShop.Models
 @model ShoeShop.Pages.BasketShoppingModel
 @{
+    ViewData["Title"] = "Корзина";
 }
 
+<div class="cart-page">
+    @* Header *@
+    <div class="page-header">
+        <h1 class="page-title">Корзина покупок</h1>
+        <p class="page-subtitle">Проверьте выбранные товары перед оформлением заказа</p>
+    </div>
 
-@* Заголовок *@
-<div class="d-flex flex-row-reverse border border-1 p-1 mt-3">
-    <h1>Корзина покупок</h1>
+    @if (Model.Products == null || Model.Products.Count() == 0) {
+        <div class="empty-cart">
+            <div class="empty-cart-icon">
+                <i class="fas fa-shopping-cart fa-4x"></i>
+            </div>
+            <h3 class="empty-cart-title">Корзина пуста</h3>
+            <p class="empty-cart-text">Добавьте товары из каталога, чтобы оформить заказ</p>
+            <a asp-page="/Index" class="btn btn-primary btn-lg mt-3">
+                <i class="fas fa-arrow-left me-2"></i>
+                Перейти к покупкам
+            </a>
+        </div>
+    } else {
+        <div class="cart-content">
+            <div class="cart-items">
+                @foreach (Product product in Model.Products) {
+                    <div class="cart-item">
+                        <div class="cart-item-image">
+                            @if (product?.Images?.Count > 0) {
+                                <img src="@product.Images[0].Path" alt="@product.Images[0].Alt" class="item-image">
+                            } else {
+                                <div class="item-image-placeholder">
+                                    <i class="fas fa-image"></i>
+                                </div>
+                            }
+                        </div>
+                        <div class="cart-item-info">
+                            <h4 class="item-name">
+                                <a asp-page="/Product" asp-route-id="@product?.Id" class="item-link">@product?.Name</a>
+                            </h4>
+                            <p class="item-description">@product?.Description</p>
+                        </div>
+                        <div class="cart-item-price">
+                            <span class="item-price">@product?.Price ₽</span>
+                        </div>
+                        <div class="cart-item-actions">
+                            <form asp-page="/BasketShopping" asp-page-handler="deleteproduct" method="post" class="remove-form">
+                                <input name="productId" type="hidden" value="@product?.Id" />
+                                <button type="submit" class="btn-remove" title="Удалить из корзины">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="cart-summary">
+                <div class="summary-card">
+                    <h3 class="summary-title">Итого к оплате</h3>
+                    <div class="summary-row">
+                        <span>Товары (@Model.Products.Count() шт.)</span>
+                        <span>@Model.Products.Sum(p => p.Price) ₽</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Доставка</span>
+                        <span class="delivery-info">
+                            @if (Model.Products.Sum(p => p.Price) >= 5000) {
+                                <span class="text-success">Бесплатно</span>
+                            } else {
+                                <span>500 ₽</span>
+                            }
+                        </span>
+                    </div>
+                    <hr class="summary-divider">
+                    <div class="summary-total">
+                        <span>Общая стоимость</span>
+                        <span class="total-price">
+                            @{
+                                var deliveryCost = Model.Products.Sum(p => p.Price) >= 5000 ? 0 : 500;
+                                var totalCost = Model.Products.Sum(p => p.Price) + deliveryCost;
+                            }
+                            @totalCost ₽
+                        </span>
+                    </div>
+                    <a asp-page="/CreatingOrder" class="btn btn-primary btn-lg checkout-btn">
+                        <i class="fas fa-credit-card me-2"></i>
+                        Оформить заказ
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
 </div>
-
-@if (Model.Products == null || Model.Products.Count() == 0) {
-    <div class="row">Корзина пуста</div>
-} else {
-    <div class="row">
-        <table class="w-100">
-            @foreach (Product product in Model.Products) {
-                <tr>
-                    <td class=""><img src="@product?.Images?[0].Path" style="width: 10%;"></td>
-                    <td><a asp-page="/Product" asp-route-id="@product?.Id">@product?.Name</a></td>
-                    <td>@product?.Price</td>
-                    <td>
-                        <form asp-page="/BasketShopping" asp-page-handler="deleteproduct" method="post">
-                            <input name="productId" type="hidden" value="@product?.Id" />
-                            <input type="submit" value="X" />
-                        </form>
-                    </td>
-                </tr>
-            }
-        </table>
-        <hr />
-        <p class="fw-bold text-end">Стоимость: @Model.Products.Sum(p => p.Price)</p>
-    </div>
-    <div class="row">
-        <a asp-page="/CreatingOrder" class="btn btn-primary">Сделать заказ</a>
-    </div>
-}
