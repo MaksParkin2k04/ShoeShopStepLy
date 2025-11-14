@@ -92,6 +92,27 @@
             <div class="product-info">
                 <h3 class="product-name">@product.Name</h3>
                 <p class="product-description">@product.Description</p>
+                
+                @if (product.Category != null) {
+                    <div class="product-category mb-2">
+                        <span class="badge bg-secondary">@product.Category.Name</span>
+                    </div>
+                }
+                
+                @if (product.Sizes != ProductSize.Not) {
+                    <div class="product-sizes-preview mb-2">
+                        <small class="text-muted">Размеры:</small>
+                        <div class="sizes-preview">
+                            @for (int size = 36; size <= 45; size++) {
+                                var sizeFlag = (ProductSize)Enum.Parse(typeof(ProductSize), $"S{size}");
+                                if (product.Sizes.HasFlag(sizeFlag)) {
+                                    <span class="size-preview">@size</span>
+                                }
+                            }
+                        </div>
+                    </div>
+                }
+                
                 <div class="d-flex justify-content-between align-items-center">
                     <span class="product-price">@product.Price ₽</span>
                     <button class="btn btn-dark btn-sm" onclick="event.stopPropagation(); addToCart(@product.Id);">В корзину</button>

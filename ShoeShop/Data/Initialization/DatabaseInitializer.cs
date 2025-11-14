@@ -22,28 +22,32 @@ namespace ShoeShop.Data.Initialization {
             if (!await roleManager.RoleExistsAsync(Admin)) {
                 await CreateUsers(userStore, userManager, roleStore, roleManager);
             }
+            
+            // Создаем товары (временно принудительно)
+            await CreateProducts(context);
         }
 
         private static async Task CreateProducts(ApplicationContext context) {
-            string json = File.ReadAllText("Data/Initialization/PRODUCT_DATA.JSON");
-            ProductDto[]? products = JsonSerializer.Deserialize<ProductDto[]>(json);
+            // Создаем категории
+            var menCategory = Category.Create("Мужская обувь", "Обувь для мужчин");
+            var womenCategory = Category.Create("Женская обувь", "Обувь для женщин");
+            var kidsCategory = Category.Create("Детская обувь", "Обувь для детей");
+            
+            context.Categories.AddRange(menCategory, womenCategory, kidsCategory);
+            await context.SaveChangesAsync();
 
-            List<Product> productList = new List<Product>();
+            // Создаем тестовые товары
+            var products = new[] {
+                Product.Create("Кроссовки Nike Air Max", true, 8999, ProductSize.S39 | ProductSize.S40 | ProductSize.S41 | ProductSize.S42, DateTime.Now, "Классические кроссовки для спорта", "Комфортные кроссовки с амортизацией Air Max", menCategory.Id),
+                Product.Create("Туфли классик", true, 12500, ProductSize.S37 | ProductSize.S38 | ProductSize.S39, DateTime.Now, "Элегантные черные туфли", "Классические туфли из натуральной кожи", womenCategory.Id),
+                Product.Create("Ботинки зимние", true, 15999, ProductSize.S40 | ProductSize.S41 | ProductSize.S42 | ProductSize.S43, DateTime.Now, "Теплые зимние ботинки", "Водонепроницаемые ботинки с утеплителем", menCategory.Id),
+                Product.Create("Балетки летние", true, 4500, ProductSize.S36 | ProductSize.S37 | ProductSize.S38 | ProductSize.S39, DateTime.Now, "Легкие летние балетки", "Комфортные балетки для повседневной носки", womenCategory.Id),
+                Product.Create("Кеды детские", true, 3200, ProductSize.S30 | ProductSize.S31 | ProductSize.S32 | ProductSize.S33, DateTime.Now, "Яркие детские кеды", "Прочные кеды для активных детей", kidsCategory.Id),
+                Product.Create("Сандалии пляжные", true, 2800, ProductSize.S38 | ProductSize.S39 | ProductSize.S40 | ProductSize.S41, DateTime.Now, "Легкие пляжные сандалии", "Удобные сандалии для отдыха", menCategory.Id)
+            };
 
-            // TODO: Обновить после добавления категорий
-            /*
-            foreach (ProductDto productDto in products ?? Enumerable.Empty<ProductDto>()) {
-                Product product = Product.Create(productDto.Name, productDto.IsSale, productDto.Price, productDto.Sizes, productDto.DateAdded, productDto.Description, productDto.Content, categoryId);
-
-                foreach (ImageDto imageDto in productDto.Images ?? Enumerable.Empty<ImageDto>()) {
-                    product.AddImage(imageDto.Path, imageDto.Alt);
-                }
-
-                context.Products.Add(product);
-            }
-            */
-
-            int count = await context.SaveChangesAsync();
+            context.Products.AddRange(products);
+            await context.SaveChangesAsync();
         }
 
         private static async Task CreateUsers(IUserStore<ApplicationUser> userStore, UserManager<ApplicationUser> userManager, IRoleStore<ApplicationRole> roleStore, RoleManager<ApplicationRole> roleManager) {
