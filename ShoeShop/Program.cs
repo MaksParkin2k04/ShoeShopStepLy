@@ -25,6 +25,7 @@ namespace ShoeShop {
 
 
 
+            builder.Services.AddSession();
             builder.Services.AddRazorPages();
             builder.Services.AddScoped<IImageManager, ImageManager>();
             builder.Services.AddScoped<IProductManager, ProductManager>();
@@ -77,6 +78,7 @@ namespace ShoeShop {
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseRouting();
+            app.UseSession();
             app.UseAuthentication();
             app.UseAuthorization();
             app.MapRazorPages();

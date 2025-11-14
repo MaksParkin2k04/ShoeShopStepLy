@@ -12,13 +12,32 @@ namespace ShoeShop.Services {
 
         private readonly IHttpContextAccessor httpContextAccessor;
 
+        private string GetCookieName() {
+            var context = httpContextAccessor.HttpContext;
+            if (context?.User?.Identity?.IsAuthenticated == true) {
+                // Для авторизованных пользователей используем ID пользователя
+                var userId = context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+                return $"{Name}_{userId}";
+            } else {
+                // Для анонимных пользователей используем ID сессии
+                if (context?.Session != null) {
+                    if (string.IsNullOrEmpty(context.Session.GetString("init"))) {
+                        context.Session.SetString("init", "true");
+                    }
+                    return $"{Name}_{context.Session.Id}";
+                }
+                return $"{Name}_anonymous";
+            }
+        }
+
         public BasketShopping GetBasketShopping() {
             HttpRequest? request = httpContextAccessor.HttpContext?.Request;
+            string cookieName = GetCookieName();
 
             BasketShopping? basketShopping = null;
 
-            if (request != null && request.Cookies.ContainsKey(Name)) {
-                string? basket = request.Cookies[Name];
+            if (request != null && request.Cookies.ContainsKey(cookieName)) {
+                string? basket = request.Cookies[cookieName];
                 if (basket != null) {
                     try {
                         basketShopping = JsonSerializer.Deserialize<BasketShopping>(basket);
@@ -40,13 +59,15 @@ namespace ShoeShop.Services {
 
         public void SetBasketShopping(BasketShopping basketShopping) {
             HttpResponse? response = httpContextAccessor.HttpContext?.Response;
+            string cookieName = GetCookieName();
             string json = JsonSerializer.Serialize(basketShopping);
-            response?.Cookies.Append(Name, json);
+            response?.Cookies.Append(cookieName, json);
         }
 
         public void Clear() {
             HttpResponse? response = httpContextAccessor.HttpContext?.Response;
-            response?.Cookies.Delete(Name);
+            string cookieName = GetCookieName();
+            response?.Cookies.Delete(cookieName);
         }
     }
 }
