@@ -1,0 +1,182 @@
+@page
+@model ShoeShop.Pages.DeliveryModel
+@{
+    ViewData["Title"] = "Доставка и оплата";
+}
+
+<div class="delivery-page">
+    @* Hero Section *@
+    <div class="hero-section">
+        <div class="hero-content">
+            <div class="hero-badge">ИНФОРМАЦИЯ</div>
+            <h1 class="hero-title">Доставка и оплата</h1>
+            <p class="hero-subtitle">Удобные способы получения и оплаты заказов</p>
+            <div class="hero-features">
+                <span class="feature-item">✓ Бесплатная доставка от 5000₽</span>
+                <span class="feature-item">✓ Доставка от 1 дня</span>
+                <span class="feature-item">✓ Безопасная оплата</span>
+            </div>
+        </div>
+        <div class="hero-decoration"></div>
+    </div>
+
+    @* Content *@
+    <div class="delivery-content">
+        <div class="row g-5">
+            @* Delivery Section *@
+            <div class="col-lg-6">
+                <div class="info-section">
+                    <h2 class="section-title">
+                        <i class="fas fa-truck me-3"></i>
+                        Способы доставки
+                    </h2>
+                    
+                    <div class="delivery-methods">
+                        <div class="method-card">
+                            <div class="method-header">
+                                <h4>Курьерская доставка</h4>
+                                <span class="method-price">от 300₽</span>
+                            </div>
+                            <ul class="method-details">
+                                <li>Доставка по Москве и МО: 1-2 дня</li>
+                                <li>Доставка по России: 3-7 дней</li>
+                                <li>Бесплатно при заказе от 5000₽</li>
+                                <li>Оплата при получении</li>
+                            </ul>
+                        </div>
+
+                        <div class="method-card">
+                            <div class="method-header">
+                                <h4>Пункты выдачи</h4>
+                                <span class="method-price">от 150₽</span>
+                            </div>
+                            <ul class="method-details">
+                                <li>Более 5000 пунктов по России</li>
+                                <li>Срок доставки: 2-5 дней</li>
+                                <li>Бесплатно при заказе от 3000₽</li>
+                                <li>Хранение 5 дней</li>
+                            </ul>
+                        </div>
+
+                        <div class="method-card">
+                            <div class="method-header">
+                                <h4>Почта России</h4>
+                                <span class="method-price">от 200₽</span>
+                            </div>
+                            <ul class="method-details">
+                                <li>Доставка в любую точку России</li>
+                                <li>Срок доставки: 5-14 дней</li>
+                                <li>Наложенный платеж</li>
+                                <li>Отслеживание посылки</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @* Payment Section *@
+            <div class="col-lg-6">
+                <div class="info-section">
+                    <h2 class="section-title">
+                        <i class="fas fa-credit-card me-3"></i>
+                        Способы оплаты
+                    </h2>
+                    
+                    <div class="payment-methods">
+                        <div class="payment-card">
+                            <div class="payment-icon">
+                                <i class="fas fa-credit-card"></i>
+                            </div>
+                            <div class="payment-info">
+                                <h4>Банковские карты</h4>
+                                <p>Visa, MasterCard, МИР. Безопасная оплата через защищенное соединение</p>
+                            </div>
+                        </div>
+
+                        <div class="payment-card">
+                            <div class="payment-icon">
+                                <i class="fas fa-mobile-alt"></i>
+                            </div>
+                            <div class="payment-info">
+                                <h4>Электронные кошельки</h4>
+                                <p>ЮMoney, QIWI, WebMoney. Мгновенное зачисление платежа</p>
+                            </div>
+                        </div>
+
+                        <div class="payment-card">
+                            <div class="payment-icon">
+                                <i class="fas fa-money-bill-wave"></i>
+                            </div>
+                            <div class="payment-info">
+                                <h4>Наличными при получении</h4>
+                                <p>Оплата курьеру или в пункте выдачи. Без комиссии</p>
+                            </div>
+                        </div>
+
+                        <div class="payment-card">
+                            <div class="payment-icon">
+                                <i class="fas fa-university"></i>
+                            </div>
+                            <div class="payment-info">
+                                <h4>Банковский перевод</h4>
+                                <p>Для юридических лиц. Оплата по счету с НДС</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @* Additional Info *@
+        <div class="additional-info">
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="info-card">
+                        <div class="info-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h4>Гарантия возврата</h4>
+                        <p>30 дней на возврат товара без объяснения причин</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="info-card">
+                        <div class="info-icon">
+                            <i class="fas fa-exchange-alt"></i>
+                        </div>
+                        <h4>Обмен размера</h4>
+                        <p>Бесплатный обмен на другой размер в течение 14 дней</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="info-card">
+                        <div class="info-icon">
+                            <i class="fas fa-headset"></i>
+                        </div>
+                        <h4>Поддержка</h4>
+                        <p>Консультации по телефону +7 (800) 123-45-67</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @* FAQ Section *@
+        <div class="faq-section">
+            <h2 class="section-title text-center">Часто задаваемые вопросы</h2>
+            <div class="faq-list">
+                <div class="faq-item">
+                    <h5>Можно ли примерить обувь при получении?</h5>
+                    <p>Да, вы можете примерить обувь при получении. Если размер не подходит, курьер заберет товар обратно.</p>
+                </div>
+                <div class="faq-item">
+                    <h5>Сколько стоит доставка?</h5>
+                    <p>Стоимость доставки зависит от способа и региона. При заказе от 5000₽ доставка курьером бесплатная.</p>
+                </div>
+                <div class="faq-item">
+                    <h5>Как отследить заказ?</h5>
+                    <p>После отправки заказа вы получите SMS с трек-номером для отслеживания посылки.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
