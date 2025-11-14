@@ -1,0 +1,13 @@
+@model IEnumerable<ShoeShop.Models.Category>
+
+@foreach (var category in Model)
+{
+    @if (ViewBag.SelectedCategoryId?.ToString() == category.Id.ToString())
+    {
+        <option value="@category.Id" selected>@category.Name</option>
+    }
+    else
+    {
+        <option value="@category.Id">@category.Name</option>
+    }
+}

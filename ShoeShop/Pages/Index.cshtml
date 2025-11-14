@@ -31,17 +31,77 @@
 @* Catalog Header *@
 <div class="catalog-header d-flex justify-content-between align-items-center">
     <h2 class="catalog-title">Коллекция</h2>
-    <form id="sortingForm" asp-page="/Index" method="get">
-        <select name="sort" class="sort-select" onchange="document.getElementById('sortingForm').submit()">
-            @foreach (string item in Enum.GetNames(typeof(ProductSorting))) {
-                if (Model.Sorting.ToString() == item) {
-                    <option value="@item" selected>@sortDictionary[item]</option>
-                } else {
-                    <option value="@item">@sortDictionary[item]</option>
+    <div class="catalog-controls d-flex gap-2">
+        <button class="btn btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#filtersCollapse">
+            <i class="fas fa-filter me-2"></i>Фильтры
+        </button>
+        <form id="sortingForm" asp-page="/Index" method="get">
+            @if (Model.CategoryId.HasValue) {
+                <input type="hidden" name="categoryId" value="@Model.CategoryId" />
+            }
+            @if (Model.MinPrice.HasValue) {
+                <input type="hidden" name="minPrice" value="@Model.MinPrice" />
+            }
+            @if (Model.MaxPrice.HasValue) {
+                <input type="hidden" name="maxPrice" value="@Model.MaxPrice" />
+            }
+            @if (Model.Sizes != null) {
+                @for (int i = 0; i < Model.Sizes.Length; i++) {
+                    <input type="hidden" name="sizes[@i]" value="@Model.Sizes[i]" />
                 }
             }
-        </select>
-    </form>
+            <select name="sort" class="sort-select" onchange="document.getElementById('sortingForm').submit()">
+                @foreach (string item in Enum.GetNames(typeof(ProductSorting))) {
+                    if (Model.Sorting.ToString() == item) {
+                        <option value="@item" selected>@sortDictionary[item]</option>
+                    } else {
+                        <option value="@item">@sortDictionary[item]</option>
+                    }
+                }
+            </select>
+        </form>
+    </div>
+</div>
+
+@* Filters Panel *@
+<div class="collapse" id="filtersCollapse">
+    <div class="filters-panel">
+        <form asp-page="/Index" method="get" class="filters-form">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Цена</label>
+                    <div class="d-flex gap-2">
+                        <input type="number" name="minPrice" class="form-control" placeholder="От" min="0" value="@Model.MinPrice">
+                        <input type="number" name="maxPrice" class="form-control" placeholder="До" min="0" value="@Model.MaxPrice">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Категория</label>
+                    <select name="categoryId" class="form-select">
+                        <option value="">Все категории</option>
+                        @await Component.InvokeAsync("CategoriesOptions", new { selectedCategoryId = Model.CategoryId })
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Размеры</label>
+                    <div class="sizes-filter">
+                        @for (int size = 36; size <= 45; size++) {
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" name="sizes" value="@size" id="filterSize@(size)" @(Model.Sizes?.Contains(size) == true ? "checked" : "")>
+                                <label class="form-check-label" for="filterSize@(size)">@size</label>
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <div class="d-flex gap-2 w-100">
+                        <button type="submit" class="btn btn-primary flex-fill">Применить</button>
+                        <a asp-page="/Index" class="btn btn-outline-secondary">Очистить</a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
 </div>
 
 @* Products Grid *@
@@ -124,12 +184,25 @@
 
 @* Pagination *@
 <div class="d-flex justify-content-center mt-5">
+    @{
+        var routeData = new Dictionary<string, string> {
+            ["sort"] = Model.Sorting.ToString()
+        };
+        if (Model.CategoryId.HasValue) routeData["categoryId"] = Model.CategoryId.ToString();
+        if (Model.MinPrice.HasValue) routeData["minPrice"] = Model.MinPrice.ToString();
+        if (Model.MaxPrice.HasValue) routeData["maxPrice"] = Model.MaxPrice.ToString();
+        if (Model.Sizes != null && Model.Sizes.Length > 0) {
+            for (int i = 0; i < Model.Sizes.Length; i++) {
+                routeData[$"sizes[{i}]"] = Model.Sizes[i].ToString();
+            }
+        }
+    }
     @await Component.InvokeAsync(typeof(ShoeShop.Paginations.Components.PaginationViewComponent), new {
             currentPage = Model.CurrentPage,
             elementsPerPage = Model.ElementsPerPage,
             totalElementsCount = Model.TotalElementsCount,
             page = "/Index",
-            routeData = new Dictionary<string, string>([new KeyValuePair<string, string>("sort", Model.Sorting.ToString())])
+            routeData = routeData
         })
 </div>
 
