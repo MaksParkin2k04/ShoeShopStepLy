@@ -82,7 +82,7 @@
                         @await Component.InvokeAsync("CategoriesOptions", new { selectedCategoryId = Model.CategoryId })
                     </select>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <label class="form-label">Размеры</label>
                     <div class="sizes-filter">
                         @for (int size = 36; size <= 45; size++) {
@@ -93,7 +93,32 @@
                         }
                     </div>
                 </div>
-                <div class="col-md-3 d-flex align-items-end">
+                <div class="col-md-2">
+                    <label class="form-label">Сортировка</label>
+                    <select name="sort" class="form-select">
+                        @if (Model.Sorting == ProductSorting.Default) {
+                            <option value="Default" selected>По умолчанию</option>
+                        } else {
+                            <option value="Default">По умолчанию</option>
+                        }
+                        @if (Model.Sorting == ProductSorting.Cheaper) {
+                            <option value="Cheaper" selected>Сначала дешевле</option>
+                        } else {
+                            <option value="Cheaper">Сначала дешевле</option>
+                        }
+                        @if (Model.Sorting == ProductSorting.Expensive) {
+                            <option value="Expensive" selected>Сначала дороже</option>
+                        } else {
+                            <option value="Expensive">Сначала дороже</option>
+                        }
+                        @if (Model.Sorting == ProductSorting.ByDate) {
+                            <option value="ByDate" selected>По дате</option>
+                        } else {
+                            <option value="ByDate">По дате</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
                     <div class="d-flex gap-2 w-100">
                         <button type="submit" class="btn btn-primary flex-fill">Применить</button>
                         <a asp-page="/Index" class="btn btn-outline-secondary">Очистить</a>

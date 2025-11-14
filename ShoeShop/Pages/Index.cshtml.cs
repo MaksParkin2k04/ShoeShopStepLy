@@ -20,7 +20,7 @@ namespace ShoeShop.Pages {
         public int[]? Sizes { get; private set; }
         public IEnumerable<Product>? Products { get; private set; }
 
-        public async Task OnGetAsync(ProductSorting sort, int pageIndex = 1, Guid? categoryId = null, decimal? minPrice = null, decimal? maxPrice = null, int[]? sizes = null) {
+        public async Task OnGetAsync(ProductSorting sort = ProductSorting.Default, int pageIndex = 1, Guid? categoryId = null, decimal? minPrice = null, decimal? maxPrice = null, int[]? sizes = null) {
             Sorting = sort;
             CurrentPage = pageIndex;
             ElementsPerPage = 20;
