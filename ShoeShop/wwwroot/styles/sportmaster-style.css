@@ -1856,3 +1856,118 @@ h1, h2, h3, h4, h5, h6 {
         gap: 0.3rem;
     }
 }
+
+/* About Page */
+.about-page {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.about-content {
+    padding: 3rem 1rem;
+}
+
+.about-section {
+    margin-bottom: 3rem;
+}
+
+.section-title {
+    font-size: 2rem;
+    font-weight: 300;
+    margin-bottom: 1.5rem;
+    color: var(--primary);
+}
+
+.section-text {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    color: var(--secondary);
+    margin-bottom: 1.5rem;
+}
+
+.advantages-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.advantage-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.advantage-icon {
+    width: 50px;
+    height: 50px;
+    background: var(--primary);
+    color: var(--white);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.advantage-content h4 {
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--primary);
+}
+
+.advantage-content p {
+    margin: 0;
+    color: var(--secondary);
+    line-height: 1.5;
+}
+
+.stats-section {
+    background: var(--accent);
+    padding: 3rem 2rem;
+    border-radius: 12px;
+    margin: 3rem 0;
+}
+
+.contact-section {
+    margin-top: 3rem;
+}
+
+.contact-card {
+    background: var(--white);
+    border: 1px solid #e1e1e1;
+    border-radius: 12px;
+    padding: 2rem;
+    height: 100%;
+}
+
+.contact-title {
+    font-size: 1.3rem;
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+    color: var(--primary);
+}
+
+.contact-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.contact-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--secondary);
+}
+
+.contact-item i {
+    color: var(--primary);
+    width: 20px;
+}
+
+.mission-text {
+    color: var(--secondary);
+    line-height: 1.6;
+    margin: 0;
+}
