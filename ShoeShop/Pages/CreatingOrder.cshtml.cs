@@ -4,19 +4,22 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using ShoeShop.Data;
 using ShoeShop.Models;
+using ShoeShop.Services;
 
 namespace ShoeShop.Pages {
     [Authorize]
     public class CreatingOrderModel : PageModel {
-        public CreatingOrderModel(UserManager<ApplicationUser> userManager, IProductRepository repository, IBasketShoppingService basketShopping) {
+        public CreatingOrderModel(UserManager<ApplicationUser> userManager, IProductRepository repository, IBasketShoppingService basketShopping, StockService stockService) {
             this.userManager = userManager;
             this.repository = repository;
             this.basketShopping = basketShopping;
+            this.stockService = stockService;
         }
 
         private UserManager<ApplicationUser> userManager;
         private IProductRepository repository;
         private readonly IBasketShoppingService basketShopping;
+        private readonly StockService stockService;
 
         public IEnumerable<Product>? Products { get; private set; }
 
@@ -55,6 +58,12 @@ namespace ShoeShop.Pages {
             Order order = Order.Create(user!.Id, DateTime.Now, coment ?? "", recipient, orderDetails);
 
             await repository.CreateOrder(order);
+            
+            // Уменьшаем остатки товаров
+            foreach (BasketItem basketItem in bs.Products) {
+                await stockService.ReduceStockSafeAsync(basketItem.ProductId, basketItem.Size);
+            }
+            
             basketShopping.Clear();
 
             return RedirectToPage("/Order", new { orderId = order.Id });

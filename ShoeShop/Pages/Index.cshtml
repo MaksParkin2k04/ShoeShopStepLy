@@ -1,6 +1,7 @@
 ﻿@page
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 @using ShoeShop.Models
+@using ShoeShop.Services
 @model IndexModel
 @{
     ViewData["Title"] = "Домашняя страница";
@@ -139,7 +140,9 @@
     }
 
     @foreach (Product product in Model.Products ?? Enumerable.Empty<Product>()) {
-        <div class="product-card" onclick="window.location.href='@Url.Page("Product", new { id = product.Id })'" style="cursor: pointer;">
+        var availability = Model.ProductAvailability.GetValueOrDefault(product.Id, ProductAvailabilityStatus.InStock);
+        var cardClass = availability == ProductAvailabilityStatus.OutOfStock ? "product-card out-of-stock" : "product-card";
+        <div class="@cardClass" onclick="window.location.href='@Url.Page("Product", new { id = product.Id })'" style="cursor: pointer;">
             <div class="product-image">
                 <div id="carousel-@product.Id" class="carousel slide" data-bs-ride="false">
                     @if (product.Images?.Count > 1) {
@@ -191,7 +194,10 @@
                             @for (int size = 36; size <= 45; size++) {
                                 var sizeFlag = (ProductSize)Enum.Parse(typeof(ProductSize), $"S{size}");
                                 if (product.Sizes.HasFlag(sizeFlag)) {
-                                    <span class="size-preview">@size</span>
+                                    var sizeQuantities = Model.ProductSizeQuantities.GetValueOrDefault(product.Id, new Dictionary<int, int>());
+                                    var quantity = sizeQuantities.GetValueOrDefault(size, 0);
+                                    var sizeClass = quantity == 0 ? "size-preview unavailable" : "size-preview";
+                                    <span class="@sizeClass">@size</span>
                                 }
                             }
                         </div>
@@ -199,8 +205,19 @@
                 }
                 
                 <div class="d-flex justify-content-between align-items-center">
-                    <span class="product-price">@product.Price ₽</span>
-                    <button class="btn btn-dark btn-sm" onclick="event.stopPropagation(); addToCart(@product.Id);">В корзину</button>
+                    <div class="d-flex flex-column">
+                        <span class="product-price">@product.Price ₽</span>
+                        @if (availability == ProductAvailabilityStatus.OutOfStock) {
+                            <small class="text-muted">Нет в наличии</small>
+                        } else if (availability == ProductAvailabilityStatus.LowStock) {
+                            <small class="text-warning">Осталось мало</small>
+                        }
+                    </div>
+                    @if (availability != ProductAvailabilityStatus.OutOfStock) {
+                        <button class="btn btn-dark btn-sm" onclick="event.stopPropagation(); addToCart(@product.Id);">В корзину</button>
+                    } else {
+                        <button class="btn btn-secondary btn-sm" disabled>Нет в наличии</button>
+                    }
                 </div>
             </div>
         </div>

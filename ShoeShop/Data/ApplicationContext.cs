@@ -9,6 +9,7 @@ namespace ShoeShop.Data {
 
         public DbSet<Product> Products { get; private set; }
         public DbSet<ProductImage> ProductImages { get; private set; }
+        public DbSet<ProductStock> ProductStocks { get; private set; }
         public DbSet<Order> Orders { get; private set; }
         public DbSet<OrderDetail> OrderDetails { get; private set; }
         public DbSet<Category> Categories { get; private set; }
@@ -47,11 +48,21 @@ namespace ShoeShop.Data {
 
             modelBuilder.Entity<Category>().Property(c => c.Name).IsRequired().HasMaxLength(100);
 
+            modelBuilder.Entity<ProductStock>().Property(s => s.Size).IsRequired();
+            modelBuilder.Entity<ProductStock>().Property(s => s.Quantity).IsRequired();
+            modelBuilder.Entity<ProductStock>().HasIndex(s => new { s.ProductId, s.Size }).IsUnique();
+
             modelBuilder.Entity<Product>()
                 .HasOne(p => p.Category)
                 .WithMany()
                 .HasForeignKey(p => p.CategoryId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<ProductStock>()
+                .HasOne(s => s.Product)
+                .WithMany()
+                .HasForeignKey(s => s.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
 
         }
     }

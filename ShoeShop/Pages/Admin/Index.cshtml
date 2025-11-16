@@ -1,0 +1,117 @@
+@page
+@model ShoeShop.Pages.Admin.AdminIndexModel
+@{
+    ViewData["Title"] = "Админ панель";
+}
+
+<div class="admin-dashboard">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-cogs me-2"></i>Панель администратора</h2>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-6 col-lg-4">
+            <div class="admin-card">
+                <div class="admin-card-icon">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+                <div class="admin-card-content">
+                    <h5>Заказы</h5>
+                    <p>Управление заказами клиентов</p>
+                    <a asp-page="/Admin/Orders" class="btn btn-primary">Перейти</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4">
+            <div class="admin-card">
+                <div class="admin-card-icon">
+                    <i class="fas fa-edit"></i>
+                </div>
+                <div class="admin-card-content">
+                    <h5>Каталог товаров</h5>
+                    <p>Редактирование товаров</p>
+                    <a asp-page="/Admin/Catalog" class="btn btn-primary">Перейти</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4">
+            <div class="admin-card">
+                <div class="admin-card-icon">
+                    <i class="fas fa-tags"></i>
+                </div>
+                <div class="admin-card-content">
+                    <h5>Категории</h5>
+                    <p>Управление категориями товаров</p>
+                    <a asp-page="/Admin/Categories" class="btn btn-primary">Перейти</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4">
+            <div class="admin-card">
+                <div class="admin-card-icon">
+                    <i class="fas fa-boxes"></i>
+                </div>
+                <div class="admin-card-content">
+                    <h5>Остатки товаров</h5>
+                    <p>Управление складскими остатками</p>
+                    <a asp-page="/Admin/Stock" class="btn btn-primary">Перейти</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4">
+            <div class="admin-card">
+                <div class="admin-card-icon">
+                    <i class="fas fa-plus"></i>
+                </div>
+                <div class="admin-card-content">
+                    <h5>Добавить товар</h5>
+                    <p>Создание нового товара</p>
+                    <a asp-page="/Admin/AddProduct" class="btn btn-success">Добавить</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.admin-dashboard {
+    padding: 20px 0;
+}
+
+.admin-card {
+    background: white;
+    border-radius: 10px;
+    padding: 30px 20px;
+    text-align: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+    height: 100%;
+}
+
+.admin-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+}
+
+.admin-card-icon {
+    font-size: 3rem;
+    color: #007bff;
+    margin-bottom: 20px;
+}
+
+.admin-card-content h5 {
+    color: #333;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.admin-card-content p {
+    color: #666;
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+}
+</style>

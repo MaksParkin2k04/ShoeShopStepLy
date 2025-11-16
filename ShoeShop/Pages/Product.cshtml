@@ -1,5 +1,6 @@
 ﻿@page
 @using ShoeShop.Models
+@using ShoeShop.Services
 @model ShoeShop.Pages.ProductModel
 @{
     ViewData["Title"] = Model.Product?.Name;
@@ -22,6 +23,13 @@
             <span class="breadcrumb-separator">/</span>
             <span class="breadcrumb-current">@Model.Product.Name</span>
         </nav>
+
+        @if (TempData["Error"] != null) {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                @TempData["Error"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
 
         <div class="row g-5">
             @* Product Images *@
@@ -94,18 +102,30 @@
                                     @for (int size = 36; size <= 45; size++) {
                                         var sizeFlag = (ProductSize)Enum.Parse(typeof(ProductSize), $"S{size}");
                                         if (Model.Product.Sizes.HasFlag(sizeFlag)) {
-                                            <input type="radio" name="selectedSize" value="@size" id="size@(size)" class="size-radio" required>
-                                            <label for="size@(size)" class="size-badge">@size</label>
+                                            var quantity = Model.SizeQuantities.GetValueOrDefault(size, 0);
+                                            var isAvailable = quantity > 0;
+                                            <input type="radio" name="selectedSize" value="@size" id="size@(size)" class="size-radio" @(!isAvailable ? "disabled" : "") data-quantity="@quantity" onchange="updateSizeInfo(@size, @quantity)" required>
+                                            <label for="size@(size)" class="size-badge @(!isAvailable ? "disabled" : "")">@size</label>
                                         }
                                     }
+                                </div>
+                                <div id="size-info" class="size-info mt-3" style="display: none;">
+                                    <div class="alert" id="size-alert"></div>
                                 </div>
                             </div>
                         }
                         
-                        <button type="submit" class="btn btn-primary btn-lg add-to-cart-btn">
-                            <i class="fas fa-shopping-cart me-2"></i>
-                            Добавить в корзину
-                        </button>
+                        @if (Model.AvailabilityStatus != ProductAvailabilityStatus.OutOfStock) {
+                            <button type="submit" class="btn btn-primary btn-lg add-to-cart-btn">
+                                <i class="fas fa-shopping-cart me-2"></i>
+                                Добавить в корзину
+                            </button>
+                        } else {
+                            <button type="button" class="btn btn-secondary btn-lg" disabled>
+                                <i class="fas fa-times me-2"></i>
+                                Нет в наличии
+                            </button>
+                        }
                     </form>
 
                     <script>
@@ -116,6 +136,25 @@
                                 return false;
                             }
                             return true;
+                        }
+
+                        function updateSizeInfo(size, quantity) {
+                            const sizeInfo = document.getElementById('size-info');
+                            const sizeAlert = document.getElementById('size-alert');
+                            
+                            if (quantity === 0) {
+                                sizeAlert.className = 'alert alert-danger';
+                                sizeAlert.innerHTML = '<i class="fas fa-times-circle me-2"></i>Размер ' + size + ' недоступен';
+                                sizeInfo.style.display = 'block';
+                            } else if (quantity < 5) {
+                                sizeAlert.className = 'alert alert-warning';
+                                sizeAlert.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>Размер ' + size + ': осталось мало';
+                                sizeInfo.style.display = 'block';
+                            } else {
+                                sizeAlert.className = 'alert alert-success';
+                                sizeAlert.innerHTML = '<i class="fas fa-check-circle me-2"></i>Размер ' + size + ' в наличии';
+                                sizeInfo.style.display = 'block';
+                            }
                         }
                     </script>
 

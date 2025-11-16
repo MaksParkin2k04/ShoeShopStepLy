@@ -1,0 +1,172 @@
+@page
+@using ShoeShop.Models
+@using ShoeShop.Services
+@model ShoeShop.Pages.Admin.StockModel
+@{
+    ViewData["Title"] = "Управление остатками";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Управление остатками</h2>
+    <a asp-page="/Admin/Index" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Админ панель
+    </a>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.Message)) {
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @Model.Message
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@* Поиск и фильтры *@
+<div class="card mb-4">
+    <div class="card-header">
+        <h6 class="mb-0">Поиск и фильтры</h6>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label">Поиск по названию товара</label>
+                <input type="text" name="search" class="form-control" placeholder="Введите название товара" value="@Model.SearchQuery">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Статус наличия</label>
+                <select name="status" class="form-select">
+                    <option value="">Все статусы</option>
+                    @if (Model.StatusFilter == "instock") {
+                        <option value="instock" selected>В наличии (≥ 5)</option>
+                    } else {
+                        <option value="instock">В наличии (≥ 5)</option>
+                    }
+                    @if (Model.StatusFilter == "lowstock") {
+                        <option value="lowstock" selected>Мало товара (1-4)</option>
+                    } else {
+                        <option value="lowstock">Мало товара (1-4)</option>
+                    }
+                    @if (Model.StatusFilter == "outofstock") {
+                        <option value="outofstock" selected>Нет в наличии (0)</option>
+                    } else {
+                        <option value="outofstock">Нет в наличии (0)</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <div class="d-flex gap-2 w-100">
+                    <button type="submit" class="btn btn-primary">Поиск</button>
+                    <a href="?" class="btn btn-outline-secondary">Очистить</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Приход товара</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" asp-page-handler="AddStock">
+                    <div class="mb-3">
+                        <label class="form-label">Товар</label>
+                        <select name="productId" class="form-select" required>
+                            <option value="">Выберите товар</option>
+                            @foreach (var product in Model.Products) {
+                                <option value="@product.Id">@product.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Размер</label>
+                        <select name="size" class="form-select" required>
+                            @for (int size = 36; size <= 45; size++) {
+                                <option value="@size">@size</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Количество</label>
+                        <input type="number" name="quantity" class="form-control" min="1" required>
+                    </div>
+                    <button type="submit" class="btn btn-success">Добавить приход</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5>Списание товара</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" asp-page-handler="ReduceStock">
+                    <div class="mb-3">
+                        <label class="form-label">Товар</label>
+                        <select name="productId" class="form-select" required>
+                            <option value="">Выберите товар</option>
+                            @foreach (var product in Model.Products) {
+                                <option value="@product.Id">@product.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Размер</label>
+                        <select name="size" class="form-select" required>
+                            @for (int size = 36; size <= 45; size++) {
+                                <option value="@size">@size</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Количество</label>
+                        <input type="number" name="quantity" class="form-control" min="1" required>
+                    </div>
+                    <button type="submit" class="btn btn-danger">Списать товар</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>Текущие остатки</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.ProductStocks.Any()) {
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Товар</th>
+                                    <th>Размер</th>
+                                    <th>Количество</th>
+                                    <th>Статус</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var stock in Model.ProductStocks) {
+                                    var statusClass = stock.Quantity == 0 ? "text-danger" : (stock.Quantity < 5 ? "text-warning" : "text-success");
+                                    var statusText = stock.Quantity == 0 ? "Нет в наличии" : (stock.Quantity < 5 ? "Мало товара" : "В наличии");
+                                    var product = Model.Products.FirstOrDefault(p => p.Id == stock.ProductId);
+                                    <tr>
+                                        <td>@(product?.Name ?? "Неизвестный товар")</td>
+                                        <td>@stock.Size</td>
+                                        <td>@stock.Quantity</td>
+                                        <td class="@statusClass">@statusText</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                } else {
+                    <p class="text-muted">Остатки не найдены</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>

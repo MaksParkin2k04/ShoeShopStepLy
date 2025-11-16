@@ -372,6 +372,31 @@ namespace ShoeShop.Migrations
                     b.ToTable("ProductImages");
                 });
 
+            modelBuilder.Entity("ShoeShop.Models.ProductStock", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Size")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("ProductId", "Size")
+                        .IsUnique();
+
+                    b.ToTable("ProductStocks");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
                 {
                     b.HasOne("ShoeShop.Data.ApplicationRole", null)
@@ -501,6 +526,17 @@ namespace ShoeShop.Migrations
                     b.HasOne("ShoeShop.Models.Product", null)
                         .WithMany("Images")
                         .HasForeignKey("ProductId");
+                });
+
+            modelBuilder.Entity("ShoeShop.Models.ProductStock", b =>
+                {
+                    b.HasOne("ShoeShop.Models.Product", "Product")
+                        .WithMany()
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("ShoeShop.Models.Order", b =>

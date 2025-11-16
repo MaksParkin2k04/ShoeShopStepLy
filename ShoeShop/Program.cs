@@ -31,6 +31,8 @@ namespace ShoeShop {
             builder.Services.AddScoped<IProductManager, ProductManager>();
             builder.Services.AddScoped<IAdminRepository, AdminRepository>();
             builder.Services.AddScoped<IProductRepository, ProductRepository>();
+            builder.Services.AddScoped<IProductStockRepository, ProductStockRepository>();
+            builder.Services.AddScoped<StockService>();
             builder.Services.AddScoped<IBasketShoppingService, BasketShoppingCookies>();
 
             builder.Services.Configure<IdentityOptions>(options => {
@@ -55,16 +57,33 @@ namespace ShoeShop {
             WebApplication app = builder.Build();
 
             // Инициализация базы данных
-            //using (IServiceScope scope = app.Services.CreateScope())
-            //{
-            //    ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
-            //    IUserStore<ApplicationUser> userStore = scope.ServiceProvider.GetRequiredService<IUserStore<ApplicationUser>>();
-            //    UserManager<ApplicationUser> userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-            //    IRoleStore<ApplicationRole> roleStore = scope.ServiceProvider.GetRequiredService<IRoleStore<ApplicationRole>>();
-            //    RoleManager<ApplicationRole> roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<ApplicationRole>>();
-
-            //    await DatabaseInitializer.Initialize(context, userStore, userManager, roleStore, roleManager);
-            //}
+            using (IServiceScope scope = app.Services.CreateScope())
+            {
+                ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
+                StockService stockService = scope.ServiceProvider.GetRequiredService<StockService>();
+                
+                // Проверяем, существует ли таблица ProductStocks
+                try {
+                    var tableExists = context.Database.ExecuteSqlRaw(
+                        "IF OBJECT_ID('ProductStocks', 'U') IS NULL " +
+                        "CREATE TABLE ProductStocks (" +
+                        "Id uniqueidentifier NOT NULL PRIMARY KEY, " +
+                        "ProductId uniqueidentifier NOT NULL, " +
+                        "Size int NOT NULL, " +
+                        "Quantity int NOT NULL, " +
+                        "FOREIGN KEY (ProductId) REFERENCES Products(Id) ON DELETE CASCADE, " +
+                        "UNIQUE (ProductId, Size))");
+                } catch {
+                    // Таблица уже существует
+                }
+                
+                // Инициализируем тестовые остатки
+                try {
+                    await ShoeShop.Data.Initialization.StockInitializer.InitializeAsync(context, stockService);
+                } catch {
+                    // Ошибка инициализации - продолжаем без остатков
+                }
+            }
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment()) {

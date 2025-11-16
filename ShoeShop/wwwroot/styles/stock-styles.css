@@ -1,0 +1,103 @@
+/* Стили для отображения статуса наличия товаров */
+
+/* Карточка товара не в наличии */
+.product-card.out-of-stock {
+    opacity: 0.6;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+}
+
+.product-card.out-of-stock .product-img {
+    filter: grayscale(100%);
+}
+
+/* Размеры товара */
+.size-preview.unavailable {
+    background-color: #6c757d !important;
+    color: #fff !important;
+    text-decoration: line-through;
+    cursor: not-allowed;
+}
+
+.size-badge.disabled {
+    background-color: #6c757d !important;
+    color: #fff !important;
+    text-decoration: line-through;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.size-radio:disabled + .size-badge {
+    pointer-events: none;
+}
+
+/* Статус наличия */
+.availability-status {
+    margin-top: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.availability-status.out-of-stock {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.availability-status.low-stock {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
+
+.availability-status.in-stock {
+    background-color: #d1edff;
+    color: #0c5460;
+    border: 1px solid #b8daff;
+}
+
+/* Информация о размере */
+.size-info {
+    margin-top: 1rem;
+}
+
+.size-info .alert {
+    margin-bottom: 0;
+    padding: 0.75rem 1rem;
+    border-radius: 0.375rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.size-info .alert i {
+    margin-right: 0.5rem;
+}
+
+.availability-status i {
+    margin-right: 0.25rem;
+}
+
+/* Кнопки */
+.btn:disabled {
+    cursor: not-allowed;
+}
+
+/* Таблица остатков */
+.table th {
+    border-top: none;
+    font-weight: 600;
+}
+
+.text-success {
+    color: #198754 !important;
+}
+
+.text-warning {
+    color: #ffc107 !important;
+}
+
+.text-danger {
+    color: #dc3545 !important;
+}

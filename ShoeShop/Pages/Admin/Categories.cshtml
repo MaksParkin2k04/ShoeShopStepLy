@@ -7,11 +7,18 @@
 
 <div class="admin-page">
     <div class="admin-header">
-        <h1 class="admin-title">
-            <i class="fas fa-tags me-3"></i>
-            Управление категориями
-        </h1>
-        <p class="admin-subtitle">Создание и редактирование категорий товаров</p>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h1 class="admin-title">
+                    <i class="fas fa-tags me-3"></i>
+                    Управление категориями
+                </h1>
+                <p class="admin-subtitle">Создание и редактирование категорий товаров</p>
+            </div>
+            <a asp-page="/Admin/Index" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Админ панель
+            </a>
+        </div>
     </div>
 
     @* Add Category Form *@
