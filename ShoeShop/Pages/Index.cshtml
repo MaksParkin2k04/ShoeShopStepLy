@@ -206,7 +206,15 @@
                 
                 <div class="d-flex justify-content-between align-items-center">
                     <div class="d-flex flex-column">
-                        <span class="product-price">@product.Price ₽</span>
+                        @if (product.HasDiscount) {
+                            <div class="price-section">
+                                <span class="product-price-old">@product.Price ₽</span>
+                                <span class="product-price">@product.SalePrice ₽</span>
+                                <span class="discount-badge">Скидка</span>
+                            </div>
+                        } else {
+                            <span class="product-price">@product.Price ₽</span>
+                        }
                         @if (availability == ProductAvailabilityStatus.OutOfStock) {
                             <small class="text-muted">Нет в наличии</small>
                         } else if (availability == ProductAvailabilityStatus.LowStock) {
@@ -247,6 +255,34 @@
             routeData = routeData
         })
 </div>
+
+<style>
+.price-section {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.product-price-old {
+    font-size: 0.9em;
+    color: #999;
+    text-decoration: line-through;
+}
+
+.product-price {
+    font-weight: bold;
+}
+
+.discount-badge {
+    background: #dc3545;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 0.7em;
+    font-weight: bold;
+    align-self: flex-start;
+}
+</style>
 
 <script>
 function addToCart(productId) {

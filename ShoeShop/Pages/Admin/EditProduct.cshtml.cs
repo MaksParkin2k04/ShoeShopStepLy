@@ -25,7 +25,7 @@ namespace ShoeShop.Pages.Admin {
             Categories = await repository.GetCategories();
         }
 
-        public async Task<IActionResult> OnPostAsync(EditProduct product, ulong[] sizes) {
+        public async Task<IActionResult> OnPostAsync(EditProduct product, ulong[] sizes, double? saleprice) {
             if (sizes != null && sizes.Length > 0) {
                 ProductSize combinedSizes = ProductSize.Not;
                 foreach (ulong size in sizes) {
@@ -33,6 +33,8 @@ namespace ShoeShop.Pages.Admin {
                 }
                 product.Sizes = combinedSizes;
             }
+            
+            product.SalePrice = saleprice;
             
             Guid productId = await productManager.Update(product);
             return RedirectToPage("/Admin/EditProduct", new { productId = productId });

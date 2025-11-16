@@ -68,6 +68,7 @@ namespace ShoeShop.Services {
             oldProduct.SetName(product.Name);
             oldProduct.SetIsSale(product.IsSale.Value);
             oldProduct.SetPrice(product.Price.Value);
+            oldProduct.SetSalePrice(product.SalePrice);
             oldProduct.SetDescription(product.Description);
             oldProduct.SetContent(product.Content);
             if (product.Sizes.HasValue) {

@@ -83,7 +83,13 @@
                     }
                     
                     <div class="product-price-section">
-                        <span class="product-price-detail">@Model.Product.Price ₽</span>
+                        @if (Model.Product.HasDiscount) {
+                            <span class="product-price-old">@Model.Product.Price ₽</span>
+                            <span class="product-price-detail">@Model.Product.SalePrice ₽</span>
+                            <span class="product-discount-badge">Скидка</span>
+                        } else {
+                            <span class="product-price-detail">@Model.Product.Price ₽</span>
+                        }
                         <span class="product-price-label">за пару</span>
                     </div>
 
@@ -157,6 +163,41 @@
                             }
                         }
                     </script>
+
+                    <style>
+                    .product-price-section {
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                        margin: 20px 0;
+                    }
+                    
+                    .product-price-old {
+                        font-size: 1.2em;
+                        color: #999;
+                        text-decoration: line-through;
+                    }
+                    
+                    .product-price-detail {
+                        font-size: 1.8em;
+                        font-weight: bold;
+                        color: #333;
+                    }
+                    
+                    .product-discount-badge {
+                        background: #dc3545;
+                        color: white;
+                        padding: 4px 8px;
+                        border-radius: 4px;
+                        font-size: 0.8em;
+                        font-weight: bold;
+                    }
+                    
+                    .product-price-label {
+                        color: #666;
+                        font-size: 0.9em;
+                    }
+                    </style>
 
                     <div class="product-features">
                         <div class="feature-item">

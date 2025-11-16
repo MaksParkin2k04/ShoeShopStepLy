@@ -8,6 +8,7 @@ namespace ShoeShop.Infrastructure {
         public string? Description { get; set; }
         public string? Content { get; set; }
         public double? Price { get; set; }
+        public double? SalePrice { get; set; }
         public ProductSize? Sizes { get; set; }
         public EditImage[]? Images { get; set; }
         public Guid? CategoryId { get; set; }

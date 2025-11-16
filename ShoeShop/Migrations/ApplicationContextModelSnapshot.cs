@@ -336,6 +336,9 @@ namespace ShoeShop.Migrations
                     b.Property<double>("Price")
                         .HasColumnType("float");
 
+                    b.Property<double?>("SalePrice")
+                        .HasColumnType("float");
+
                     b.Property<decimal>("Sizes")
                         .HasColumnType("decimal(20,0)");
 

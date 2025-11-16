@@ -45,6 +45,18 @@
         /// Цена товара
         /// </summary>
         public double Price { get; private set; }
+        /// <summary>
+        /// Акционная цена
+        /// </summary>
+        public double? SalePrice { get; private set; }
+        /// <summary>
+        /// Итоговая цена (акционная или обычная)
+        /// </summary>
+        public double FinalPrice => SalePrice ?? Price;
+        /// <summary>
+        /// Есть ли скидка
+        /// </summary>
+        public bool HasDiscount => SalePrice.HasValue && SalePrice < Price;
         private ProductSize _sizes;
         /// <summary>
         /// Доступные размеры товара
@@ -100,6 +112,14 @@
         /// <param name="price">Цена</param>
         public void SetPrice(double price) {
             Price = price;
+        }
+
+        /// <summary>
+        /// Установить акционную цену
+        /// </summary>
+        /// <param name="salePrice">Акционная цена</param>
+        public void SetSalePrice(double? salePrice) {
+            SalePrice = salePrice;
         }
 
         /// <summary>

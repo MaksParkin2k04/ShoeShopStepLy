@@ -19,6 +19,7 @@ namespace ShoeShop.Data {
 
             modelBuilder.Entity<Product>().Property(b => b.Name).IsRequired().HasMaxLength(50);
             modelBuilder.Entity<Product>().Property(b => b.Price).IsRequired();
+            modelBuilder.Entity<Product>().Property(b => b.SalePrice);
             modelBuilder.Entity<Product>().Property(b => b.DateAdded).IsRequired();
             modelBuilder.Entity<Product>().Property(b => b.Description).IsRequired().HasMaxLength(120);
             modelBuilder.Entity<Product>().Property(b => b.Content).IsRequired();
