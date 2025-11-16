@@ -19,11 +19,12 @@ namespace ShoeShop.Services {
         /// <param name="productId">Идентификатор товара</param>
         /// <param name="size">Размер</param>
         /// <param name="quantity">Количество</param>
-        public async Task AddStockAsync(Guid productId, int size, int quantity) {
+        /// <param name="purchasePrice">Цена закупки</param>
+        public async Task AddStockAsync(Guid productId, int size, int quantity, double purchasePrice = 0) {
             var existing = await _stockRepository.GetByProductAndSizeAsync(productId, size);
             
             if (existing == null) {
-                var newStock = ProductStock.Create(productId, size, quantity);
+                var newStock = ProductStock.Create(productId, size, quantity, purchasePrice);
                 await _stockRepository.SaveAsync(newStock);
             } else {
                 existing.AddQuantity(quantity);
@@ -110,6 +111,32 @@ namespace ShoeShop.Services {
                 stock.ReduceQuantity(quantity);
                 await _stockRepository.SaveAsync(stock);
             }
+        }
+
+        /// <summary>
+        /// Обновить цену закупки
+        /// </summary>
+        /// <param name="productId">Идентификатор товара</param>
+        /// <param name="size">Размер</param>
+        /// <param name="purchasePrice">Новая цена закупки</param>
+        public async Task UpdatePurchasePriceAsync(Guid productId, int size, double purchasePrice) {
+            var stock = await _stockRepository.GetByProductAndSizeAsync(productId, size);
+            if (stock != null) {
+                stock.SetPurchasePrice(purchasePrice);
+                await _stockRepository.SaveAsync(stock);
+            }
+        }
+
+        /// <summary>
+        /// Проверить наличие нужного количества товара
+        /// </summary>
+        /// <param name="productId">Идентификатор товара</param>
+        /// <param name="size">Размер</param>
+        /// <param name="requiredQuantity">Требуемое количество</param>
+        /// <returns>true если товара достаточно</returns>
+        public async Task<bool> IsAvailableAsync(Guid productId, int size, int requiredQuantity = 1) {
+            var availableQuantity = await GetQuantityBySizeAsync(productId, size);
+            return availableQuantity >= requiredQuantity;
         }
 
         /// <summary>

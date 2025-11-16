@@ -12,6 +12,13 @@
         <p class="page-subtitle">Проверьте выбранные товары перед оформлением заказа</p>
     </div>
 
+    @if (TempData["Error"] != null) {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
     @if (Model.BasketItems == null || Model.BasketItems.Count() == 0) {
         <div class="empty-cart">
             <div class="empty-cart-icon">
@@ -45,8 +52,19 @@
                             <p class="item-description">@item.Product?.Description</p>
                             <p class="item-size">Размер: @item.Size</p>
                         </div>
+                        <div class="cart-item-quantity">
+                            <form asp-page="/BasketShopping" asp-page-handler="updatequantity" method="post" class="quantity-form">
+                                <input name="productId" type="hidden" value="@item.Product?.Id" />
+                                <input name="size" type="hidden" value="@item.Size" />
+                                <div class="quantity-controls">
+                                    <button type="button" class="btn-quantity" onclick="changeQuantity(this, -1)">-</button>
+                                    <input name="quantity" type="number" value="@item.Quantity" min="1" max="10" class="quantity-input" onchange="this.form.submit()">
+                                    <button type="button" class="btn-quantity" onclick="changeQuantity(this, 1)">+</button>
+                                </div>
+                            </form>
+                        </div>
                         <div class="cart-item-price">
-                            <span class="item-price">@item.Product?.Price ₽</span>
+                            <span class="item-price">@((item.Product?.Price * item.Quantity) ?? 0) ₽</span>
                         </div>
                         <div class="cart-item-actions">
                             <form asp-page="/BasketShopping" asp-page-handler="deleteproduct" method="post" class="remove-form">
@@ -65,13 +83,13 @@
                 <div class="summary-card">
                     <h3 class="summary-title">Итого к оплате</h3>
                     <div class="summary-row">
-                        <span>Товары (@Model.BasketItems.Count() шт.)</span>
-                        <span>@Model.BasketItems.Sum(p => p.Product.Price) ₽</span>
+                        <span>Товары (@Model.BasketItems.Sum(p => p.Quantity) шт.)</span>
+                        <span>@Model.BasketItems.Sum(p => p.Product.Price * p.Quantity) ₽</span>
                     </div>
                     <div class="summary-row">
                         <span>Доставка</span>
                         <span class="delivery-info">
-                            @if (Model.BasketItems.Sum(p => p.Product.Price) >= 5000) {
+                            @if (Model.BasketItems.Sum(p => p.Product.Price * p.Quantity) >= 5000) {
                                 <span class="text-success">Бесплатно</span>
                             } else {
                                 <span>500 ₽</span>
@@ -83,8 +101,9 @@
                         <span>Общая стоимость</span>
                         <span class="total-price">
                             @{
-                                var deliveryCost = Model.BasketItems.Sum(p => p.Product.Price) >= 5000 ? 0 : 500;
-                                var totalCost = Model.BasketItems.Sum(p => p.Product.Price) + deliveryCost;
+                                var subtotal = Model.BasketItems.Sum(p => p.Product.Price * p.Quantity);
+                                var deliveryCost = subtotal >= 5000 ? 0 : 500;
+                                var totalCost = subtotal + deliveryCost;
                             }
                             @totalCost ₽
                         </span>
@@ -98,3 +117,97 @@
         </div>
     }
 </div>
+
+<script>
+function changeQuantity(button, change) {
+    const input = button.parentElement.querySelector('.quantity-input');
+    const currentValue = parseInt(input.value);
+    const newValue = Math.max(1, Math.min(10, currentValue + change));
+    input.value = newValue;
+    input.form.submit();
+}
+</script>
+
+<style>
+.cart-item {
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid #eee;
+    gap: 20px;
+}
+
+.cart-item-image {
+    flex-shrink: 0;
+    width: 100px;
+    height: 100px;
+}
+
+.item-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.cart-item-info {
+    flex-grow: 1;
+}
+
+.cart-item-quantity {
+    flex-shrink: 0;
+}
+
+.quantity-controls {
+    display: flex;
+    align-items: center;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.btn-quantity {
+    background: #f8f9fa;
+    border: none;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s;
+}
+
+.btn-quantity:hover {
+    background: #e9ecef;
+}
+
+.quantity-input {
+    border: none;
+    width: 50px;
+    text-align: center;
+    padding: 8px 4px;
+    font-weight: bold;
+}
+
+.cart-item-price {
+    flex-shrink: 0;
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+.cart-item-actions {
+    flex-shrink: 0;
+}
+
+.btn-remove {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btn-remove:hover {
+    background: #c82333;
+}
+</style>

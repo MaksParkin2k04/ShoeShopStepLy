@@ -33,6 +33,7 @@ namespace ShoeShop {
             builder.Services.AddScoped<IProductRepository, ProductRepository>();
             builder.Services.AddScoped<IProductStockRepository, ProductStockRepository>();
             builder.Services.AddScoped<StockService>();
+            builder.Services.AddScoped<SalesStatisticsService>();
             builder.Services.AddScoped<IBasketShoppingService, BasketShoppingCookies>();
 
             builder.Services.Configure<IdentityOptions>(options => {
@@ -71,8 +72,14 @@ namespace ShoeShop {
                         "ProductId uniqueidentifier NOT NULL, " +
                         "Size int NOT NULL, " +
                         "Quantity int NOT NULL, " +
+                        "PurchasePrice float NOT NULL DEFAULT 0, " +
                         "FOREIGN KEY (ProductId) REFERENCES Products(Id) ON DELETE CASCADE, " +
                         "UNIQUE (ProductId, Size))");
+                    
+                    // Добавляем колонку PurchasePrice если ее нет
+                    context.Database.ExecuteSqlRaw(
+                        "IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'ProductStocks' AND COLUMN_NAME = 'PurchasePrice') " +
+                        "ALTER TABLE ProductStocks ADD PurchasePrice float NOT NULL DEFAULT 0");
                 } catch {
                     // Таблица уже существует
                 }

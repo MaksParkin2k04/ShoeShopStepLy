@@ -50,6 +50,7 @@ namespace ShoeShop.Data {
 
             modelBuilder.Entity<ProductStock>().Property(s => s.Size).IsRequired();
             modelBuilder.Entity<ProductStock>().Property(s => s.Quantity).IsRequired();
+            modelBuilder.Entity<ProductStock>().Property(s => s.PurchasePrice).IsRequired();
             modelBuilder.Entity<ProductStock>().HasIndex(s => new { s.ProductId, s.Size }).IsUnique();
 
             modelBuilder.Entity<Product>()

@@ -60,9 +60,9 @@ namespace ShoeShop.Pages.Admin {
             }).ThenBy(s => s.Size);
         }
 
-        public async Task<IActionResult> OnPostAddStockAsync(Guid productId, int size, int quantity) {
+        public async Task<IActionResult> OnPostAddStockAsync(Guid productId, int size, int quantity, double purchasePrice = 0) {
             try {
-                await _stockService.AddStockAsync(productId, size, quantity);
+                await _stockService.AddStockAsync(productId, size, quantity, purchasePrice);
                 Message = $"Успешно добавлен приход: {quantity} пар размера {size}";
             } catch (Exception ex) {
                 Message = $"Ошибка при добавлении прихода: {ex.Message}";
@@ -77,6 +77,17 @@ namespace ShoeShop.Pages.Admin {
                 Message = $"Успешно списано: {quantity} пар размера {size}";
             } catch (Exception ex) {
                 Message = $"Ошибка при списании: {ex.Message}";
+            }
+
+            return RedirectToPage();
+        }
+
+        public async Task<IActionResult> OnPostUpdatePriceAsync(Guid productId, int size, double purchasePrice) {
+            try {
+                await _stockService.UpdatePurchasePriceAsync(productId, size, purchasePrice);
+                Message = $"Цена закупки обновлена: {purchasePrice:F2} ₽";
+            } catch (Exception ex) {
+                Message = $"Ошибка при обновлении цены: {ex.Message}";
             }
 
             return RedirectToPage();

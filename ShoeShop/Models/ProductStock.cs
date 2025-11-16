@@ -10,11 +10,13 @@ namespace ShoeShop.Models {
         /// <param name="productId">Идентификатор товара</param>
         /// <param name="size">Размер</param>
         /// <param name="quantity">Количество</param>
-        private ProductStock(Guid id, Guid productId, int size, int quantity) {
+        /// <param name="purchasePrice">Цена закупки</param>
+        private ProductStock(Guid id, Guid productId, int size, int quantity, double purchasePrice) {
             Id = id;
             ProductId = productId;
             Size = size;
             Quantity = quantity;
+            PurchasePrice = purchasePrice;
         }
 
         /// <summary>
@@ -36,6 +38,11 @@ namespace ShoeShop.Models {
         /// Количество
         /// </summary>
         public int Quantity { get; private set; }
+
+        /// <summary>
+        /// Цена закупки
+        /// </summary>
+        public double PurchasePrice { get; private set; }
 
         /// <summary>
         /// Товар
@@ -71,14 +78,24 @@ namespace ShoeShop.Models {
         }
 
         /// <summary>
+        /// Установить цену закупки
+        /// </summary>
+        /// <param name="purchasePrice">Новая цена закупки</param>
+        public void SetPurchasePrice(double purchasePrice) {
+            if (purchasePrice < 0) throw new ArgumentException("Цена не может быть отрицательной");
+            PurchasePrice = purchasePrice;
+        }
+
+        /// <summary>
         /// Создать запись остатков
         /// </summary>
         /// <param name="productId">Идентификатор товара</param>
         /// <param name="size">Размер</param>
         /// <param name="quantity">Количество</param>
+        /// <param name="purchasePrice">Цена закупки</param>
         /// <returns>Новая запись остатков</returns>
-        public static ProductStock Create(Guid productId, int size, int quantity) {
-            return new ProductStock(Guid.NewGuid(), productId, size, quantity);
+        public static ProductStock Create(Guid productId, int size, int quantity, double purchasePrice = 0) {
+            return new ProductStock(Guid.NewGuid(), productId, size, quantity, purchasePrice);
         }
     }
 }

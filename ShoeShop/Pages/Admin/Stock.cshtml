@@ -91,6 +91,10 @@
                         <label class="form-label">Количество</label>
                         <input type="number" name="quantity" class="form-control" min="1" required>
                     </div>
+                    <div class="mb-3">
+                        <label class="form-label">Цена закупки (руб.)</label>
+                        <input type="number" name="purchasePrice" class="form-control" min="0" step="0.01" placeholder="0.00">
+                    </div>
                     <button type="submit" class="btn btn-success">Добавить приход</button>
                 </form>
             </div>
@@ -145,7 +149,9 @@
                                     <th>Товар</th>
                                     <th>Размер</th>
                                     <th>Количество</th>
+                                    <th>Цена закупки</th>
                                     <th>Статус</th>
+                                    <th>Действия</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -157,7 +163,20 @@
                                         <td>@(product?.Name ?? "Неизвестный товар")</td>
                                         <td>@stock.Size</td>
                                         <td>@stock.Quantity</td>
+                                        <td>@(stock.PurchasePrice > 0 ? stock.PurchasePrice.ToString("F2") + " ₽" : "-")</td>
                                         <td class="@statusClass">@statusText</td>
+                                        <td>
+                                            <form method="post" asp-page-handler="UpdatePrice" class="d-inline">
+                                                <input type="hidden" name="productId" value="@stock.ProductId" />
+                                                <input type="hidden" name="size" value="@stock.Size" />
+                                                <div class="input-group input-group-sm" style="width: 120px;">
+                                                    <input type="number" name="purchasePrice" class="form-control" step="0.01" min="0" value="@stock.PurchasePrice" placeholder="0.00">
+                                                    <button type="submit" class="btn btn-outline-primary btn-sm">
+                                                        <i class="fas fa-check"></i>
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </td>
                                     </tr>
                                 }
                             </tbody>

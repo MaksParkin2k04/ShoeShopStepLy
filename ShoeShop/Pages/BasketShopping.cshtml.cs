@@ -29,7 +29,7 @@ namespace ShoeShop.Pages {
             foreach (BasketItem item in bs.Products) {
                 Product? product = products.FirstOrDefault(p => p.Id == item.ProductId);
                 if (product != null) {
-                    list.Add(new BasketProductInfo { Product = product, Size = item.Size });
+                    list.Add(new BasketProductInfo { Product = product, Size = item.Size, Quantity = item.Quantity });
                     validItems.Add(item);
                 }
             }
@@ -57,10 +57,24 @@ namespace ShoeShop.Pages {
 
             return RedirectToPage("/BasketShopping");
         }
+
+        public IActionResult OnPostUpdateQuantity(Guid productId, int size, int quantity) {
+            if (quantity <= 0) return RedirectToPage("/BasketShopping");
+            
+            BasketShopping bs = basketShopping.GetBasketShopping();
+            BasketItem? item = bs.Products.FirstOrDefault(p => p.ProductId == productId && p.Size == size);
+            if (item != null) {
+                item.Quantity = quantity;
+                basketShopping.SetBasketShopping(bs);
+            }
+
+            return RedirectToPage("/BasketShopping");
+        }
     }
 
     public class BasketProductInfo {
         public Product Product { get; set; }
         public int Size { get; set; }
+        public int Quantity { get; set; } = 1;
     }
 }
