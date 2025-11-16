@@ -1,0 +1,160 @@
+@page
+@model ShoeShop.Pages.ReturnsModel
+@{
+    ViewData["Title"] = "Возврат товара";
+}
+
+<div class="returns-page">
+    @* Hero Section *@
+    <div class="hero-section">
+        <div class="hero-content">
+            <div class="hero-badge">ВОЗВРАТ ТОВАРА</div>
+            <h1 class="hero-title">Легкий возврат</h1>
+            <p class="hero-subtitle">30 дней на возврат без лишних вопросов</p>
+            <div class="hero-features">
+                <span class="feature-item">✓ Быстрое оформление</span>
+                <span class="feature-item">✓ Полный возврат средств</span>
+                <span class="feature-item">✓ Простая процедура</span>
+            </div>
+        </div>
+        <div class="hero-decoration"></div>
+    </div>
+
+    @* Returns Content *@
+    <div class="returns-content">
+        <div class="row g-5">
+            <div class="col-lg-6">
+                <div class="returns-section">
+                    <h2 class="section-title">Условия возврата</h2>
+                    <p class="section-text">
+                        Мы заботимся о наших клиентах и предоставляем возможность вернуть товар 
+                        в течение 30 дней с момента покупки. Ваше удовлетворение — наш приоритет.
+                    </p>
+                    
+                    <div class="requirements-list">
+                        <div class="requirement-item">
+                            <div class="requirement-icon">
+                                <i class="fas fa-box"></i>
+                            </div>
+                            <div class="requirement-content">
+                                <h4>Оригинальная упаковка</h4>
+                                <p>Товар должен быть в оригинальной упаковке</p>
+                            </div>
+                        </div>
+                        <div class="requirement-item">
+                            <div class="requirement-icon">
+                                <i class="fas fa-tags"></i>
+                            </div>
+                            <div class="requirement-content">
+                                <h4>Все ярлыки и бирки</h4>
+                                <p>Сохранены все заводские ярлыки</p>
+                            </div>
+                        </div>
+                        <div class="requirement-item">
+                            <div class="requirement-icon">
+                                <i class="fas fa-receipt"></i>
+                            </div>
+                            <div class="requirement-content">
+                                <h4>Документ покупки</h4>
+                                <p>Чек или подтверждение заказа</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="returns-section">
+                    <h2 class="section-title">Как оформить возврат</h2>
+                    <div class="return-steps">
+                        <div class="step-card">
+                            <div class="step-header">
+                                <div class="step-icon">
+                                    <i class="fas fa-phone-alt"></i>
+                                </div>
+                                <div class="step-badge">Шаг 1</div>
+                            </div>
+                            <div class="step-body">
+                                <h4 class="step-title">Свяжитесь с нами</h4>
+                                <p class="step-description">Позвоните по телефону +7 (999) 123-45-67 или напишите на returns@steply.ru</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step-card">
+                            <div class="step-header">
+                                <div class="step-icon">
+                                    <i class="fas fa-edit"></i>
+                                </div>
+                                <div class="step-badge">Шаг 2</div>
+                            </div>
+                            <div class="step-body">
+                                <h4 class="step-title">Опишите причину</h4>
+                                <p class="step-description">Расскажите причину возврата и получите номер заявки</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step-card">
+                            <div class="step-header">
+                                <div class="step-icon">
+                                    <i class="fas fa-shipping-fast"></i>
+                                </div>
+                                <div class="step-badge">Шаг 3</div>
+                            </div>
+                            <div class="step-body">
+                                <h4 class="step-title">Отправьте товар</h4>
+                                <p class="step-description">Упакуйте товар и отправьте по указанному адресу</p>
+                            </div>
+                        </div>
+                        
+                        <div class="step-card">
+                            <div class="step-header">
+                                <div class="step-icon">
+                                    <i class="fas fa-money-bill-wave"></i>
+                                </div>
+                                <div class="step-badge">Шаг 4</div>
+                            </div>
+                            <div class="step-body">
+                                <h4 class="step-title">Получите возврат</h4>
+                                <p class="step-description">После проверки товара мы вернем полную стоимость</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @* Contact Section *@
+        <div class="contact-section">
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="contact-card">
+                        <h3 class="contact-title">Контакты для возврата</h3>
+                        <div class="contact-info">
+                            <div class="contact-item">
+                                <i class="fas fa-phone"></i>
+                                <span>+7 (999) 123-45-67</span>
+                            </div>
+                            <div class="contact-item">
+                                <i class="fas fa-envelope"></i>
+                                <span>returns@steply.ru</span>
+                            </div>
+                            <div class="contact-item">
+                                <i class="fas fa-clock"></i>
+                                <span>Пн-Вс: 9:00 - 21:00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="contact-card">
+                        <h3 class="contact-title">Важная информация</h3>
+                        <p class="info-text">
+                            Стоимость обратной доставки оплачивается покупателем, 
+                            за исключением случаев брака или ошибки магазина. 
+                            Возврат средств происходит в течение 3-5 рабочих дней.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

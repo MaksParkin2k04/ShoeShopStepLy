@@ -35,6 +35,9 @@ namespace ShoeShop.Data {
             modelBuilder.Entity<OrderDetail>().ToTable(o => o.HasCheckConstraint("ValidPrice", $"{nameof(OrderDetail.Price)} > 0"));
 
             modelBuilder.Entity<Order>(o => {
+                o.Property(p => p.PaymentType).IsRequired();
+                o.Property(p => p.PaymentDate);
+                
                 o.OwnsOne(p => p.Recipient, r => {
                     r.Property(p => p.Name).HasColumnName("RecipientName").IsRequired().HasMaxLength(50);
                     r.Property(p => p.City).HasColumnName("City").IsRequired().HasMaxLength(50);

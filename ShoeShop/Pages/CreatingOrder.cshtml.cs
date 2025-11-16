@@ -21,6 +21,7 @@ namespace ShoeShop.Pages {
         private readonly IBasketShoppingService basketShopping;
         private readonly StockService stockService;
 
+
         public IEnumerable<Product>? Products { get; private set; }
         public List<BasketProductInfo> BasketItems { get; private set; } = new List<BasketProductInfo>();
 
@@ -76,7 +77,7 @@ namespace ShoeShop.Pages {
             ApplicationUser? user = await userManager.GetUserAsync(User);
 
             OrderRecipient recipient = OrderRecipient.Create(name ?? "", city ?? "", street ?? "", house ?? "", apartment ?? "", phone ?? "");
-            Order order = Order.Create(user!.Id, DateTime.Now, coment ?? "", recipient, orderDetails);
+            Order order = Order.Create(user!.Id, DateTime.Now, coment ?? "", recipient, orderDetails, PaymentType.Cash);
 
             await repository.CreateOrder(order);
             

@@ -12,12 +12,14 @@
         /// <param name="createdDate">Дата создания заказа</param>
         /// <param name="coment">Коментарий к заказу</param>
         /// <param name="status">Статус заказа</param>
-        private Order(Guid id, Guid customerId, DateTime createdDate, string? coment, OrderStatus status) {
+        /// <param name="paymentType">Тип оплаты</param>
+        private Order(Guid id, Guid customerId, DateTime createdDate, string? coment, OrderStatus status, PaymentType paymentType) {
             Id = id;
             CustomerId = customerId;
             CreatedDate = createdDate;
             Coment = coment;
             Status = status;
+            PaymentType = paymentType;
         }
 
         //private OrderRecipient? recipient;
@@ -51,10 +53,21 @@
         /// Статус заказа
         /// </summary>
         public OrderStatus Status { get; private set; }
+        /// <summary>
+        /// Тип оплаты
+        /// </summary>
+        public PaymentType PaymentType { get; private set; }
+        /// <summary>
+        /// Дата оплаты
+        /// </summary>
+        public DateTime? PaymentDate { get; private set; }
 
         public void SetStatus(OrderStatus status) {
             if (Status == OrderStatus.Completed) { throw new ArgumentOutOfRangeException("status", "Нельзя изменить статус выполненого заказа"); }
             Status = status;
+            if (status == OrderStatus.Paid) {
+                PaymentDate = DateTime.Now;
+            }
         }
 
         /// <summary>
@@ -65,9 +78,10 @@
         /// <param name="coment">Коментарий к заказу</param>
         /// <param name="recipient">Получатель заказа</param>
         /// <param name="orderDetails">Состав заказа</param>
+        /// <param name="paymentType">Тип оплаты</param>
         /// <returns>Объект содержащий информацию о заказе</returns>
-        public static Order Create(Guid customerId, DateTime createdDate, string? coment, OrderRecipient recipient, IEnumerable<OrderDetail> orderDetails) {
-            Order order = new Order(Guid.Empty, customerId, createdDate, coment, OrderStatus.Created);
+        public static Order Create(Guid customerId, DateTime createdDate, string? coment, OrderRecipient recipient, IEnumerable<OrderDetail> orderDetails, PaymentType paymentType = PaymentType.Cash) {
+            Order order = new Order(Guid.Empty, customerId, createdDate, coment, OrderStatus.Created, paymentType);
             order.Recipient = recipient;
             order.orderDetails = orderDetails != null ? new List<OrderDetail>(orderDetails) : new List<OrderDetail>();
             return order;

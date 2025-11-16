@@ -1,0 +1,141 @@
+@page
+@model ShoeShop.Pages.WarrantyModel
+@{
+    ViewData["Title"] = "Гарантия";
+}
+
+<div class="warranty-page">
+    @* Hero Section *@
+    <div class="hero-section">
+        <div class="hero-content">
+            <div class="hero-badge">ГАРАНТИЯ</div>
+            <h1 class="hero-title">Качество гарантировано</h1>
+            <p class="hero-subtitle">Полная гарантия на всю обувь</p>
+            <div class="hero-features">
+                <span class="feature-item">✓ До 60 дней гарантии</span>
+                <span class="feature-item">✓ Бесплатная замена</span>
+                <span class="feature-item">✓ Полный возврат</span>
+            </div>
+        </div>
+        <div class="hero-decoration"></div>
+    </div>
+
+    @* Warranty Content *@
+    <div class="warranty-content">
+        <div class="row g-5">
+            <div class="col-lg-6">
+                <div class="warranty-section">
+                    <h2 class="section-title">Сроки гарантии</h2>
+                    <p class="section-text">
+                        Мы предоставляем гарантию на всю реализуемую обувь 
+                        в соответствии с действующим законодательством РФ.
+                    </p>
+                    
+                    <div class="warranty-periods">
+                        <div class="period-item">
+                            <div class="period-icon">
+                                <i class="fas fa-shoe-prints"></i>
+                            </div>
+                            <div class="period-content">
+                                <h4>Кожаная обувь</h4>
+                                <p>60 дней гарантии</p>
+                            </div>
+                        </div>
+                        <div class="period-item">
+                            <div class="period-icon">
+                                <i class="fas fa-running"></i>
+                            </div>
+                            <div class="period-content">
+                                <h4>Спортивная обувь</h4>
+                                <p>45 дней гарантии</p>
+                            </div>
+                        </div>
+                        <div class="period-item">
+                            <div class="period-icon">
+                                <i class="fas fa-child"></i>
+                            </div>
+                            <div class="period-content">
+                                <h4>Детская обувь</h4>
+                                <p>30 дней гарантии</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="warranty-section">
+                    <h2 class="section-title">Что покрывает гарантия</h2>
+                    <div class="coverage-list">
+                        <div class="coverage-item covered">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Дефекты материалов</span>
+                        </div>
+                        <div class="coverage-item covered">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Производственные дефекты</span>
+                        </div>
+                        <div class="coverage-item covered">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Нарушение целостности швов</span>
+                        </div>
+                        <div class="coverage-item covered">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Отклеивание подошвы</span>
+                        </div>
+                    </div>
+                    
+                    <h3 class="mt-4">Не покрывается гарантией:</h3>
+                    <div class="coverage-list">
+                        <div class="coverage-item not-covered">
+                            <i class="fas fa-times-circle"></i>
+                            <span>Механические повреждения</span>
+                        </div>
+                        <div class="coverage-item not-covered">
+                            <i class="fas fa-times-circle"></i>
+                            <span>Естественный износ</span>
+                        </div>
+                        <div class="coverage-item not-covered">
+                            <i class="fas fa-times-circle"></i>
+                            <span>Неправильный уход</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @* Contact Section *@
+        <div class="contact-section">
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="contact-card">
+                        <h3 class="contact-title">Гарантийный отдел</h3>
+                        <div class="contact-info">
+                            <div class="contact-item">
+                                <i class="fas fa-phone"></i>
+                                <span>+7 (999) 123-45-67</span>
+                            </div>
+                            <div class="contact-item">
+                                <i class="fas fa-envelope"></i>
+                                <span>warranty@steply.ru</span>
+                            </div>
+                            <div class="contact-item">
+                                <i class="fas fa-clock"></i>
+                                <span>Пн-Пт: 9:00 - 18:00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="contact-card">
+                        <h3 class="contact-title">Гарантийное обслуживание</h3>
+                        <p class="info-text">
+                            При обнаружении брака в гарантийный период мы бесплатно 
+                            заменим товар или вернем полную стоимость. 
+                            Ваше удовлетворение — наш приоритет.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

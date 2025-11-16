@@ -35,6 +35,7 @@ namespace ShoeShop {
             builder.Services.AddScoped<StockService>();
             builder.Services.AddScoped<SalesStatisticsService>();
             builder.Services.AddScoped<IBasketShoppingService, BasketShoppingCookies>();
+            builder.Services.AddHttpClient<YooKassaService>();
 
             builder.Services.Configure<IdentityOptions>(options => {
                 // Параметры для требований к паролю..

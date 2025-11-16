@@ -1,0 +1,125 @@
+@page
+@model ShoeShop.Pages.TermsModel
+@{
+    ViewData["Title"] = "Пользовательское соглашение";
+}
+
+<div class="terms-page">
+    @* Hero Section *@
+    <div class="hero-section">
+        <div class="hero-content">
+            <div class="hero-badge">ПОЛЬЗОВАТЕЛЬСКОЕ СОГЛАШЕНИЕ</div>
+            <h1 class="hero-title">Правила использования</h1>
+            <p class="hero-subtitle">Общие условия работы с нашим магазином</p>
+            <div class="hero-features">
+                <span class="feature-item">✓ Прозрачные условия</span>
+                <span class="feature-item">✓ Честные отношения</span>
+                <span class="feature-item">✓ Защита прав</span>
+            </div>
+        </div>
+        <div class="hero-decoration"></div>
+    </div>
+
+    @* Terms Content *@
+    <div class="terms-content">
+        <div class="row g-5">
+            <div class="col-lg-6">
+                <div class="terms-section">
+                    <h2 class="section-title">Основные условия</h2>
+                    <p class="section-text">
+                        Используя наш сайт, вы соглашаетесь с условиями данного соглашения. 
+                        Мы стремимся к честным и прозрачным отношениям с каждым клиентом.
+                    </p>
+                    
+                    <div class="terms-list">
+                        <div class="term-item">
+                            <div class="term-icon">
+                                <i class="fas fa-user-check"></i>
+                            </div>
+                            <div class="term-content">
+                                <h4>Регистрация</h4>
+                                <p>Для оформления заказов необходима регистрация с достоверными данными</p>
+                            </div>
+                        </div>
+                        <div class="term-item">
+                            <div class="term-icon">
+                                <i class="fas fa-shopping-cart"></i>
+                            </div>
+                            <div class="term-content">
+                                <h4>Заказы и оплата</h4>
+                                <p>Оплата при получении, цены включают НДС</p>
+                            </div>
+                        </div>
+                        <div class="term-item">
+                            <div class="term-icon">
+                                <i class="fas fa-truck"></i>
+                            </div>
+                            <div class="term-content">
+                                <h4>Доставка</h4>
+                                <p>Доставка по РФ в течение 1-7 дней</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="terms-section">
+                    <h2 class="section-title">Ответственность сторон</h2>
+                    <div class="responsibility-list">
+                        <div class="responsibility-item">
+                            <h4>Обязанности магазина:</h4>
+                            <ul>
+                                <li>Предоставлять качественные товары</li>
+                                <li>Обеспечивать своевременную доставку</li>
+                                <li>Предоставлять гарантию на товары</li>
+                            </ul>
+                        </div>
+                        <div class="responsibility-item">
+                            <h4>Обязанности покупателя:</h4>
+                            <ul>
+                                <li>Предоставлять достоверную информацию</li>
+                                <li>Оплачивать заказы в срок</li>
+                                <li>Соблюдать условия соглашения</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @* Contact Section *@
+        <div class="contact-section">
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="contact-card">
+                        <h3 class="contact-title">Контакты по вопросам соглашения</h3>
+                        <div class="contact-info">
+                            <div class="contact-item">
+                                <i class="fas fa-phone"></i>
+                                <span>+7 (999) 123-45-67</span>
+                            </div>
+                            <div class="contact-item">
+                                <i class="fas fa-envelope"></i>
+                                <span>legal@steply.ru</span>
+                            </div>
+                            <div class="contact-item">
+                                <i class="fas fa-clock"></i>
+                                <span>Пн-Пт: 9:00 - 18:00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="contact-card">
+                        <h3 class="contact-title">Важная информация</h3>
+                        <p class="info-text">
+                            Мы можем изменять условия соглашения. Актуальная версия 
+                            всегда размещена на нашем сайте. Споры решаются в соответствии 
+                            с законодательством РФ. Дата вступления в силу: 01.01.2024
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

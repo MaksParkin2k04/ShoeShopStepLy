@@ -7,6 +7,7 @@
     Dictionary<string, string> statusFilterDictionary = new Dictionary<string, string>(new KeyValuePair<string, string>[] {
         new KeyValuePair<string, string>("Аll", "Все"),
         new KeyValuePair<string, string>("Created", "Созданные"),
+        new KeyValuePair<string, string>("Paid", "Оплаченные"),
         new KeyValuePair<string, string>("Processing", "В обработке"),
         new KeyValuePair<string, string>("Completed", "Выполненные"),
         new KeyValuePair<string, string>("Canceled", "Отмененные")
@@ -140,26 +141,42 @@
                                     </div>
                                 </td>
                                 <td class="order-status">
-                                    <span class="status-badge status-@order.Status.ToString().ToLower()">
-                                        @switch (order.Status) {
-                                            case OrderStatus.Created:
-                                                <i class="fas fa-plus-circle me-1"></i>
-                                                <span>Создан</span>
-                                                break;
-                                            case OrderStatus.Processing:
-                                                <i class="fas fa-clock me-1"></i>
-                                                <span>В обработке</span>
-                                                break;
-                                            case OrderStatus.Completed:
-                                                <i class="fas fa-check-circle me-1"></i>
-                                                <span>Выполнен</span>
-                                                break;
-                                            case OrderStatus.Canceled:
-                                                <i class="fas fa-times-circle me-1"></i>
-                                                <span>Отменен</span>
-                                                break;
-                                        }
-                                    </span>
+                                    <div class="status-info">
+                                        <span class="status-badge status-@order.Status.ToString().ToLower()">
+                                            @switch (order.Status) {
+                                                case OrderStatus.Created:
+                                                    <i class="fas fa-plus-circle me-1"></i>
+                                                    <span>Создан</span>
+                                                    break;
+                                                case OrderStatus.Paid:
+                                                    <i class="fas fa-credit-card me-1"></i>
+                                                    <span>Оплачен</span>
+                                                    break;
+                                                case OrderStatus.Processing:
+                                                    <i class="fas fa-clock me-1"></i>
+                                                    <span>В обработке</span>
+                                                    break;
+                                                case OrderStatus.Completed:
+                                                    <i class="fas fa-check-circle me-1"></i>
+                                                    <span>Выполнен</span>
+                                                    break;
+                                                case OrderStatus.Canceled:
+                                                    <i class="fas fa-times-circle me-1"></i>
+                                                    <span>Отменен</span>
+                                                    break;
+                                            }
+                                        </span>
+                                        <div class="payment-info">
+                                            @if (order.PaymentType == PaymentType.Online) {
+                                                <small class="text-primary">Онлайн оплата</small>
+                                            } else {
+                                                <small class="text-muted">Оплата при получении</small>
+                                            }
+                                            @if (order.PaymentDate.HasValue) {
+                                                <small class="text-success d-block">Оплачено: @order.PaymentDate.Value.ToString("dd.MM.yyyy HH:mm")</small>
+                                            }
+                                        </div>
+                                    </div>
                                 </td>
                                 <td class="order-actions">
                                     <div class="action-buttons">

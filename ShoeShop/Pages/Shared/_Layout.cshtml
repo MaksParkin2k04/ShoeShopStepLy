@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="~/styles/style.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/styles/sportmaster-style.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/styles/stock-styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/styles/returns-steps.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/ShoeShop.styles.css" asp-append-version="true" />
     @await RenderSectionAsync("Styles", required: false)
 </head>
@@ -48,7 +49,56 @@
         </div>
     </main>
 
-
+    <footer class="bg-light border-top mt-5">
+        <div class="container py-5">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5 class="mb-3 text-dark">Магазин обуви StepLy</h5>
+                    <p class="text-muted">Качественная обувь для всей семьи. Широкий ассортимент, доступные цены, быстрая доставка.</p>
+                    <div class="social-links">
+                        <a href="#" class="text-primary me-3"><i class="fab fa-vk"></i></a>
+                        <a href="#" class="text-primary me-3"><i class="fab fa-telegram"></i></a>
+                        <a href="#" class="text-primary me-3"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <h6 class="mb-3 text-dark">Каталог</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="text-muted text-decoration-none">Мужская обувь</a></li>
+                        <li><a href="#" class="text-muted text-decoration-none">Женская обувь</a></li>
+                        <li><a href="#" class="text-muted text-decoration-none">Детская обувь</a></li>
+                        <li><a href="#" class="text-muted text-decoration-none">Спортивная обувь</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-2">
+                    <h6 class="mb-3 text-dark">Информация</h6>
+                    <ul class="list-unstyled">
+                        <li><a asp-page="/About" class="text-muted text-decoration-none">О нас</a></li>
+                        <li><a asp-page="/Delivery" class="text-muted text-decoration-none">Доставка</a></li>
+                        <li><a asp-page="/Returns" class="text-muted text-decoration-none">Возврат</a></li>
+                        <li><a asp-page="/Warranty" class="text-muted text-decoration-none">Гарантия</a></li>
+                        <li><a asp-page="/Privacy" class="text-muted text-decoration-none">Конфиденциальность</a></li>
+                        <li><a asp-page="/Terms" class="text-muted text-decoration-none">Пользовательское соглашение</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h6 class="mb-3 text-dark">Контакты</h6>
+                    <ul class="list-unstyled text-muted">
+                        <li><i class="fas fa-phone me-2"></i>+7 (999) 123-45-67</li>
+                        <li><i class="fas fa-envelope me-2"></i>info@steply.ru</li>
+                        <li><i class="fas fa-map-marker-alt me-2"></i>г. Москва, ул. Примерная, д. 1</li>
+                        <li><i class="fas fa-clock me-2"></i>Пн-Вс: 9:00 - 21:00</li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="my-4">
+            <div class="row align-items-center">
+                <div class="col-12 text-center">
+                    <p class="text-muted mb-0">&copy; 2024 StepLy. Все права защищены.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
 
     <script src="~/lib/jquery/jquery.min.js"></script>
     <script src="~/lib/bootstrap/js/bootstrap.bundle.min.js"></script>

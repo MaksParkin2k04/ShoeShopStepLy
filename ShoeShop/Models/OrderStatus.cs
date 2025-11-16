@@ -5,6 +5,10 @@
         /// </summary>
         Created,
         /// <summary>
+        /// Оплачен
+        /// </summary>
+        Paid,
+        /// <summary>
         /// Обрабатывается
         /// </summary>
         Processing,

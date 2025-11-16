@@ -1,14 +1,173 @@
-﻿@page
+@page
 @model PrivacyModel
 @{
-    ViewData["Title"] = "Приватная страница";
+    ViewData["Title"] = "Политика конфиденциальности";
 }
 
-@* Заголовок *@
-<div class="d-flex flex-row-reverse p-1 mt-3">
-    <h1>@ViewData["Title"]</h1>
-</div>
+<div class="privacy-page">
+    @* Hero Section *@
+    <div class="hero-section">
+        <div class="hero-content">
+            <div class="hero-badge">КОНФИДЕНЦИАЛЬНОСТЬ</div>
+            <h1 class="hero-title">Защита ваших данных</h1>
+            <p class="hero-subtitle">Мы серьезно относимся к безопасности ваших персональных данных</p>
+            <div class="hero-features">
+                <span class="feature-item">✓ Полная конфиденциальность</span>
+                <span class="feature-item">✓ Современная защита</span>
+                <span class="feature-item">✓ Соответствие законам РФ</span>
+            </div>
+        </div>
+        <div class="hero-decoration"></div>
+    </div>
 
-<div class="row">
-<p>На этой странице подробно изложена политика конфиденциальности вашего сайта.</p>
+    @* Privacy Content *@
+    <div class="privacy-content">
+        <div class="row g-5">
+            <div class="col-lg-6">
+                <div class="privacy-section">
+                    <h2 class="section-title">Какие данные мы собираем</h2>
+                    <p class="section-text">
+                        Мы собираем только необходимую информацию для обработки ваших заказов 
+                        и улучшения качества обслуживания.
+                    </p>
+                    
+                    <div class="data-list">
+                        <div class="data-item">
+                            <div class="data-icon">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="data-content">
+                                <h4>Личные данные</h4>
+                                <p>Имя, фамилия, номер телефона</p>
+                            </div>
+                        </div>
+                        <div class="data-item">
+                            <div class="data-icon">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <div class="data-content">
+                                <h4>Контактная информация</h4>
+                                <p>Адрес электронной почты</p>
+                            </div>
+                        </div>
+                        <div class="data-item">
+                            <div class="data-icon">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </div>
+                            <div class="data-content">
+                                <h4>Адрес доставки</h4>
+                                <p>Информация для доставки заказов</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="privacy-section">
+                    <h2 class="section-title">Как мы защищаем данные</h2>
+                    <div class="protection-list">
+                        <div class="protection-item">
+                            <i class="fas fa-shield-alt"></i>
+                            <div>
+                                <h4>Шифрование данных</h4>
+                                <p>Все данные передаются по защищенному соединению</p>
+                            </div>
+                        </div>
+                        <div class="protection-item">
+                            <i class="fas fa-lock"></i>
+                            <div>
+                                <h4>Ограниченный доступ</h4>
+                                <p>Доступ к данным имеют только уполномоченные сотрудники</p>
+                            </div>
+                        </div>
+                        <div class="protection-item">
+                            <i class="fas fa-server"></i>
+                            <div>
+                                <h4>Безопасные серверы</h4>
+                                <p>Данные хранятся на защищенных серверах</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @* Rights Section *@
+        <div class="rights-section">
+            <h2 class="section-title text-center">Ваши права</h2>
+            <div class="row g-4">
+                <div class="col-md-3">
+                    <div class="right-item">
+                        <div class="right-icon">
+                            <i class="fas fa-eye"></i>
+                        </div>
+                        <h4>Доступ к данным</h4>
+                        <p>Вы можете запросить информацию о ваших данных</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="right-item">
+                        <div class="right-icon">
+                            <i class="fas fa-edit"></i>
+                        </div>
+                        <h4>Исправление</h4>
+                        <p>Право на исправление неточных данных</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="right-item">
+                        <div class="right-icon">
+                            <i class="fas fa-trash"></i>
+                        </div>
+                        <h4>Удаление</h4>
+                        <p>Право на удаление ваших данных</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="right-item">
+                        <div class="right-icon">
+                            <i class="fas fa-ban"></i>
+                        </div>
+                        <h4>Отзыв согласия</h4>
+                        <p>Право отозвать согласие на обработку</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @* Contact Section *@
+        <div class="contact-section">
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="contact-card">
+                        <h3 class="contact-title">Контакты по вопросам данных</h3>
+                        <div class="contact-info">
+                            <div class="contact-item">
+                                <i class="fas fa-phone"></i>
+                                <span>+7 (999) 123-45-67</span>
+                            </div>
+                            <div class="contact-item">
+                                <i class="fas fa-envelope"></i>
+                                <span>privacy@steply.ru</span>
+                            </div>
+                            <div class="contact-item">
+                                <i class="fas fa-clock"></i>
+                                <span>Пн-Пт: 9:00 - 18:00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="contact-card">
+                        <h3 class="contact-title">Обновление политики</h3>
+                        <p class="info-text">
+                            Мы можем обновлять данную политику конфиденциальности. 
+                            Актуальная версия всегда размещена на нашем сайте. 
+                            Дата последнего обновления: 01.01.2024
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
