@@ -1,0 +1,133 @@
+@page "/404"
+@model ShoeShop.Pages.NotFoundModel
+@{
+    ViewData["Title"] = "Страница не найдена";
+}
+
+<div class="error-page">
+    <div class="error-container">
+        <div class="error-icon">
+            <i class="fas fa-search"></i>
+        </div>
+        <div class="error-content">
+            <h1 class="error-title">404</h1>
+            <h2 class="error-subtitle">Страница не найдена</h2>
+            <p class="error-message">
+                Запрашиваемая страница не существует или была перемещена.<br>
+                Возможно, вы перешли по устаревшей ссылке или ввели неверный адрес.
+            </p>
+            
+            <div class="error-suggestions">
+                <h5>Что можно сделать:</h5>
+                <ul class="suggestions-list">
+                    <li>Проверьте правильность написания адреса</li>
+                    <li>Воспользуйтесь поиском по сайту</li>
+                    <li>Перейдите на главную страницу</li>
+                </ul>
+            </div>
+            
+            <div class="error-actions">
+                <a asp-page="/Index" class="btn btn-primary">
+                    <i class="fas fa-home me-2"></i>На главную
+                </a>
+                <button onclick="history.back()" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Назад
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.error-page {
+    min-height: 70vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+}
+
+.error-container {
+    text-align: center;
+    max-width: 600px;
+    width: 100%;
+}
+
+.error-icon {
+    font-size: 5rem;
+    color: #6c757d;
+    margin-bottom: 20px;
+}
+
+.error-title {
+    font-size: 4rem;
+    font-weight: 700;
+    color: #dc3545;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+}
+
+.error-subtitle {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.error-message {
+    font-size: 1.1rem;
+    color: #666;
+    margin-bottom: 30px;
+    line-height: 1.6;
+}
+
+.error-suggestions {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 30px;
+    text-align: left;
+}
+
+.error-suggestions h5 {
+    color: #333;
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+.suggestions-list {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.suggestions-list li {
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.error-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+@@media (max-width: 768px) {
+    .error-title {
+        font-size: 3rem;
+    }
+    
+    .error-subtitle {
+        font-size: 1.5rem;
+    }
+    
+    .error-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .error-actions .btn {
+        width: 200px;
+    }
+}
+</style>
