@@ -155,6 +155,15 @@ namespace ShoeShop {
                     // Таблица уже существует
                 }
                 
+                // Добавляем колонку AdminComments в таблицу Orders
+                try {
+                    context.Database.ExecuteSqlRaw(
+                        "IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'Orders' AND COLUMN_NAME = 'AdminComments') " +
+                        "ALTER TABLE Orders ADD AdminComments nvarchar(max) NULL");
+                } catch {
+                    // Колонка уже существует
+                }
+                
                 // Инициализируем тестовые остатки
                 try {
                     await ShoeShop.Data.Initialization.StockInitializer.InitializeAsync(context, stockService);

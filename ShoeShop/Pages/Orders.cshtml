@@ -112,13 +112,41 @@
                                             <i class="fas fa-plus-circle me-1"></i>
                                             <span>Создан</span>
                                             break;
+                                        case OrderStatus.Paid:
+                                            <i class="fas fa-credit-card me-1"></i>
+                                            <span>Оплачен</span>
+                                            break;
                                         case OrderStatus.Processing:
-                                            <i class="fas fa-clock me-1"></i>
+                                            <i class="fas fa-cogs me-1"></i>
                                             <span>В обработке</span>
+                                            break;
+                                        case OrderStatus.AwaitingShipment:
+                                            <i class="fas fa-clock me-1"></i>
+                                            <span>Ожидает отправления</span>
+                                            break;
+                                        case OrderStatus.Shipped:
+                                            <i class="fas fa-shipping-fast me-1"></i>
+                                            <span>Отправлен</span>
+                                            break;
+                                        case OrderStatus.InTransit:
+                                            <i class="fas fa-truck me-1"></i>
+                                            <span>В пути</span>
+                                            break;
+                                        case OrderStatus.Arrived:
+                                            <i class="fas fa-map-marker-alt me-1"></i>
+                                            <span>Прибыл</span>
+                                            break;
+                                        case OrderStatus.ReadyForPickup:
+                                            <i class="fas fa-hand-paper me-1"></i>
+                                            <span>Готов к выдаче</span>
                                             break;
                                         case OrderStatus.Completed:
                                             <i class="fas fa-check-circle me-1"></i>
                                             <span>Выполнен</span>
+                                            break;
+                                        case OrderStatus.Returned:
+                                            <i class="fas fa-undo me-1"></i>
+                                            <span>Возвращен</span>
                                             break;
                                         case OrderStatus.Canceled:
                                             <i class="fas fa-times-circle me-1"></i>
@@ -181,10 +209,19 @@
                                 <i class="fas fa-box me-1"></i>
                                 Товаров: @order.OrderDetails.Count
                             </div>
-                            <a asp-page="Order" asp-route-orderId="@order.Id" class="btn btn-outline-primary btn-sm">
-                                <i class="fas fa-eye me-1"></i>
-                                Подробнее
-                            </a>
+                            <div class="order-actions">
+                                <a asp-page="Order" asp-route-orderId="@order.Id" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-eye me-1"></i>
+                                    Подробнее
+                                </a>
+                                @if (order.PaymentDate.HasValue || order.Status == OrderStatus.Paid)
+                                {
+                                    <a href="/Receipt/@order.Id" target="_blank" class="btn btn-success btn-sm ms-2">
+                                        <i class="fas fa-receipt me-1"></i>
+                                        Чек
+                                    </a>
+                                }
+                            </div>
                         </div>
                     </div>
                 }

@@ -71,8 +71,12 @@
             <div class="card-body">
                 <form method="post" asp-page-handler="AddStock">
                     <div class="mb-3">
+                        <label class="form-label">Поиск товара</label>
+                        <input type="text" id="addStockSearch" class="form-control mb-2" placeholder="Введите название товара для поиска">
+                    </div>
+                    <div class="mb-3">
                         <label class="form-label">Товар</label>
-                        <select name="productId" class="form-select" required>
+                        <select name="productId" id="addStockSelect" class="form-select" required>
                             <option value="">Выберите товар</option>
                             @foreach (var product in Model.Products) {
                                 <option value="@product.Id">@product.Name</option>
@@ -109,8 +113,12 @@
             <div class="card-body">
                 <form method="post" asp-page-handler="ReduceStock">
                     <div class="mb-3">
+                        <label class="form-label">Поиск товара</label>
+                        <input type="text" id="reduceStockSearch" class="form-control mb-2" placeholder="Введите название товара для поиска">
+                    </div>
+                    <div class="mb-3">
                         <label class="form-label">Товар</label>
-                        <select name="productId" class="form-select" required>
+                        <select name="productId" id="reduceStockSelect" class="form-select" required>
                             <option value="">Выберите товар</option>
                             @foreach (var product in Model.Products) {
                                 <option value="@product.Id">@product.Name</option>
@@ -189,3 +197,55 @@
         </div>
     </div>
 </div>
+
+<script>
+// Функция поиска для блока "Приход товара"
+document.getElementById('addStockSearch').addEventListener('input', function() {
+    const searchValue = this.value.toLowerCase();
+    const select = document.getElementById('addStockSelect');
+    const options = select.querySelectorAll('option');
+    
+    options.forEach(option => {
+        if (option.value === '') {
+            option.style.display = 'block';
+            return;
+        }
+        
+        const text = option.textContent.toLowerCase();
+        option.style.display = text.includes(searchValue) ? 'block' : 'none';
+    });
+    
+    // Сбрасываем выбор если текущий товар не соответствует поиску
+    if (select.selectedIndex > 0) {
+        const selectedOption = select.options[select.selectedIndex];
+        if (selectedOption.style.display === 'none') {
+            select.selectedIndex = 0;
+        }
+    }
+});
+
+// Функция поиска для блока "Списание товара"
+document.getElementById('reduceStockSearch').addEventListener('input', function() {
+    const searchValue = this.value.toLowerCase();
+    const select = document.getElementById('reduceStockSelect');
+    const options = select.querySelectorAll('option');
+    
+    options.forEach(option => {
+        if (option.value === '') {
+            option.style.display = 'block';
+            return;
+        }
+        
+        const text = option.textContent.toLowerCase();
+        option.style.display = text.includes(searchValue) ? 'block' : 'none';
+    });
+    
+    // Сбрасываем выбор если текущий товар не соответствует поиску
+    if (select.selectedIndex > 0) {
+        const selectedOption = select.options[select.selectedIndex];
+        if (selectedOption.style.display === 'none') {
+            select.selectedIndex = 0;
+        }
+    }
+});
+</script>

@@ -50,13 +50,41 @@
                         <i class="fas fa-plus-circle me-2"></i>
                         <span>Создан</span>
                         break;
+                    case OrderStatus.Paid:
+                        <i class="fas fa-credit-card me-2"></i>
+                        <span>Оплачен</span>
+                        break;
                     case OrderStatus.Processing:
-                        <i class="fas fa-clock me-2"></i>
+                        <i class="fas fa-cogs me-2"></i>
                         <span>В обработке</span>
+                        break;
+                    case OrderStatus.AwaitingShipment:
+                        <i class="fas fa-clock me-2"></i>
+                        <span>Ожидает отправления</span>
+                        break;
+                    case OrderStatus.Shipped:
+                        <i class="fas fa-shipping-fast me-2"></i>
+                        <span>Отправлен</span>
+                        break;
+                    case OrderStatus.InTransit:
+                        <i class="fas fa-truck me-2"></i>
+                        <span>В пути</span>
+                        break;
+                    case OrderStatus.Arrived:
+                        <i class="fas fa-map-marker-alt me-2"></i>
+                        <span>Прибыл</span>
+                        break;
+                    case OrderStatus.ReadyForPickup:
+                        <i class="fas fa-hand-paper me-2"></i>
+                        <span>Готов к выдаче</span>
                         break;
                     case OrderStatus.Completed:
                         <i class="fas fa-check-circle me-2"></i>
                         <span>Выполнен</span>
+                        break;
+                    case OrderStatus.Returned:
+                        <i class="fas fa-undo me-2"></i>
+                        <span>Возвращен</span>
                         break;
                     case OrderStatus.Canceled:
                         <i class="fas fa-times-circle me-2"></i>
@@ -132,6 +160,53 @@
                     </div>
                 }
             </div>
+            
+            @* Admin Comments *@
+            <div class="admin-comments-section">
+                <h3 class="section-title">
+                    <i class="fas fa-comments me-2"></i>
+                    Комментарии администратора
+                </h3>
+                
+                @if (Model.Order.AdminComments != null && Model.Order.AdminComments.Any())
+                {
+                    <div class="comments-list">
+                        @foreach (var comment in Model.Order.AdminComments)
+                        {
+                            @if (comment.Contains("Клиент:"))
+                            {
+                                <div class="customer-comment-admin">
+                                    <i class="fas fa-user me-2"></i>
+                                    @comment
+                                </div>
+                            }
+                            else
+                            {
+                                @* Комментарии администратора (со старыми и новыми) *@
+                                <div class="admin-comment">
+                                    <i class="fas fa-user-shield me-2"></i>
+                                    @comment
+                                </div>
+                            }
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted">Комментариев пока нет</p>
+                }
+                
+                <form asp-page="/Admin/OrderDetail" asp-page-handler="AddComment" method="post" class="add-comment-form mt-3">
+                    <input type="hidden" name="orderId" value="@Model.Order.Id" />
+                    <div class="input-group">
+                        <input type="text" name="comment" class="form-control" placeholder="Добавить комментарий..." required />
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-plus me-1"></i>
+                            Добавить
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
 
         @* Actions *@
@@ -157,30 +232,82 @@
                 </form>
             }
             
-            @if (Model.Order.Status != OrderStatus.Completed && Model.Order.Status != OrderStatus.Canceled) {
-                <div class="dropdown">
-                    <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                        <i class="fas fa-edit me-2"></i>
-                        Изменить статус
-                    </button>
+            <div class="dropdown">
+                <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    <i class="fas fa-edit me-2"></i>
+                    Изменить статус
+                </button>
                     <ul class="dropdown-menu">
-                        @if (Model.Order.Status != OrderStatus.Processing) {
-                            <li>
-                                <form asp-page="/Admin/OrderDetail" asp-page-handler="UpdateStatus" method="post" class="d-inline">
-                                    <input type="hidden" name="orderId" value="@Model.Order.Id" />
-                                    <input type="hidden" name="status" value="@((int)OrderStatus.Processing)" />
-                                    <button type="submit" class="dropdown-item">
-                                        <i class="fas fa-clock me-2"></i>В обработку
-                                    </button>
-                                </form>
-                            </li>
-                        }
+                        <li>
+                            <form asp-page="/Admin/OrderDetail" asp-page-handler="UpdateStatus" method="post" class="d-inline">
+                                <input type="hidden" name="orderId" value="@Model.Order.Id" />
+                                <input type="hidden" name="status" value="@((int)OrderStatus.Processing)" />
+                                <button type="submit" class="dropdown-item">
+                                    <i class="fas fa-cogs me-2"></i>В обработку
+                                </button>
+                            </form>
+                        </li>
+                        <li>
+                            <form asp-page="/Admin/OrderDetail" asp-page-handler="UpdateStatus" method="post" class="d-inline">
+                                <input type="hidden" name="orderId" value="@Model.Order.Id" />
+                                <input type="hidden" name="status" value="@((int)OrderStatus.AwaitingShipment)" />
+                                <button type="submit" class="dropdown-item">
+                                    <i class="fas fa-clock me-2"></i>Ожидает отправления
+                                </button>
+                            </form>
+                        </li>
+                        <li>
+                            <form asp-page="/Admin/OrderDetail" asp-page-handler="UpdateStatus" method="post" class="d-inline">
+                                <input type="hidden" name="orderId" value="@Model.Order.Id" />
+                                <input type="hidden" name="status" value="@((int)OrderStatus.Shipped)" />
+                                <button type="submit" class="dropdown-item">
+                                    <i class="fas fa-shipping-fast me-2"></i>Отправлен
+                                </button>
+                            </form>
+                        </li>
+                        <li>
+                            <form asp-page="/Admin/OrderDetail" asp-page-handler="UpdateStatus" method="post" class="d-inline">
+                                <input type="hidden" name="orderId" value="@Model.Order.Id" />
+                                <input type="hidden" name="status" value="@((int)OrderStatus.InTransit)" />
+                                <button type="submit" class="dropdown-item">
+                                    <i class="fas fa-truck me-2"></i>В пути
+                                </button>
+                            </form>
+                        </li>
+                        <li>
+                            <form asp-page="/Admin/OrderDetail" asp-page-handler="UpdateStatus" method="post" class="d-inline">
+                                <input type="hidden" name="orderId" value="@Model.Order.Id" />
+                                <input type="hidden" name="status" value="@((int)OrderStatus.Arrived)" />
+                                <button type="submit" class="dropdown-item">
+                                    <i class="fas fa-map-marker-alt me-2"></i>Прибыл
+                                </button>
+                            </form>
+                        </li>
+                        <li>
+                            <form asp-page="/Admin/OrderDetail" asp-page-handler="UpdateStatus" method="post" class="d-inline">
+                                <input type="hidden" name="orderId" value="@Model.Order.Id" />
+                                <input type="hidden" name="status" value="@((int)OrderStatus.ReadyForPickup)" />
+                                <button type="submit" class="dropdown-item">
+                                    <i class="fas fa-hand-paper me-2"></i>Готов к выдаче
+                                </button>
+                            </form>
+                        </li>
                         <li>
                             <form asp-page="/Admin/OrderDetail" asp-page-handler="UpdateStatus" method="post" class="d-inline">
                                 <input type="hidden" name="orderId" value="@Model.Order.Id" />
                                 <input type="hidden" name="status" value="@((int)OrderStatus.Completed)" />
                                 <button type="submit" class="dropdown-item">
                                     <i class="fas fa-check-circle me-2"></i>Выполнить
+                                </button>
+                            </form>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <form asp-page="/Admin/OrderDetail" asp-page-handler="UpdateStatus" method="post" class="d-inline">
+                                <input type="hidden" name="orderId" value="@Model.Order.Id" />
+                                <input type="hidden" name="status" value="@((int)OrderStatus.Returned)" />
+                                <button type="submit" class="dropdown-item text-warning">
+                                    <i class="fas fa-undo me-2"></i>Возврат
                                 </button>
                             </form>
                         </li>
@@ -195,7 +322,42 @@
                         </li>
                     </ul>
                 </div>
-            }
         </div>
     }
 </div>
+
+<style>
+.admin-comments-section {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 20px;
+}
+
+.comments-list {
+    margin-bottom: 20px;
+}
+
+.admin-comment {
+    background: white;
+    border-left: 4px solid #007bff;
+    padding: 10px 15px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.add-comment-form .input-group {
+    max-width: 600px;
+}
+
+.customer-comment-admin {
+    background: #e8f5e8;
+    border-left: 4px solid #28a745;
+    padding: 10px 15px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    font-size: 14px;
+    color: #155724;
+}
+</style>

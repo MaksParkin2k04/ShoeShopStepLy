@@ -1,0 +1,183 @@
+@page "/Receipt/{orderId:guid}"
+@model ShoeShop.Pages.ReceiptModel
+@{
+    ViewData["Title"] = "Чек";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Чек №@Model.Order?.Id</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+        }
+        .receipt {
+            border: 2px dashed #333;
+            padding: 20px;
+            background: #fafafa;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .company-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .receipt-info {
+            margin-bottom: 15px;
+            font-size: 12px;
+        }
+        .items {
+            margin-bottom: 15px;
+        }
+        .item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 12px;
+        }
+        .item-name {
+            flex: 1;
+        }
+        .item-price {
+            margin-left: 10px;
+        }
+        .total-section {
+            border-top: 1px solid #333;
+            padding-top: 10px;
+            margin-top: 15px;
+        }
+        .total-line {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 12px;
+        }
+        .total-final {
+            font-weight: bold;
+            font-size: 14px;
+            border-top: 1px solid #333;
+            padding-top: 5px;
+            margin-top: 5px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 10px;
+            border-top: 1px solid #333;
+            padding-top: 10px;
+        }
+        .print-btn {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 0 5px;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        @@media print {
+            .print-btn { display: none; }
+            body { margin: 0; padding: 0; }
+            .receipt { border: none; background: white; }
+        }
+    </style>
+</head>
+<body>
+    @if (Model.Order != null)
+    {
+        <div class="print-btn">
+            <button class="btn" onclick="window.print()">Печать чека</button>
+            <button class="btn" onclick="window.close()">Закрыть</button>
+        </div>
+
+        <div class="receipt">
+            <div class="header">
+                <div class="company-name">МАГАЗИН ОБУВИ STEPLY</div>
+                <div>ИНН: 1234567890</div>
+                <div>г. Москва, ул. Примерная, д. 1</div>
+                <div>Тел: +7 (999) 123-45-67</div>
+            </div>
+
+            <div class="receipt-info">
+                <div>ЧЕК № @Model.Order.Id.ToString().Substring(0, 8).ToUpper()</div>
+                <div>Дата: @Model.Order.CreatedDate.ToString("dd.MM.yyyy HH:mm")</div>
+                <div>Кассир: Система</div>
+                <div>Покупатель: @Model.Order.Recipient.Name</div>
+            </div>
+
+            <div class="items">
+                @foreach (var item in Model.Order.OrderDetails)
+                {
+                    <div class="item">
+                        <div class="item-name">
+                            @item.Name
+                            <br>Размер: @item.Size
+                        </div>
+                        <div class="item-price">@item.Price ₽</div>
+                    </div>
+                }
+            </div>
+
+            <div class="total-section">
+                <div class="total-line">
+                    <span>Товары (@Model.Order.OrderDetails.Count шт.)</span>
+                    <span>@Model.TotalAmount ₽</span>
+                </div>
+                
+                @if (Model.DiscountAmount > 0)
+                {
+                    <div class="total-line">
+                        <span>Скидка по промокоду</span>
+                        <span>-@Model.DiscountAmount ₽</span>
+                    </div>
+                }
+                
+                <div class="total-line">
+                    <span>Доставка</span>
+                    <span>@(Model.TotalAmount >= 5000 ? "Бесплатно" : "500 ₽")</span>
+                </div>
+                
+                <div class="total-line total-final">
+                    <span>ИТОГО К ОПЛАТЕ</span>
+                    <span>@Model.FinalAmount ₽</span>
+                </div>
+            </div>
+
+            <div class="footer">
+                <div>Способ оплаты: Наличные при получении</div>
+                <div>Спасибо за покупку!</div>
+                <div>Сохраните чек до получения товара</div>
+                <div style="margin-top: 10px;">
+                    ═══════════════════════════════
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div style="text-align: center; padding: 50px;">
+            <h2>Заказ не найден</h2>
+            <button class="btn" onclick="window.close()">Закрыть</button>
+        </div>
+    }
+</body>
+</html>

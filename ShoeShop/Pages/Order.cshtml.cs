@@ -22,5 +22,16 @@ namespace ShoeShop.Pages {
             await productRepository.UpdateOrder(order);
             return RedirectToPage("/Order", new { orderId = orderId });
         }
+        
+        public async Task<IActionResult> OnPostAddCustomerCommentAsync(Guid orderId, string comment) {
+            if (!string.IsNullOrEmpty(comment)) {
+                Order? order = await productRepository.GetOrder(orderId);
+                if (order != null) {
+                    order.AddCustomerComment(comment);
+                    await productRepository.UpdateOrder(order);
+                }
+            }
+            return RedirectToPage("/Order", new { orderId = orderId });
+        }
     }
 }

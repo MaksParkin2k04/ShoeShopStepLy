@@ -61,13 +61,26 @@
         /// Дата оплаты
         /// </summary>
         public DateTime? PaymentDate { get; private set; }
+        /// <summary>
+        /// Комментарии администратора
+        /// </summary>
+        public List<string>? AdminComments { get; private set; }
 
         public void SetStatus(OrderStatus status) {
-            if (Status == OrderStatus.Completed) { throw new ArgumentOutOfRangeException("status", "Нельзя изменить статус выполненого заказа"); }
             Status = status;
             if (status == OrderStatus.Paid) {
                 PaymentDate = DateTime.Now;
             }
+        }
+        
+        public void AddAdminComment(string comment) {
+            AdminComments = AdminComments ?? new List<string>();
+            AdminComments.Add($"[{DateTime.Now:dd.MM.yyyy HH:mm}] Администратор: {comment}");
+        }
+        
+        public void AddCustomerComment(string comment) {
+            AdminComments = AdminComments ?? new List<string>();
+            AdminComments.Add($"[{DateTime.Now:dd.MM.yyyy HH:mm}] Клиент: {comment}");
         }
 
         /// <summary>
