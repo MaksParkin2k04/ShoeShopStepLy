@@ -9,17 +9,19 @@ using ShoeShop.Services;
 namespace ShoeShop.Pages {
     [Authorize]
     public class CreatingOrderModel : PageModel {
-        public CreatingOrderModel(UserManager<ApplicationUser> userManager, IProductRepository repository, IBasketShoppingService basketShopping, StockService stockService) {
+        public CreatingOrderModel(UserManager<ApplicationUser> userManager, IProductRepository repository, IBasketShoppingService basketShopping, StockService stockService, PromoCodeService promoCodeService) {
             this.userManager = userManager;
             this.repository = repository;
             this.basketShopping = basketShopping;
             this.stockService = stockService;
+            this.promoCodeService = promoCodeService;
         }
 
         private UserManager<ApplicationUser> userManager;
         private IProductRepository repository;
         private readonly IBasketShoppingService basketShopping;
         private readonly StockService stockService;
+        private readonly PromoCodeService promoCodeService;
 
 
         public IEnumerable<Product>? Products { get; private set; }
@@ -32,6 +34,13 @@ namespace ShoeShop.Pages {
         public string UserHouse { get; set; } = "";
         public string UserApartment { get; set; } = "";
         public string UserPhone { get; set; } = "";
+        
+        [BindProperty]
+        public string PromoCode { get; set; } = string.Empty;
+        
+        public decimal TotalAmount { get; set; }
+        public decimal DiscountAmount { get; set; }
+        public decimal FinalAmount { get; set; }
 
         public async Task OnGetAsync() {
             // Получаем данные пользователя для автозаполнения
@@ -57,6 +66,25 @@ namespace ShoeShop.Pages {
                 }
             }
             BasketItems = list;
+            
+            // Вычисляем общую сумму заказа
+            TotalAmount = (decimal)BasketItems.Sum(item => item.Product.Price * item.Quantity);
+            
+            // Проверяем, есть ли примененный промокод
+            if (TempData["AppliedPromoCode"] != null && TempData["AppliedDiscount"] != null)
+            {
+                PromoCode = TempData["AppliedPromoCode"].ToString();
+                DiscountAmount = decimal.Parse(TempData["AppliedDiscount"].ToString());
+                FinalAmount = TotalAmount - DiscountAmount;
+                
+                // Сохраняем данные для следующего запроса
+                TempData.Keep("AppliedPromoCode");
+                TempData.Keep("AppliedDiscount");
+            }
+            else
+            {
+                FinalAmount = TotalAmount;
+            }
         }
 
         public async Task<IActionResult> OnPostAsync(string name, string city, string street, string house, string apartment, string phone, string coment, Guid[] products) {
@@ -94,6 +122,13 @@ namespace ShoeShop.Pages {
             }
 
             ApplicationUser? user = await userManager.GetUserAsync(User);
+            
+            // Применяем промокод если он был использован
+            if (TempData["AppliedPromoCode"] != null)
+            {
+                string appliedPromoCode = TempData["AppliedPromoCode"].ToString();
+                // Промокод был применен
+            }
 
             OrderRecipient recipient = OrderRecipient.Create(name ?? "", city ?? "", street ?? "", house ?? "", apartment ?? "", phone ?? "");
             Order order = Order.Create(user!.Id, DateTime.Now, coment ?? "", recipient, orderDetails, PaymentType.Cash);
@@ -110,6 +145,47 @@ namespace ShoeShop.Pages {
             basketShopping.Clear();
 
             return RedirectToPage("/Order", new { orderId = order.Id });
+        }
+
+        public async Task<IActionResult> OnPostCheckPromoCodeAsync(string promoCode)
+        {
+            if (!string.IsNullOrEmpty(promoCode))
+            {
+                var isValid = await promoCodeService.ValidatePromoCodeAsync(promoCode);
+                if (isValid)
+                {
+                    BasketShopping bs = basketShopping.GetBasketShopping();
+                    Guid[] productIds = bs.Products.Select(p => p.ProductId).ToArray();
+                    var products = await repository.GetProducts(productIds);
+                    
+                    decimal totalAmount = 0;
+                    foreach (BasketItem item in bs.Products)
+                    {
+                        var product = products.FirstOrDefault(p => p.Id == item.ProductId);
+                        if (product != null)
+                        {
+                            totalAmount += (decimal)(product.Price * item.Quantity);
+                        }
+                    }
+                    
+                    var discount = await promoCodeService.ApplyPromoCodeAsync(promoCode, totalAmount);
+                    TempData["AppliedPromoCode"] = promoCode;
+                    TempData["AppliedDiscount"] = discount.ToString();
+                }
+                else
+                {
+                    TempData["PromoError"] = "Неверный или неактивный промокод";
+                }
+            }
+            
+            return RedirectToPage();
+        }
+        
+        public IActionResult OnPostRemovePromoCode()
+        {
+            TempData.Remove("AppliedPromoCode");
+            TempData.Remove("AppliedDiscount");
+            return RedirectToPage();
         }
     }
 }

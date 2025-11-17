@@ -37,6 +37,7 @@ namespace ShoeShop {
             builder.Services.AddScoped<StockService>();
             builder.Services.AddScoped<SalesStatisticsService>();
             builder.Services.AddScoped<IBasketShoppingService, BasketShoppingCookies>();
+            builder.Services.AddScoped<PromoCodeService>();
             builder.Services.AddHttpClient<YooKassaService>();
 
             builder.Services.Configure<IdentityOptions>(options => {
@@ -116,6 +117,39 @@ namespace ShoeShop {
                     context.Database.ExecuteSqlRaw(
                         "IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'ProductStocks' AND COLUMN_NAME = 'PurchasePrice') " +
                         "ALTER TABLE ProductStocks ADD PurchasePrice float NOT NULL DEFAULT 0");
+                } catch {
+                    // Таблица уже существует
+                }
+                
+                // Создаем таблицу PromoCodes
+                try {
+                    context.Database.ExecuteSqlRaw(
+                        "IF OBJECT_ID('PromoCodes', 'U') IS NULL " +
+                        "CREATE TABLE PromoCodes (" +
+                        "Id int IDENTITY(1,1) NOT NULL PRIMARY KEY, " +
+                        "Code nvarchar(20) NOT NULL UNIQUE, " +
+                        "DiscountPercent decimal(5,2) NOT NULL, " +
+                        "MaxDiscountAmount decimal(18,2) NULL, " +
+                        "IsActive bit NOT NULL DEFAULT 1, " +
+                        "CreatedAt datetime2 NOT NULL, " +
+                        "ExpiresAt datetime2 NULL, " +
+                        "UsageLimit int NULL, " +
+                        "UsageCount int NOT NULL DEFAULT 0)");
+                    
+                    // Добавляем недостающие колонки если таблица уже существует
+                    context.Database.ExecuteSqlRaw(
+                        "IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'PromoCodes' AND COLUMN_NAME = 'UsageLimit') " +
+                        "ALTER TABLE PromoCodes ADD UsageLimit int NULL");
+                    
+                    context.Database.ExecuteSqlRaw(
+                        "IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'PromoCodes' AND COLUMN_NAME = 'UsageCount') " +
+                        "ALTER TABLE PromoCodes ADD UsageCount int NOT NULL DEFAULT 0");
+                    
+                    // Создаем тестовый промокод
+                    context.Database.ExecuteSqlRaw(
+                        "IF NOT EXISTS (SELECT * FROM PromoCodes WHERE Code = 'TEST10') " +
+                        "INSERT INTO PromoCodes (Code, DiscountPercent, IsActive, CreatedAt, UsageCount) " +
+                        "VALUES ('TEST10', 10.00, 1, GETDATE(), 0)");
                 } catch {
                     // Таблица уже существует
                 }

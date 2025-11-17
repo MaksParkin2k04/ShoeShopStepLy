@@ -13,6 +13,7 @@ namespace ShoeShop.Data {
         public DbSet<Order> Orders { get; private set; }
         public DbSet<OrderDetail> OrderDetails { get; private set; }
         public DbSet<Category> Categories { get; private set; }
+        public DbSet<PromoCode> PromoCodes { get; private set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
             base.OnModelCreating(modelBuilder);
@@ -68,6 +69,10 @@ namespace ShoeShop.Data {
                 .WithMany()
                 .HasForeignKey(s => s.ProductId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<PromoCode>().Property(p => p.Code).IsRequired().HasMaxLength(20);
+            modelBuilder.Entity<PromoCode>().Property(p => p.DiscountPercent).IsRequired();
+            modelBuilder.Entity<PromoCode>().HasIndex(p => p.Code).IsUnique();
 
         }
     }

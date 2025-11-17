@@ -25,49 +25,83 @@
             </a>
         </div>
     } else {
-        <form asp-page="/CreatingOrder" method="post" class="checkout-form">
-            <div class="checkout-content">
-                @* Order Items *@
-                <div class="order-summary-section">
-                    <h3 class="section-title">
-                        <i class="fas fa-list me-2"></i>
-                        Ваш заказ
-                    </h3>
-                    <div class="order-items">
-                        @foreach (var item in Model.BasketItems) {
-                            <div class="order-item">
-                                <div class="order-item-image">
-                                    @if (item.Product?.Images?.Count > 0) {
-                                        <img src="@item.Product.Images[0].Path" alt="@item.Product.Images[0].Alt" class="item-image">
-                                    } else {
-                                        <div class="item-image-placeholder">
-                                            <i class="fas fa-image"></i>
-                                        </div>
-                                    }
-                                </div>
-                                <div class="order-item-info">
-                                    <h4 class="item-name">
-                                        <a asp-page="/Product" asp-route-id="@item.Product?.Id" class="item-link">@item.Product?.Name</a>
-                                    </h4>
-                                    <p class="item-description">@item.Product?.Description</p>
-                                    <p class="item-details">Размер: @item.Size | Количество: @item.Quantity шт.</p>
-                                </div>
-                                <div class="order-item-price">
-                                    <span class="item-price">@((item.Product?.Price * item.Quantity) ?? 0) ₽</span>
-                                </div>
-                                <input type="hidden" name="products[]" value="@item.Product?.Id" />
+        <div class="checkout-content">
+            @* Order Items *@
+            <div class="order-summary-section">
+                <h3 class="section-title">
+                    <i class="fas fa-list me-2"></i>
+                    Ваш заказ
+                </h3>
+                <div class="order-items">
+                    @foreach (var item in Model.BasketItems) {
+                        <div class="order-item">
+                            <div class="order-item-image">
+                                @if (item.Product?.Images?.Count > 0) {
+                                    <img src="@item.Product.Images[0].Path" alt="@item.Product.Images[0].Alt" class="item-image">
+                                } else {
+                                    <div class="item-image-placeholder">
+                                        <i class="fas fa-image"></i>
+                                    </div>
+                                }
                             </div>
-                        }
-                    </div>
+                            <div class="order-item-info">
+                                <h4 class="item-name">
+                                    <a asp-page="/Product" asp-route-id="@item.Product?.Id" class="item-link">@item.Product?.Name</a>
+                                </h4>
+                                <p class="item-description">@item.Product?.Description</p>
+                                <p class="item-details">Размер: @item.Size | Количество: @item.Quantity шт.</p>
+                            </div>
+                            <div class="order-item-price">
+                                <span class="item-price">@((item.Product?.Price * item.Quantity) ?? 0) ₽</span>
+                            </div>
+                        </div>
+                    }
+                </div>
+                @* Промокод *@
+                <div class="promo-section mb-3">
+                    <h4 class="section-title">Промокод</h4>
+                    @if (TempData["PromoSuccess"] != null)
+                    {
+                        <div class="alert alert-success">@TempData["PromoSuccess"]</div>
+                    }
+                    @if (TempData["PromoError"] != null)
+                    {
+                        <div class="alert alert-danger">@TempData["PromoError"]</div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.PromoCode))
+                    {
+                        <div class="alert alert-success d-flex justify-content-between align-items-center">
+                            <span>Применен промокод: <strong>@Model.PromoCode</strong></span>
+                            <form method="post" asp-page-handler="RemovePromoCode" style="display:inline;">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Удалить</button>
+                            </form>
+                        </div>
+                    }
+                    else
+                    {
+                        <form method="post" asp-page-handler="CheckPromoCode" class="d-flex gap-2">
+                            <input name="promoCode" class="form-control" placeholder="Введите промокод" required />
+                            <button type="submit" class="btn btn-outline-primary">Применить</button>
+                        </form>
+                    }
+                </div>
+                    
                     <div class="order-total">
                         <div class="total-row">
                             <span>Товары (@Model.BasketItems.Sum(p => p.Quantity) шт.)</span>
-                            <span>@Model.BasketItems.Sum(p => p.Product.Price * p.Quantity) ₽</span>
+                            <span>@Model.TotalAmount ₽</span>
                         </div>
+                        @if (Model.DiscountAmount > 0)
+                        {
+                            <div class="total-row text-success">
+                                <span>Скидка по промокоду</span>
+                                <span>-@Model.DiscountAmount ₽</span>
+                            </div>
+                        }
                         <div class="total-row">
                             <span>Доставка</span>
                             <span class="delivery-cost">
-                                @if (Model.BasketItems.Sum(p => p.Product.Price * p.Quantity) >= 5000) {
+                                @if (Model.TotalAmount >= 5000) {
                                     <span class="text-success">Бесплатно</span>
                                 } else {
                                     <span>500 ₽</span>
@@ -79,18 +113,21 @@
                             <span>Итого к оплате</span>
                             <span class="final-price">
                                 @{
-                                    var subtotal = Model.BasketItems.Sum(p => p.Product.Price * p.Quantity);
-                                    var deliveryCost = subtotal >= 5000 ? 0 : 500;
-                                    var totalCost = subtotal + deliveryCost;
+                                    var deliveryCost = Model.TotalAmount >= 5000 ? 0 : 500;
+                                    var finalTotal = Model.FinalAmount + deliveryCost;
                                 }
-                                @totalCost ₽
+                                @finalTotal ₽
                             </span>
                         </div>
                     </div>
                 </div>
 
-                @* Delivery Form *@
+            @* Delivery Form *@
+            <form asp-page="/CreatingOrder" method="post" class="checkout-form">
                 <div class="delivery-form-section">
+                    @foreach (var item in Model.BasketItems) {
+                        <input type="hidden" name="products[]" value="@item.Product?.Id" />
+                    }
                     <h3 class="section-title">
                         <i class="fas fa-truck me-2"></i>
                         Данные для доставки
@@ -142,6 +179,10 @@
                         </div>
                     </div>
 
+                    @* Скрытые поля для промокода *@
+                    <input type="hidden" name="PromoCode" id="hiddenPromoCode" value="" />
+                    <input type="hidden" name="DiscountAmount" id="hiddenDiscountAmount" value="0" />
+                    
                     <div class="form-actions">
                         <a asp-page="/BasketShopping" class="btn btn-outline-secondary btn-lg">
                             <i class="fas fa-arrow-left me-2"></i>
@@ -153,7 +194,8 @@
                         </button>
                     </div>
                 </div>
-            </div>
-        </form>
+            </form>
+        </div>
     }
 </div>
+
