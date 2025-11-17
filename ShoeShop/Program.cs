@@ -38,6 +38,7 @@ namespace ShoeShop {
             builder.Services.AddScoped<SalesStatisticsService>();
             builder.Services.AddScoped<IBasketShoppingService, BasketShoppingCookies>();
             builder.Services.AddScoped<PromoCodeService>();
+            builder.Services.AddScoped<ReviewService>();
             builder.Services.AddHttpClient<YooKassaService>();
             builder.Services.AddHttpClient<YandexMetrikaService>();
 
@@ -162,6 +163,37 @@ namespace ShoeShop {
                         "ALTER TABLE Orders ADD AdminComments nvarchar(max) NULL");
                 } catch {
                     // Колонка уже существует
+                }
+                
+                // Создаем таблицу ProductReviews
+                try {
+                    context.Database.ExecuteSqlRaw(
+                        "IF OBJECT_ID('ProductReviews', 'U') IS NULL " +
+                        "CREATE TABLE ProductReviews (" +
+                        "Id uniqueidentifier NOT NULL PRIMARY KEY, " +
+                        "ProductId uniqueidentifier NOT NULL, " +
+                        "UserId nvarchar(450) NOT NULL, " +
+                        "Rating int NOT NULL CHECK (Rating >= 1 AND Rating <= 5), " +
+                        "Comment nvarchar(1000) NULL, " +
+                        "CreatedAt datetime2 NOT NULL, " +
+                        "FOREIGN KEY (ProductId) REFERENCES Products(Id) ON DELETE CASCADE)");
+                } catch {
+                    // Таблица уже существует
+                }
+                
+                // Создаем таблицу ReviewReplies
+                try {
+                    context.Database.ExecuteSqlRaw(
+                        "IF OBJECT_ID('ReviewReplies', 'U') IS NULL " +
+                        "CREATE TABLE ReviewReplies (" +
+                        "Id uniqueidentifier NOT NULL PRIMARY KEY, " +
+                        "ReviewId uniqueidentifier NOT NULL, " +
+                        "AdminId nvarchar(450) NOT NULL, " +
+                        "Reply nvarchar(1000) NOT NULL, " +
+                        "CreatedAt datetime2 NOT NULL, " +
+                        "FOREIGN KEY (ReviewId) REFERENCES ProductReviews(Id) ON DELETE CASCADE)");
+                } catch {
+                    // Таблица уже существует
                 }
                 
                 // Инициализируем тестовые остатки

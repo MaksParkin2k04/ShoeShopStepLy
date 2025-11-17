@@ -5,13 +5,15 @@ using ShoeShop.Services;
 
 namespace ShoeShop.Pages {
     public class IndexModel : PageModel {
-        public IndexModel(IProductRepository repository, StockService stockService) {
+        public IndexModel(IProductRepository repository, StockService stockService, ReviewService reviewService) {
             this.repository = repository;
             this.stockService = stockService;
+            this.reviewService = reviewService;
         }
 
         private IProductRepository repository;
         private StockService stockService;
+        private ReviewService reviewService;
 
         public int CurrentPage { get; private set; }
         public int ElementsPerPage { get; private set; }
@@ -24,6 +26,8 @@ namespace ShoeShop.Pages {
         public IEnumerable<Product>? Products { get; private set; }
         public Dictionary<Guid, ProductAvailabilityStatus> ProductAvailability { get; private set; } = new();
         public Dictionary<Guid, Dictionary<int, int>> ProductSizeQuantities { get; private set; } = new();
+        public Dictionary<Guid, double> ProductRatings { get; private set; } = new();
+        public Dictionary<Guid, int> ProductReviewCounts { get; private set; } = new();
 
         public async Task OnGetAsync(ProductSorting sort = ProductSorting.Default, int pageIndex = 1, Guid? categoryId = null, decimal? minPrice = null, decimal? maxPrice = null, int[]? sizes = null) {
             Sorting = sort;
@@ -63,10 +67,12 @@ namespace ShoeShop.Pages {
             TotalElementsCount = filteredProducts.Count();
             Products = filteredProducts.Skip((pageIndex - 1) * 20).Take(20);
             
-            // Загружаем информацию о наличии для отображаемых товаров
+            // Загружаем информацию о наличии и рейтингах для отображаемых товаров
             foreach (var product in Products) {
                 ProductAvailability[product.Id] = await stockService.GetAvailabilityStatusAsync(product.Id);
                 ProductSizeQuantities[product.Id] = await stockService.GetSizeQuantitiesAsync(product.Id);
+                ProductRatings[product.Id] = await reviewService.GetAverageRatingAsync(product.Id);
+                ProductReviewCounts[product.Id] = await reviewService.GetReviewCountAsync(product.Id);
             }
         }
     }

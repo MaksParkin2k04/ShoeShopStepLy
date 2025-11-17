@@ -179,6 +179,26 @@
             </div>
             <div class="product-info">
                 <h3 class="product-name">@product.Name</h3>
+                
+                @{
+                    var rating = Model.ProductRatings.GetValueOrDefault(product.Id, 0);
+                    var reviewCount = Model.ProductReviewCounts.GetValueOrDefault(product.Id, 0);
+                }
+                @if (reviewCount > 0) {
+                    <div class="product-rating mb-2">
+                        <div class="stars">
+                            @for (int i = 1; i <= 5; i++) {
+                                if (i <= Math.Round(rating)) {
+                                    <i class="fas fa-star text-warning"></i>
+                                } else {
+                                    <i class="far fa-star text-muted"></i>
+                                }
+                            }
+                        </div>
+                        <small class="text-muted">@rating.ToString("F1") (@reviewCount)</small>
+                    </div>
+                }
+                
                 <p class="product-description">@product.Description</p>
                 
                 @if (product.Category != null) {
@@ -281,6 +301,21 @@
     font-size: 0.7em;
     font-weight: bold;
     align-self: flex-start;
+}
+
+.product-rating {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.product-rating .stars {
+    display: flex;
+    gap: 2px;
+}
+
+.product-rating .stars i {
+    font-size: 0.9em;
 }
 </style>
 
