@@ -1,0 +1,32 @@
+@page
+@model ShoeShop.Pages.AdminAuthModel
+@{
+    ViewData["Title"] = "Админ панель";
+    Layout = "_Layout";
+}
+
+<div class="modal fade show" id="adminAuthModal" tabindex="-1" style="display: block; background: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Доступ к админ панели</h5>
+            </div>
+            <div class="modal-body">
+                @if (!string.IsNullOrEmpty(Model.ErrorMessage)) {
+                    <div class="alert alert-danger">@Model.ErrorMessage</div>
+                }
+                <form method="post">
+                    <input type="hidden" name="returnUrl" value="@Model.ReturnUrl" />
+                    <div class="mb-3">
+                        <label class="form-label">Введите пароль администратора:</label>
+                        <input type="password" name="password" class="form-control" required autofocus>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <a href="/" class="btn btn-secondary">Отмена</a>
+                        <button type="submit" class="btn btn-primary">Войти</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

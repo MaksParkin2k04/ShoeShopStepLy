@@ -1,0 +1,11 @@
+@model IEnumerable<ShoeShop.Models.Category>
+
+<ul class="list-unstyled">
+    @foreach (var category in Model) {
+        <li>
+            <a asp-page="/Index" asp-route-categoryId="@category.Id" class="text-muted text-decoration-none">
+                @category.Name
+            </a>
+        </li>
+    }
+</ul>

@@ -15,6 +15,8 @@ namespace ShoeShop.Models {
         Task<int> OrderCount(OrderStatusFilter filter);
         Task<Order?> GetOrder(Guid orderId);
         Task UpdateOrder(Order order);
+        Task DeleteOrder(Guid orderId);
+        Task DeleteAllOrders();
 
         Task<IEnumerable<Category>> GetCategories();
         Task AddCategory(Category category);

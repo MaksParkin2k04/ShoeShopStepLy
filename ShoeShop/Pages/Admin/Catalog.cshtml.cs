@@ -1,14 +1,16 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using ShoeShop.Attributes;
 using ShoeShop.Models;
 
 namespace ShoeShop.Pages.Admin {
 
-    [Authorize(Roles = "Admin")]
+    [Authorize]
+    [AdminAuth]
     public class CatalogModel : PageModel {
         /// <summary>
-        /// Максимальное количество элементов на стронице
+        /// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         /// </summary>
         private const int MAX_COUNT_ITEMS_ON_PAGE = 20;
 

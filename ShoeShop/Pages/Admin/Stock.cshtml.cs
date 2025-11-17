@@ -1,11 +1,13 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using ShoeShop.Attributes;
 using ShoeShop.Models;
 using ShoeShop.Services;
 
 namespace ShoeShop.Pages.Admin {
-    [Authorize(Roles = "Admin")]
+    [Authorize]
+    [AdminAuth]
     public class StockModel : PageModel {
         private readonly IProductRepository _productRepository;
         private readonly IProductStockRepository _stockRepository;

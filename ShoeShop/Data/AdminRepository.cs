@@ -62,6 +62,22 @@ namespace ShoeShop.Data {
             await context.SaveChangesAsync();
         }
 
+        public async Task DeleteOrder(Guid orderId) {
+            Order? order = await GetOrder(orderId);
+            if (order != null) {
+                context.Orders.Remove(order);
+                await context.SaveChangesAsync();
+            }
+        }
+
+        public async Task DeleteAllOrders() {
+            // Сначала удаляем все OrderDetails
+            context.OrderDetails.RemoveRange(context.OrderDetails);
+            // Затем удаляем все Orders
+            context.Orders.RemoveRange(context.Orders);
+            await context.SaveChangesAsync();
+        }
+
         public async Task<IEnumerable<Category>> GetCategories() {
             return await context.Categories.OrderBy(c => c.Name).ToListAsync();
         }

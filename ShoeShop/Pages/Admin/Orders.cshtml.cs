@@ -2,12 +2,14 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using ShoeShop.Attributes;
 using ShoeShop.Data;
 using ShoeShop.Models;
 
 namespace ShoeShop.Pages.Admin {
 
-    [Authorize(Roles = "Admin")]
+    [Authorize]
+    [AdminAuth]
     public class OrdersModel : PageModel {
         public OrdersModel(IAdminRepository repository) {
             this.repository = repository;
@@ -38,6 +40,16 @@ namespace ShoeShop.Pages.Admin {
                 order.SetStatus((OrderStatus)status);
                 await repository.UpdateOrder(order);
             }
+            return RedirectToPage();
+        }
+
+        public async Task<IActionResult> OnPostDeleteAsync(Guid orderId) {
+            await repository.DeleteOrder(orderId);
+            return RedirectToPage();
+        }
+
+        public async Task<IActionResult> OnPostDeleteAllAsync() {
+            await repository.DeleteAllOrders();
             return RedirectToPage();
         }
     }

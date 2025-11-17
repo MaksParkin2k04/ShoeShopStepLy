@@ -30,9 +30,18 @@
                 </h1>
                 <p class="admin-subtitle">Просмотр и управление всеми заказами в системе</p>
             </div>
-            <a asp-page="/Admin/Index" class="btn btn-outline-secondary">
-                <i class="fas fa-arrow-left me-2"></i>Админ панель
-            </a>
+            <div class="d-flex gap-2">
+                @if (Model.TotalElementsCount > 0) {
+                    <form asp-page="/Admin/Orders" asp-page-handler="DeleteAll" method="post" class="d-inline" onsubmit="return confirm('ВНИМАНИЕ! Это действие удалит ВСЕ заказы из системы. Вы уверены?')">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash me-2"></i>Удалить все заказы
+                        </button>
+                    </form>
+                }
+                <a asp-page="/Admin/Index" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Админ панель
+                </a>
+            </div>
         </div>
         
         @* Stats Cards *@
@@ -198,6 +207,12 @@
                                         <a href="/OrderLabel/@order.Id" target="_blank" class="btn btn-sm btn-outline-info" title="Печать этикетки">
                                             <i class="fas fa-print"></i>
                                         </a>
+                                        <form asp-page="/Admin/Orders" asp-page-handler="Delete" method="post" class="d-inline" onsubmit="return confirm('Вы уверены, что хотите удалить этот заказ?')">
+                                            <input type="hidden" name="orderId" value="@order.Id" />
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Удалить заказ">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
                                         @if (order.Status != OrderStatus.Completed && order.Status != OrderStatus.Canceled) {
                                             <div class="dropdown">
                                                 <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" title="Изменить статус">
