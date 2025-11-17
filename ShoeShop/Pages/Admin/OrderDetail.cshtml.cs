@@ -26,5 +26,14 @@ namespace ShoeShop.Pages.Admin {
             }
             return RedirectToPage("/Admin/OrderDetail", new { orderId = orderId });
         }
+        
+        public async Task<IActionResult> OnPostMarkAsPaidAsync(Guid orderId) {
+            Order? order = await repository.GetOrder(orderId);
+            if (order != null) {
+                order.SetStatus(OrderStatus.Paid);
+                await repository.UpdateOrder(order);
+            }
+            return RedirectToPage("/Admin/OrderDetail", new { orderId = orderId });
+        }
     }
 }

@@ -24,8 +24,27 @@ namespace ShoeShop.Pages {
 
         public IEnumerable<Product>? Products { get; private set; }
         public List<BasketProductInfo> BasketItems { get; private set; } = new List<BasketProductInfo>();
+        
+        // Данные пользователя для автозаполнения
+        public string UserName { get; set; } = "";
+        public string UserCity { get; set; } = "";
+        public string UserStreet { get; set; } = "";
+        public string UserHouse { get; set; } = "";
+        public string UserApartment { get; set; } = "";
+        public string UserPhone { get; set; } = "";
 
         public async Task OnGetAsync() {
+            // Получаем данные пользователя для автозаполнения
+            ApplicationUser? user = await userManager.GetUserAsync(User);
+            if (user != null) {
+                UserName = $"{user.FirstName} {user.LastName}".Trim();
+                UserCity = user.City ?? "";
+                UserStreet = user.Street ?? "";
+                UserHouse = user.House ?? "";
+                UserApartment = user.Apartment ?? "";
+                UserPhone = user.PhoneNumber ?? "";
+            }
+            
             BasketShopping bs = basketShopping.GetBasketShopping();
             Guid[] productIds = bs.Products.Select(p => p.ProductId).ToArray();
             Products = await repository.GetProducts(productIds);

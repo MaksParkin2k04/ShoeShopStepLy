@@ -28,6 +28,20 @@
                         <i class="fas fa-calendar me-1"></i>
                         @Model.Order.CreatedDate.ToString("dd.MM.yyyy HH:mm")
                     </span>
+                    <span class="payment-status-info">
+                        @if (Model.Order.PaymentDate.HasValue || Model.Order.Status == OrderStatus.Paid)
+                        {
+                            <span class="badge bg-success">
+                                <i class="fas fa-check me-1"></i>Оплачено
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-warning">
+                                <i class="fas fa-clock me-1"></i>Ожидает оплаты
+                            </span>
+                        }
+                    </span>
                 </div>
             </div>
             <span class="status-badge large status-@Model.Order.Status.ToString().ToLower()">
@@ -126,6 +140,22 @@
                 <i class="fas fa-arrow-left me-2"></i>
                 Вернуться к заказам
             </a>
+            
+            <a href="/OrderLabel/@Model.Order.Id" target="_blank" class="btn btn-info">
+                <i class="fas fa-print me-2"></i>
+                Печать этикетки
+            </a>
+            
+            @if (!Model.Order.PaymentDate.HasValue && Model.Order.Status != OrderStatus.Paid)
+            {
+                <form asp-page="/Admin/OrderDetail" asp-page-handler="MarkAsPaid" method="post" class="d-inline">
+                    <input type="hidden" name="orderId" value="@Model.Order.Id" />
+                    <button type="submit" class="btn btn-success" onclick="return confirm('Отметить заказ как оплаченный?')">
+                        <i class="fas fa-money-bill me-2"></i>
+                        Отметить оплаченным
+                    </button>
+                </form>
+            }
             
             @if (Model.Order.Status != OrderStatus.Completed && Model.Order.Status != OrderStatus.Canceled) {
                 <div class="dropdown">

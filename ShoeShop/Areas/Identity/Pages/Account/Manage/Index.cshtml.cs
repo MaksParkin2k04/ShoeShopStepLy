@@ -52,13 +52,30 @@ namespace ShoeShop.Areas.Identity.Pages.Account.Manage
         /// </summary>
         public class InputModel
         {
-            /// <summary>
-            ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-            ///     directly from your code. This API may change or be removed in future releases.
-            /// </summary>
             [Phone]
-            [Display(Name = "Phone number")]
+            [Display(Name = "Номер телефона")]
             public string PhoneNumber { get; set; }
+            
+            [Display(Name = "Имя")]
+            public string FirstName { get; set; }
+            
+            [Display(Name = "Фамилия")]
+            public string LastName { get; set; }
+            
+            [Display(Name = "Улица")]
+            public string Street { get; set; }
+            
+            [Display(Name = "Дом")]
+            public string House { get; set; }
+            
+            [Display(Name = "Квартира")]
+            public string Apartment { get; set; }
+            
+            [Display(Name = "Город")]
+            public string City { get; set; }
+            
+            [Display(Name = "Почтовый индекс")]
+            public string PostalCode { get; set; }
         }
 
         private async Task LoadAsync(ApplicationUser user)
@@ -70,7 +87,14 @@ namespace ShoeShop.Areas.Identity.Pages.Account.Manage
 
             Input = new InputModel
             {
-                PhoneNumber = phoneNumber
+                PhoneNumber = phoneNumber,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Street = user.Street,
+                House = user.House,
+                Apartment = user.Apartment,
+                City = user.City,
+                PostalCode = user.PostalCode
             };
         }
 
@@ -106,13 +130,29 @@ namespace ShoeShop.Areas.Identity.Pages.Account.Manage
                 var setPhoneResult = await _userManager.SetPhoneNumberAsync(user, Input.PhoneNumber);
                 if (!setPhoneResult.Succeeded)
                 {
-                    StatusMessage = "Unexpected error when trying to set phone number.";
+                    StatusMessage = "Ошибка при обновлении номера телефона.";
                     return RedirectToPage();
                 }
             }
+            
+            // Обновляем дополнительные поля профиля
+            user.FirstName = Input.FirstName;
+            user.LastName = Input.LastName;
+            user.Street = Input.Street;
+            user.House = Input.House;
+            user.Apartment = Input.Apartment;
+            user.City = Input.City;
+            user.PostalCode = Input.PostalCode;
+            
+            var updateResult = await _userManager.UpdateAsync(user);
+            if (!updateResult.Succeeded)
+            {
+                StatusMessage = "Ошибка при обновлении профиля.";
+                return RedirectToPage();
+            }
 
             await _signInManager.RefreshSignInAsync(user);
-            StatusMessage = "Your profile has been updated";
+            StatusMessage = "Ваш профиль успешно обновлен";
             return RedirectToPage();
         }
     }

@@ -166,6 +166,18 @@
                                                     break;
                                             }
                                         </span>
+                                        @if (order.PaymentDate.HasValue || order.Status == OrderStatus.Paid)
+                                        {
+                                            <small class="text-success d-block mt-1">
+                                                <i class="fas fa-check-circle me-1"></i>Оплачено
+                                            </small>
+                                        }
+                                        else
+                                        {
+                                            <small class="text-warning d-block mt-1">
+                                                <i class="fas fa-clock me-1"></i>Ожидает оплаты
+                                            </small>
+                                        }
                                         <div class="payment-info">
                                             @if (order.PaymentType == PaymentType.Online) {
                                                 <small class="text-primary">Онлайн оплата</small>
@@ -182,6 +194,9 @@
                                     <div class="action-buttons">
                                         <a asp-page="/Admin/OrderDetail" asp-route-orderId="@order.Id" class="btn btn-sm btn-outline-primary" title="Просмотреть детали">
                                             <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="/OrderLabel/@order.Id" target="_blank" class="btn btn-sm btn-outline-info" title="Печать этикетки">
+                                            <i class="fas fa-print"></i>
                                         </a>
                                         @if (order.Status != OrderStatus.Completed && order.Status != OrderStatus.Canceled) {
                                             <div class="dropdown">

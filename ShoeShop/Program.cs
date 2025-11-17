@@ -9,6 +9,7 @@ using ShoeShop.Data.Initialization;
 using ShoeShop.Infrastructure;
 using ShoeShop.Models;
 using ShoeShop.Services;
+using Microsoft.AspNetCore.Identity.UI.Services;
 
 namespace ShoeShop {
     public class Program {
@@ -21,7 +22,8 @@ namespace ShoeShop {
             builder.Services.AddDbContext<ApplicationContext>(options => options.UseSqlServer(connectionString));
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-            builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true).AddRoles<ApplicationRole>().AddEntityFrameworkStores<ApplicationContext>();
+            builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = false).AddRoles<ApplicationRole>().AddEntityFrameworkStores<ApplicationContext>();
+            builder.Services.AddTransient<IEmailSender, EmailSender>();
 
 
 
@@ -63,6 +65,39 @@ namespace ShoeShop {
             {
                 ApplicationContext context = scope.ServiceProvider.GetRequiredService<ApplicationContext>();
                 StockService stockService = scope.ServiceProvider.GetRequiredService<StockService>();
+                
+                // Добавляем поля профиля пользователя
+                try {
+                    context.Database.ExecuteSqlRaw(
+                        "IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'AspNetUsers' AND COLUMN_NAME = 'FirstName') " +
+                        "ALTER TABLE AspNetUsers ADD FirstName nvarchar(max) NULL");
+                    
+                    context.Database.ExecuteSqlRaw(
+                        "IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'AspNetUsers' AND COLUMN_NAME = 'LastName') " +
+                        "ALTER TABLE AspNetUsers ADD LastName nvarchar(max) NULL");
+                    
+                    context.Database.ExecuteSqlRaw(
+                        "IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'AspNetUsers' AND COLUMN_NAME = 'Street') " +
+                        "ALTER TABLE AspNetUsers ADD Street nvarchar(max) NULL");
+                    
+                    context.Database.ExecuteSqlRaw(
+                        "IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'AspNetUsers' AND COLUMN_NAME = 'House') " +
+                        "ALTER TABLE AspNetUsers ADD House nvarchar(max) NULL");
+                    
+                    context.Database.ExecuteSqlRaw(
+                        "IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'AspNetUsers' AND COLUMN_NAME = 'Apartment') " +
+                        "ALTER TABLE AspNetUsers ADD Apartment nvarchar(max) NULL");
+                    
+                    context.Database.ExecuteSqlRaw(
+                        "IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'AspNetUsers' AND COLUMN_NAME = 'City') " +
+                        "ALTER TABLE AspNetUsers ADD City nvarchar(max) NULL");
+                    
+                    context.Database.ExecuteSqlRaw(
+                        "IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'AspNetUsers' AND COLUMN_NAME = 'PostalCode') " +
+                        "ALTER TABLE AspNetUsers ADD PostalCode nvarchar(max) NULL");
+                } catch {
+                    // Колонки уже существуют
+                }
                 
                 // Проверяем, существует ли таблица ProductStocks
                 try {

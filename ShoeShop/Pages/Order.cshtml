@@ -52,6 +52,45 @@
                             break;
                     }
                 </span>
+                
+                <div class="payment-status-info mt-3">
+                    @if (Model.Order.PaymentDate.HasValue || Model.Order.Status == OrderStatus.Paid)
+                    {
+                        <div class="alert alert-success d-flex align-items-center">
+                            <i class="fas fa-check-circle me-2"></i>
+                            <div>
+                                <strong>Оплачено</strong>
+                                @if (Model.Order.PaymentDate.HasValue)
+                                {
+                                    <div class="small">Дата оплаты: @Model.Order.PaymentDate.Value.ToString("dd.MM.yyyy HH:mm")</div>
+                                }
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        @if (Model.Order.PaymentType == PaymentType.Online)
+                        {
+                            <div class="alert alert-warning d-flex align-items-center">
+                                <i class="fas fa-clock me-2"></i>
+                                <div>
+                                    <strong>Ожидает оплаты</strong>
+                                    <div class="small">Онлайн оплата</div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="alert alert-info d-flex align-items-center">
+                                <i class="fas fa-money-bill me-2"></i>
+                                <div>
+                                    <strong>Оплата при получении</strong>
+                                    <div class="small">Оплатите курьеру при получении заказа</div>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
             </div>
         </div>
 

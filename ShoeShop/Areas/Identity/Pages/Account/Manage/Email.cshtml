@@ -1,42 +1,64 @@
 ﻿@page
 @model EmailModel
 @{
-    ViewData["Title"] = "Manage Email";
+    ViewData["Title"] = "Электронная почта";
     ViewData["ActivePage"] = ManageNavPages.Email;
 }
 
-<h3>@ViewData["Title"]</h3>
+<div class="profile-section">
+    <div class="section-header">
+        <h2 class="section-title">
+            <i class="fas fa-envelope me-2"></i>
+            Электронная почта
+        </h2>
+        <p class="section-subtitle">Управление адресом электронной почты</p>
+    </div>
 <partial name="_StatusMessage" for="StatusMessage" />
-<div class="row">
-    <div class="col-md-6">
-        <form id="email-form" method="post">
-            <div asp-validation-summary="All" class="text-danger" role="alert"></div>
+    <partial name="_StatusMessage" for="StatusMessage" />
+    
+    <form id="email-form" method="post" class="profile-form">
+        <div asp-validation-summary="All" class="text-danger" role="alert"></div>
+        
+        <div class="form-section">
+            <h4 class="form-section-title">Текущая почта</h4>
             @if (Model.IsEmailConfirmed)
             {
-                <div class="form-floating mb-3 input-group">
-                    <input asp-for="Email" class="form-control" placeholder="Please enter your email." disabled />
-                        <div class="input-group-append">
-                            <span class="h-100 input-group-text text-success font-weight-bold">✓</span>
-                        </div>
-                    <label asp-for="Email" class="form-label"></label>
+                <div class="form-group">
+                    <label asp-for="Email" class="form-label">Подтвержденная почта</label>
+                    <div class="input-group">
+                        <input asp-for="Email" class="form-control" disabled />
+                        <span class="input-group-text text-success">
+                            <i class="fas fa-check"></i>
+                        </span>
+                    </div>
                 </div>
             }
             else
             {
-                <div class="form-floating mb-3">
-                    <input asp-for="Email" class="form-control" placeholder="Please enter your email." disabled />
-                    <label asp-for="Email" class="form-label"></label>
-                    <button id="email-verification" type="submit" asp-page-handler="SendVerificationEmail" class="btn btn-link">Send verification email</button>
+                <div class="form-group">
+                    <label asp-for="Email" class="form-label">Неподтвержденная почта</label>
+                    <input asp-for="Email" class="form-control" disabled />
+                    <button id="email-verification" type="submit" asp-page-handler="SendVerificationEmail" class="btn btn-outline-primary mt-2">
+                        <i class="fas fa-envelope me-2"></i>
+                        Отправить письмо подтверждения
+                    </button>
                 </div>
             }
-            <div class="form-floating mb-3">
-                <input asp-for="Input.NewEmail" class="form-control" autocomplete="email" aria-required="true" placeholder="Please enter new email." />
-                <label asp-for="Input.NewEmail" class="form-label"></label>
+            
+            <div class="form-group">
+                <label asp-for="Input.NewEmail" class="form-label">Новая почта</label>
+                <input asp-for="Input.NewEmail" class="form-control" autocomplete="email" placeholder="Введите новый адрес почты" />
                 <span asp-validation-for="Input.NewEmail" class="text-danger"></span>
             </div>
-            <button id="change-email-button" type="submit" asp-page-handler="ChangeEmail" class="w-100 btn btn-lg btn-primary">Change email</button>
-        </form>
-    </div>
+            
+            <div class="form-actions">
+                <button id="change-email-button" type="submit" asp-page-handler="ChangeEmail" class="btn btn-primary">
+                    <i class="fas fa-save me-2"></i>
+                    Изменить почту
+                </button>
+            </div>
+        </div>
+    </form>
 </div>
 
 @section Scripts {

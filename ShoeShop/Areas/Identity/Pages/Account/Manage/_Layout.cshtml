@@ -9,17 +9,27 @@
     }
 }
 
-<h1>Manage your account</h1>
-
-<div>
-    <h2>Change your account settings</h2>
-    <hr />
-    <div class="row">
-        <div class="col-md-3">
-            <partial name="_ManageNav" />
+<div class="admin-page">
+    <div class="admin-header">
+        <div class="admin-title-section">
+            <h1 class="admin-title">
+                <i class="fas fa-user-cog me-3"></i>
+                Профиль пользователя
+            </h1>
+            <p class="admin-subtitle">Управление настройками вашего аккаунта</p>
         </div>
-        <div class="col-md-9">
-            @RenderBody()
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-3">
+            <div class="admin-content">
+                <partial name="_ManageNav" />
+            </div>
+        </div>
+        <div class="col-lg-9">
+            <div class="admin-content">
+                @RenderBody()
+            </div>
         </div>
     </div>
 </div>

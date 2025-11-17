@@ -126,6 +126,29 @@
                                             break;
                                     }
                                 </span>
+                                <div class="payment-status mt-2">
+                                    @if (order.PaymentDate.HasValue || order.Status == OrderStatus.Paid)
+                                    {
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check me-1"></i>Оплачено
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        @if (order.PaymentType == PaymentType.Online)
+                                        {
+                                            <span class="badge bg-warning">
+                                                <i class="fas fa-clock me-1"></i>Ожидает оплаты
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-info">
+                                                <i class="fas fa-money-bill me-1"></i>Оплата при получении
+                                            </span>
+                                        }
+                                    }
+                                </div>
                             </div>
                         </div>
                         

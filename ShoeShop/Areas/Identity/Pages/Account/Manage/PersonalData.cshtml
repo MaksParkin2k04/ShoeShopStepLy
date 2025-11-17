@@ -1,24 +1,39 @@
 ﻿@page
 @model PersonalDataModel
 @{
-    ViewData["Title"] = "Personal Data";
+    ViewData["Title"] = "Личные данные";
     ViewData["ActivePage"] = ManageNavPages.PersonalData;
 }
 
-<h3>@ViewData["Title"]</h3>
-
-<div class="row">
-    <div class="col-md-6">
-        <p>Your account contains personal data that you have given us. This page allows you to download or delete that data.</p>
-        <p>
-            <strong>Deleting this data will permanently remove your account, and this cannot be recovered.</strong>
-        </p>
-        <form id="download-data" asp-page="DownloadPersonalData" method="post">
-            <button class="btn btn-primary" type="submit">Download</button>
-        </form>
-        <p>
-            <a id="delete" asp-page="DeletePersonalData" class="btn btn-danger">Delete</a>
-        </p>
+<div class="profile-section">
+    <div class="section-header">
+        <h2 class="section-title">
+            <i class="fas fa-database me-2"></i>
+            Личные данные
+        </h2>
+        <p class="section-subtitle">Управление вашими персональными данными</p>
+    </div>
+    
+    <div class="form-section">
+        <h4 class="form-section-title">Информация о данных</h4>
+        <p>Ваш аккаунт содержит личные данные, которые вы нам предоставили. Эта страница позволяет скачать или удалить эти данные.</p>
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <strong>Удаление этих данных навсегда удалит ваш аккаунт, и это нельзя будет отменить.</strong>
+        </div>
+        
+        <div class="form-actions">
+            <form id="download-data" asp-page="DownloadPersonalData" method="post" class="d-inline">
+                <button class="btn btn-outline-primary" type="submit">
+                    <i class="fas fa-download me-2"></i>
+                    Скачать данные
+                </button>
+            </form>
+            <a id="delete" asp-page="DeletePersonalData" class="btn btn-danger">
+                <i class="fas fa-trash me-2"></i>
+                Удалить аккаунт
+            </a>
+        </div>
     </div>
 </div>
 

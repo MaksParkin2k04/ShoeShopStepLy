@@ -1,0 +1,110 @@
+@page "/OrderLabel/{orderId:guid}"
+@model ShoeShop.Pages.OrderLabelModel
+@{
+    ViewData["Title"] = "Этикетка заказа";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Этикетка заказа №@Model.Order?.Id</title>
+    <link rel="stylesheet" href="~/styles/label-print.css" />
+</head>
+<body>
+    @if (Model.Order != null)
+    {
+        <div class="label">
+            <div class="header">
+                <div class="company-name">StepLy</div>
+                <div class="order-number">Заказ №@Model.Order.Id.ToString().Substring(0, 8)</div>
+                <div class="payment-status">
+                    @if (Model.Order.PaymentDate.HasValue || Model.Order.Status == ShoeShop.Models.OrderStatus.Paid)
+                    {
+                        <span class="paid">✓ ОПЛАЧЕНО</span>
+                    }
+                    else
+                    {
+                        <span class="unpaid">✗ НЕ ОПЛАЧЕНО</span>
+                    }
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Получатель:</div>
+                <div class="recipient-info">
+                    <div><strong>@Model.Order.Recipient.Name</strong></div>
+                    <div>@Model.Order.Recipient.Phone</div>
+                    <div>@Model.Order.Recipient.City</div>
+                    <div>@Model.Order.Recipient.Street, @Model.Order.Recipient.House</div>
+                    @if (!string.IsNullOrEmpty(Model.Order.Recipient.Apartment))
+                    {
+                        <div>кв. @Model.Order.Recipient.Apartment</div>
+                    }
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Товары:</div>
+                <div class="items-list">
+                    @foreach (var item in Model.Order.OrderDetails)
+                    {
+                        <div class="item">
+                            @item.Name (размер @item.Size) - @item.Price₽
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="total">
+                Итого: @Model.Order.OrderDetails.Sum(x => x.Price)₽
+            </div>
+
+            <div class="section">
+                <div class="section-title">Оплата:</div>
+                <div style="font-size: 12px;">
+                    @if (Model.Order.PaymentType == ShoeShop.Models.PaymentType.Online)
+                    {
+                        <div>Онлайн оплата</div>
+                        @if (Model.Order.PaymentDate.HasValue)
+                        {
+                            <div>Оплачено: @Model.Order.PaymentDate.Value.ToString("dd.MM.yyyy HH:mm")</div>
+                        }
+                        else
+                        {
+                            <div>Ожидает оплаты</div>
+                        }
+                    }
+                    else
+                    {
+                        <div>Оплата при получении</div>
+                    }
+                </div>
+            </div>
+
+            <div class="section" style="margin-top: 15px; font-size: 10px;">
+                <div>Дата: @Model.Order.CreatedDate.ToString("dd.MM.yyyy HH:mm")</div>
+                @if (!string.IsNullOrEmpty(Model.Order.Coment))
+                {
+                    <div>Комментарий: @Model.Order.Coment</div>
+                }
+            </div>
+        </div>
+    }
+
+    <div class="no-print" style="margin-top: 20px; text-align: center;">
+        <button onclick="window.print()" class="btn btn-primary">Печать</button>
+        <button onclick="window.close()" class="btn btn-secondary">Закрыть</button>
+    </div>
+
+    <script>
+        // Автоматическая печать при загрузке
+        window.onload = function() {
+            setTimeout(function() {
+                window.print();
+            }, 500);
+        };
+    </script>
+</body>
+</html>

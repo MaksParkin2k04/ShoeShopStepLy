@@ -101,11 +101,11 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="name" class="form-label">Имя получателя *</label>
-                                <input id="name" name="name" type="text" class="form-control" required placeholder="Введите имя получателя" />
+                                <input id="name" name="name" type="text" class="form-control" required placeholder="Введите имя получателя" value="@Model.UserName" />
                             </div>
                             <div class="form-group">
                                 <label for="phone" class="form-label">Телефон *</label>
-                                <input id="phone" name="phone" type="tel" class="form-control" required placeholder="+7 (999) 123-45-67" />
+                                <input id="phone" name="phone" type="tel" class="form-control" required placeholder="+7 (999) 123-45-67" value="@Model.UserPhone" />
                             </div>
                         </div>
                     </div>
@@ -115,21 +115,21 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="city" class="form-label">Город *</label>
-                                <input id="city" name="city" type="text" class="form-control" required placeholder="Москва" />
+                                <input id="city" name="city" type="text" class="form-control" required placeholder="Москва" value="@Model.UserCity" />
                             </div>
                             <div class="form-group">
                                 <label for="street" class="form-label">Улица *</label>
-                                <input id="street" name="street" type="text" class="form-control" required placeholder="ул. Пушкина" />
+                                <input id="street" name="street" type="text" class="form-control" required placeholder="ул. Пушкина" value="@Model.UserStreet" />
                             </div>
                         </div>
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="house" class="form-label">Дом *</label>
-                                <input id="house" name="house" type="text" class="form-control" required placeholder="д. 10" />
+                                <input id="house" name="house" type="text" class="form-control" required placeholder="д. 10" value="@Model.UserHouse" />
                             </div>
                             <div class="form-group">
                                 <label for="apartment" class="form-label">Квартира</label>
-                                <input id="apartment" name="apartment" type="text" class="form-control" placeholder="кв. 25" />
+                                <input id="apartment" name="apartment" type="text" class="form-control" placeholder="кв. 25" value="@Model.UserApartment" />
                             </div>
                         </div>
                     </div>

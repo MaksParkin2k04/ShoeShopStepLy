@@ -2,12 +2,20 @@
 @using Microsoft.AspNetCore.Http.Features
 @model TwoFactorAuthenticationModel
 @{
-    ViewData["Title"] = "Two-factor authentication (2FA)";
+    ViewData["Title"] = "Двухфакторная аутентификация";
     ViewData["ActivePage"] = ManageNavPages.TwoFactorAuthentication;
 }
 
-<partial name="_StatusMessage" for="StatusMessage" />
-<h3>@ViewData["Title"]</h3>
+<div class="profile-section">
+    <div class="section-header">
+        <h2 class="section-title">
+            <i class="fas fa-shield-alt me-2"></i>
+            Двухфакторная аутентификация
+        </h2>
+        <p class="section-subtitle">Дополнительная защита вашего аккаунта</p>
+    </div>
+    
+    <partial name="_StatusMessage" for="StatusMessage" />
 @{
     var consentFeature = HttpContext.Features.Get<ITrackingConsentFeature>();
     @if (consentFeature?.CanTrack ?? true)
