@@ -1,0 +1,241 @@
+/* Адаптивные стили для мобильных устройств */
+
+/* Общие мобильные стили */
+@media (max-width: 768px) {
+    .container {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+    
+    /* Навигация */
+    .navbar-brand {
+        font-size: 1.1rem;
+    }
+    
+    .navbar-nav .nav-link {
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+    }
+    
+    /* Кнопки */
+    .btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+    }
+    
+    .btn-lg {
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+    }
+    
+    /* Карточки товаров */
+    .product-card {
+        margin-bottom: 1rem;
+    }
+    
+    .product-card .card-body {
+        padding: 1rem;
+    }
+    
+    .product-card .card-title {
+        font-size: 1rem;
+        line-height: 1.3;
+    }
+    
+    .product-card .product-price {
+        font-size: 1.1rem;
+    }
+    
+    /* Размеры товаров */
+    .sizes-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .size-badge {
+        min-width: 40px;
+        padding: 0.5rem;
+        font-size: 0.9rem;
+    }
+    
+    /* Формы */
+    .form-control {
+        font-size: 1rem;
+        padding: 0.75rem;
+    }
+    
+    .form-select {
+        font-size: 1rem;
+        padding: 0.75rem;
+    }
+    
+    /* Таблицы */
+    .table-responsive {
+        font-size: 0.85rem;
+    }
+    
+    .table th,
+    .table td {
+        padding: 0.5rem;
+        vertical-align: middle;
+    }
+    
+    /* Админ панель */
+    .admin-title {
+        font-size: 1.5rem;
+    }
+    
+    .admin-subtitle {
+        font-size: 0.9rem;
+    }
+    
+    .stat-card {
+        margin-bottom: 1rem;
+    }
+    
+    .stat-number {
+        font-size: 1.5rem;
+    }
+    
+    /* Вкладки */
+    .nav-tabs .nav-link {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.9rem;
+    }
+    
+    .tab-content {
+        padding: 1rem;
+    }
+    
+    /* QR Scanner */
+    #video {
+        width: 100%;
+        height: auto;
+        max-height: 250px;
+    }
+    
+    /* Этикетки товаров */
+    .product-item {
+        padding: 1rem !important;
+    }
+    
+    .size-buttons .btn {
+        min-width: 35px;
+        padding: 0.25rem 0.5rem;
+        font-size: 0.8rem;
+        margin: 0.1rem;
+    }
+    
+    /* Корзина */
+    .basket-item {
+        padding: 1rem;
+    }
+    
+    .basket-item .row > div {
+        margin-bottom: 0.5rem;
+    }
+}
+
+/* Очень маленькие экраны */
+@media (max-width: 576px) {
+    .container {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+    
+    /* Заголовки */
+    h1 {
+        font-size: 1.5rem;
+    }
+    
+    h2 {
+        font-size: 1.3rem;
+    }
+    
+    h3 {
+        font-size: 1.2rem;
+    }
+    
+    /* Кнопки в ряд */
+    .btn-group-vertical .btn {
+        margin-bottom: 0.25rem;
+    }
+    
+    /* Скрытие текста в кнопках, оставляем только иконки */
+    .btn-sm .btn-text {
+        display: none;
+    }
+    
+    /* Уменьшение отступов */
+    .p-4 {
+        padding: 1rem !important;
+    }
+    
+    .p-3 {
+        padding: 0.75rem !important;
+    }
+    
+    .mb-4 {
+        margin-bottom: 1rem !important;
+    }
+    
+    .mb-3 {
+        margin-bottom: 0.75rem !important;
+    }
+    
+    /* Адаптивные колонки */
+    .col-md-6 {
+        margin-bottom: 1rem;
+    }
+    
+    /* Футер */
+    footer .col-lg-4,
+    footer .col-lg-2 {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    
+    footer .social-links {
+        justify-content: center;
+    }
+}
+
+/* Ландшафтная ориентация на мобильных */
+@media (max-width: 768px) and (orientation: landscape) {
+    .navbar-collapse {
+        max-height: 200px;
+        overflow-y: auto;
+    }
+    
+    #video {
+        max-height: 200px;
+    }
+}
+
+/* Улучшения для сенсорных устройств */
+@media (hover: none) and (pointer: coarse) {
+    .btn {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    .nav-link {
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+    }
+    
+    .size-badge {
+        min-height: 44px;
+        min-width: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .form-control,
+    .form-select {
+        min-height: 44px;
+    }
+}

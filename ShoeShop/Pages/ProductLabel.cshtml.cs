@@ -45,7 +45,7 @@ namespace ShoeShop.Pages
             }
 
             // Генерируем QR-код для товара
-            var productUrl = $"https://jxpc5n7p-7002.euw.devtunnels.ms/Product?id={productId}";
+            var productUrl = $"https://jxpc5n7p-7002.euw.devtunnels.ms/Product/{productId}";
             QRCodeBase64 = GenerateQRCode(productUrl);
 
             return Page();
