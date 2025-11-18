@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StepLy - Магазин кроссовок</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Главная страница -->
+        <div id="home-page" class="page active">
+            <div class="hero-banner">
+                <h1>🔥 Скидки до 50%</h1>
+                <p>На популярные модели кроссовок</p>
+            </div>
+            
+            <div class="categories-grid">
+                <div class="category-card" onclick="showCatalog('men')">
+                    <span>👨 Мужские</span>
+                </div>
+                <div class="category-card" onclick="showCatalog('women')">
+                    <span>👩 Женские</span>
+                </div>
+                <div class="category-card" onclick="showCatalog('running')">
+                    <span>🏃 Беговые</span>
+                </div>
+                <div class="category-card" onclick="showCatalog('sale')">
+                    <span>🏷️ Распродажа</span>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2>🔥 Популярные товары</h2>
+                <div id="popular-products" class="products-grid"></div>
+            </div>
+            
+            <div class="section">
+                <h2>✨ Новинки</h2>
+                <div id="new-products" class="products-grid"></div>
+            </div>
+        </div>
+        
+        <!-- Каталог -->
+        <div id="catalog-page" class="page">
+            <div class="page-header">
+                <button onclick="goBack()" class="back-btn">← Назад</button>
+                <h1 id="catalog-title">Каталог</h1>
+                <button onclick="showFilters()" class="filter-btn">🔍</button>
+            </div>
+            
+            <div class="filters-bar">
+                <select id="sort-select" onchange="applySorting()">
+                    <option value="popular">По популярности</option>
+                    <option value="price-asc">Цена: по возрастанию</option>
+                    <option value="price-desc">Цена: по убыванию</option>
+                    <option value="new">Новинки</option>
+                </select>
+            </div>
+            
+            <div id="catalog-products" class="products-grid"></div>
+            <div id="load-more" class="load-more" onclick="loadMoreProducts()">Загрузить еще</div>
+        </div>
+        
+        <!-- Страница товара -->
+        <div id="product-page" class="page">
+            <div class="page-header">
+                <button onclick="goBack()" class="back-btn">← Назад</button>
+                <h1>Товар</h1>
+                <button onclick="toggleFavorite()" class="favorite-btn">♡</button>
+            </div>
+            
+            <div id="product-gallery" class="product-gallery"></div>
+            <div id="product-info" class="product-info"></div>
+            <div id="product-sizes" class="sizes-selector"></div>
+            <div id="product-description" class="product-description"></div>
+        </div>
+        
+        <!-- Корзина -->
+        <div id="cart-page" class="page">
+            <div class="page-header">
+                <button onclick="goBack()" class="back-btn">← Назад</button>
+                <h1>Корзина</h1>
+            </div>
+            
+            <div id="cart-items" class="cart-items"></div>
+            <div class="cart-summary">
+                <div class="promo-code">
+                    <input type="text" id="promo-input" placeholder="Промокод">
+                    <button onclick="applyPromo()">Применить</button>
+                </div>
+                <div class="total">
+                    <span>Итого: <span id="cart-total">0 ₽</span></span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Профиль -->
+        <div id="profile-page" class="page">
+            <div class="page-header">
+                <button onclick="goBack()" class="back-btn">← Назад</button>
+                <h1>Профиль</h1>
+            </div>
+            
+            <div class="profile-info">
+                <div id="user-info"></div>
+                <div class="profile-menu">
+                    <div class="menu-item" onclick="showOrders()">
+                        <span>📦 Мои заказы</span>
+                        <span>→</span>
+                    </div>
+                    <div class="menu-item" onclick="showFavorites()">
+                        <span>♡ Избранное</span>
+                        <span>→</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Нижняя навигация -->
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="showPage('home')">
+            <span>🏠</span>
+            <span>Главная</span>
+        </div>
+        <div class="nav-item" onclick="showPage('catalog')">
+            <span>🛍️</span>
+            <span>Каталог</span>
+        </div>
+        <div class="nav-item" onclick="showPage('cart')">
+            <span>🛒</span>
+            <span>Корзина</span>
+            <span id="cart-badge" class="badge">0</span>
+        </div>
+        <div class="nav-item" onclick="showPage('profile')">
+            <span>👤</span>
+            <span>Профиль</span>
+        </div>
+    </div>
+    
+    <!-- Модальные окна -->
+    <div id="filters-modal" class="modal">
+        <div class="modal-content">
+            <h3>Фильтры</h3>
+            <div class="filter-group">
+                <label>Бренд:</label>
+                <select id="brand-filter">
+                    <option value="">Все бренды</option>
+                    <option value="nike">Nike</option>
+                    <option value="adidas">Adidas</option>
+                    <option value="puma">Puma</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Размер:</label>
+                <div class="size-filters">
+                    <button class="size-btn" data-size="40">40</button>
+                    <button class="size-btn" data-size="41">41</button>
+                    <button class="size-btn" data-size="42">42</button>
+                    <button class="size-btn" data-size="43">43</button>
+                </div>
+            </div>
+            <div class="filter-group">
+                <label>Цена:</label>
+                <input type="range" id="price-range" min="0" max="50000" value="50000">
+                <span id="price-value">до 50000 ₽</span>
+            </div>
+            <div class="modal-actions">
+                <button onclick="applyFilters()">Применить</button>
+                <button onclick="closeModal()">Отмена</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="app.js"></script>
+</body>
+</html>

@@ -25,6 +25,14 @@ namespace ShoeShop.Data {
             return await context.Products.Include(p => p.Images).Include(p => p.Category).FirstOrDefaultAsync(p => p.Id == productId);
         }
 
+        public async Task<Product?> GetByIdAsync(Guid productId) {
+            return await GetProduct(productId);
+        }
+
+        public async Task<IEnumerable<Product>> GetAllAsync() {
+            return await context.Products.Include(p => p.Images).Include(p => p.Category).ToArrayAsync();
+        }
+
         public async Task<int> ProductCount() {
             return await context.Products.IsSaleFilters(IsSaleFilter.IsSale).CountAsync();
         }

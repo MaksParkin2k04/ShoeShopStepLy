@@ -1,0 +1,71 @@
+@page
+@model ShoeShop.Pages.Admin.TelegramSetupModel
+@{
+    ViewData["Title"] = "Настройка Telegram";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Быстрая настройка Telegram Mini App</h3>
+                </div>
+                <div class="card-body">
+                    @if (!string.IsNullOrEmpty(Model.Message))
+                    {
+                        <div class="alert alert-@(Model.IsSuccess ? "success" : "danger")">
+                            @Model.Message
+                        </div>
+                    }
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>1. Настройка Webhook</h5>
+                            <form method="post" asp-page-handler="SetWebhook">
+                                <div class="form-group">
+                                    <label>URL для webhook:</label>
+                                    <input type="text" class="form-control" name="webhookUrl" 
+                                           value="@($"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}/api/telegram/webhook")" 
+                                           required>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Установить Webhook</button>
+                            </form>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h5>2. Тестирование бота</h5>
+                            <form method="post" asp-page-handler="SendTest">
+                                <div class="form-group">
+                                    <label>Ваш Telegram ID:</label>
+                                    <input type="number" class="form-control" name="chatId" 
+                                           placeholder="Например: 123456789" required>
+                                    <small class="text-muted">Получить ID можно у <code>@@userinfobot</code></small>
+                                </div>
+                                <button type="submit" class="btn btn-success">Отправить тестовое сообщение</button>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="row">
+                        <div class="col-12">
+                            <h5>3. Настройка Mini App в BotFather</h5>
+                            <ol>
+                                <li>Откройте <code>@@BotFather</code> в Telegram</li>
+                                <li>Отправьте команду <code>/newapp</code></li>
+                                <li>Выберите вашего бота</li>
+                                <li>Введите название: <strong>StepLy Shop</strong></li>
+                                <li>Введите описание: <strong>Магазин качественной обуви</strong></li>
+                                <li>Загрузите иконку (512x512px)</li>
+                                <li>Введите URL: <code>@($"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}/telegram-app")</code></li>
+                                <li>Выберите "Inline keyboard"</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,161 @@
+@page
+@model ShoeShop.Pages.Admin.TelegramBotModel
+@{
+    ViewData["Title"] = "Telegram Bot";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title">Настройка Telegram Mini App</h3>
+                    <div>
+                        <a asp-page="/Admin/TelegramSetup" class="btn btn-primary btn-sm me-2">
+                            <i class="fas fa-cog"></i> Настройка
+                        </a>
+                        <a asp-page="/Admin/TelegramTest" class="btn btn-warning btn-sm">
+                            <i class="fas fa-bug"></i> Тест
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Ссылка на Mini App</h5>
+                            <div class="input-group mb-3">
+                                <input type="text" class="form-control" 
+                                       value="@($"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}/telegram-app")" 
+                                       readonly>
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-secondary" type="button" 
+                                            onclick="copyToClipboard(this.previousElementSibling)">
+                                        Копировать
+                                    </button>
+                                </div>
+                            </div>
+                            <small class="text-muted">
+                                Используйте эту ссылку при создании Mini App в BotFather
+                            </small>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <h5>Инструкция по настройке</h5>
+                            <ol class="small">
+                                <li>Откройте <code>@@BotFather</code> в Telegram</li>
+                                <li>Отправьте команду <code>/newapp</code></li>
+                                <li>Выберите вашего бота</li>
+                                <li>Введите название приложения: "StepLy Shop"</li>
+                                <li>Введите описание: "Магазин обуви StepLy"</li>
+                                <li>Загрузите иконку приложения (512x512px)</li>
+                                <li>Вставьте ссылку из поля слева</li>
+                                <li>Выберите "Inline keyboard"</li>
+                            </ol>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="row">
+                        <div class="col-12">
+                            <h5>Статистика заказов из Telegram</h5>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="info-box">
+                                        <span class="info-box-icon bg-info"><i class="fas fa-shopping-cart"></i></span>
+                                        <div class="info-box-content">
+                                            <span class="info-box-text">Всего заказов</span>
+                                            <span class="info-box-number">@Model.TotalOrders</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="info-box">
+                                        <span class="info-box-icon bg-success"><i class="fas fa-ruble-sign"></i></span>
+                                        <div class="info-box-content">
+                                            <span class="info-box-text">Общая сумма</span>
+                                            <span class="info-box-number">@Model.TotalAmount.ToString("N0") ₽</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="info-box">
+                                        <span class="info-box-icon bg-warning"><i class="fas fa-users"></i></span>
+                                        <div class="info-box-content">
+                                            <span class="info-box-text">Уникальных клиентов</span>
+                                            <span class="info-box-number">@Model.UniqueCustomers</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="info-box">
+                                        <span class="info-box-icon bg-danger"><i class="fas fa-calendar-day"></i></span>
+                                        <div class="info-box-content">
+                                            <span class="info-box-text">За сегодня</span>
+                                            <span class="info-box-number">@Model.TodayOrders</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <h5>Последние заказы из Telegram</h5>
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>ID заказа</th>
+                                            <th>Дата</th>
+                                            <th>Клиент</th>
+                                            <th>Сумма</th>
+                                            <th>Статус</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var order in Model.RecentOrders)
+                                        {
+                                            <tr>
+                                                <td>@order.Id.ToString().Substring(0, 8)...</td>
+                                                <td>@order.CreatedDate.ToString("dd.MM.yyyy HH:mm")</td>
+                                                <td>@order.Recipient?.Name</td>
+                                                <td>@((order.OrderDetails?.Sum(od => od.Price) ?? 0).ToString("N0")) ₽</td>
+                                                <td>
+                                                    <span class="badge badge-secondary">
+                                                        @order.Status
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyToClipboard(element) {
+    element.select();
+    element.setSelectionRange(0, 99999);
+    document.execCommand("copy");
+    
+    const button = element.nextElementSibling.querySelector('button');
+    const originalText = button.textContent;
+    button.textContent = 'Скопировано!';
+    button.classList.add('btn-success');
+    button.classList.remove('btn-outline-secondary');
+    
+    setTimeout(() => {
+        button.textContent = originalText;
+        button.classList.remove('btn-success');
+        button.classList.add('btn-outline-secondary');
+    }, 2000);
+}
+</script>

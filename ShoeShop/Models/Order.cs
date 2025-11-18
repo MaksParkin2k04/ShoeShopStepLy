@@ -65,6 +65,26 @@
         /// Комментарии администратора
         /// </summary>
         public List<string>? AdminComments { get; private set; }
+        
+        /// <summary>
+        /// Источник заказа (Сайт, Telegram, VK)
+        /// </summary>
+        public string? Source { get; private set; }
+        
+        /// <summary>
+        /// Telegram ID пользователя (если заказ из Telegram)
+        /// </summary>
+        public long? TelegramUserId { get; private set; }
+        
+        /// <summary>
+        /// ID пользователя сайта (если заказ связан с аккаунтом)
+        /// </summary>
+        public Guid? WebUserId { get; private set; }
+        
+        /// <summary>
+        /// Номер заказа для отслеживания
+        /// </summary>
+        public string OrderNumber { get; private set; } = string.Empty;
 
         public void SetStatus(OrderStatus status) {
             Status = status;
@@ -81,6 +101,22 @@
         public void AddCustomerComment(string comment) {
             AdminComments = AdminComments ?? new List<string>();
             AdminComments.Add($"[{DateTime.Now:dd.MM.yyyy HH:mm}] Клиент: {comment}");
+        }
+        
+        public void SetSource(string source) {
+            Source = source;
+        }
+        
+        public void SetTelegramUser(long telegramUserId) {
+            TelegramUserId = telegramUserId;
+        }
+        
+        public void SetOrderNumber(string orderNumber) {
+            OrderNumber = orderNumber;
+        }
+        
+        public void SetWebUser(Guid webUserId) {
+            WebUserId = webUserId;
         }
 
         /// <summary>

@@ -76,6 +76,7 @@
         From35To40 = S35 | S36 | S37 | S38 | S39 | S40,
         From38To45 = S38 | S39 | S40 | S41 | S42 | S43 | S44 | S45,
         From39To46 = S39 | S40 | S41 | S42 | S43 | S44 | S45 | S46,
-        From40To45 = S40 | S41 | S42 | S43 | S44 | S45
+        From40To45 = S40 | S41 | S42 | S43 | S44 | S45,
+        All = From35To40 | From38To45 | From39To46
     }
 }

@@ -132,6 +132,9 @@ namespace ShoeShop.Pages {
 
             OrderRecipient recipient = OrderRecipient.Create(name ?? "", city ?? "", street ?? "", house ?? "", apartment ?? "", phone ?? "");
             Order order = Order.Create(user!.Id, DateTime.Now, coment ?? "", recipient, orderDetails, PaymentType.Cash);
+            order.SetSource("Сайт");
+            order.SetWebUser(user.Id);
+            order.SetOrderNumber($"WEB{DateTime.Now:yyyyMMdd}{order.Id.ToString().Substring(0, 6).ToUpper()}");
 
             await repository.CreateOrder(order);
             

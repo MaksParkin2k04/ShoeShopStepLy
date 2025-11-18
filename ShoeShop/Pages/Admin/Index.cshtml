@@ -1,4 +1,4 @@
-@page
+@page "/Admin"
 @model ShoeShop.Pages.Admin.AdminIndexModel
 @{
     ViewData["Title"] = "Админ панель";
@@ -115,6 +115,45 @@
                     <h5>Аналитика сайта</h5>
                     <p>Статистика посещений из Яндекс.Метрики</p>
                     <a asp-page="/Admin/Analytics" class="btn btn-info">Посмотреть</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4">
+            <div class="admin-card">
+                <div class="admin-card-icon">
+                    <i class="fab fa-telegram-plane"></i>
+                </div>
+                <div class="admin-card-content">
+                    <h5>Telegram Бот</h5>
+                    <p>Управление Telegram ботом и пользователями</p>
+                    <a asp-page="/Admin/TelegramManagement" class="btn btn-primary">Управлять</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-4">
+            <div class="admin-card">
+                <div class="admin-card-icon">
+                    <i class="fas fa-mobile-alt"></i>
+                </div>
+                <div class="admin-card-content">
+                    <h5>Telegram Mini App</h5>
+                    <p>Настройка и статистика Telegram приложения</p>
+                    <a asp-page="/Admin/TelegramBot" class="btn btn-primary">Настроить</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4">
+            <div class="admin-card">
+                <div class="admin-card-icon">
+                    <i class="fas fa-database"></i>
+                </div>
+                <div class="admin-card-content">
+                    <h5>Тестовые данные</h5>
+                    <p>Добавление тестовых товаров и категорий</p>
+                    <a asp-page="/Admin/TestData" class="btn btn-secondary">Управление</a>
                 </div>
             </div>
         </div>

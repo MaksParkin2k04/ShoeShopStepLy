@@ -81,29 +81,40 @@ namespace ShoeShop.Services {
             Dictionary<string, IFormFile?> dictionary = new Dictionary<string, IFormFile?>();
 
             foreach (EditImage editImage in product.Images ?? Enumerable.Empty<EditImage>()) {
-
                 string relativePath = IMAGE_FOLDER_PATH + Guid.NewGuid().ToString() + ".jpg";
-                ProductImage? oldImage = oldProduct.Images?.FirstOrDefault(i => i.Id == editImage.Id);
-                if (oldImage == null) { throw new ArgumentOutOfRangeException(nameof(product), $"Изображение Id-{editImage.Id} несуществует"); }
-
+                
                 switch (editImage.Mode) {
-                    case EditImageMode.Original:
-                        oldProduct.UpdateImageAlt(editImage.Id.Value, editImage.Alt);
-                        break;
                     case EditImageMode.New:
-                        oldProduct.AddImage(relativePath, editImage.Alt);
-                        dictionary.Add(Path.Combine(environment.WebRootPath, relativePath), editImage.Image);
+                        if (editImage.Image != null) {
+                            oldProduct.AddImage(relativePath, editImage.Alt);
+                            dictionary.Add(Path.Combine(environment.WebRootPath, relativePath), editImage.Image);
+                        }
                         break;
+                    case EditImageMode.Original:
                     case EditImageMode.Edit:
-                        imageManager.Delete(Path.Combine(environment.WebRootPath, oldImage.Path));
-                        oldProduct.RemoveImage(oldImage.Id);
-
-                        dictionary.Add(Path.Combine(environment.WebRootPath, relativePath), editImage.Image);
-                        oldProduct.AddImage(IMAGE_FOLDER_PATH + Guid.NewGuid().ToString(), editImage.Alt);
-                        break;
                     case EditImageMode.Deleted:
-                        imageManager.Delete(Path.Combine(environment.WebRootPath, oldImage!.Path));
-                        oldProduct.RemoveImage(editImage.Id.Value);
+                        if (editImage.Id.HasValue) {
+                            ProductImage? oldImage = oldProduct.Images?.FirstOrDefault(i => i.Id == editImage.Id);
+                            if (oldImage != null) {
+                                switch (editImage.Mode) {
+                                    case EditImageMode.Original:
+                                        oldProduct.UpdateImageAlt(editImage.Id.Value, editImage.Alt);
+                                        break;
+                                    case EditImageMode.Edit:
+                                        imageManager.Delete(Path.Combine(environment.WebRootPath, oldImage.Path));
+                                        oldProduct.RemoveImage(oldImage.Id);
+                                        if (editImage.Image != null) {
+                                            dictionary.Add(Path.Combine(environment.WebRootPath, relativePath), editImage.Image);
+                                            oldProduct.AddImage(relativePath, editImage.Alt);
+                                        }
+                                        break;
+                                    case EditImageMode.Deleted:
+                                        imageManager.Delete(Path.Combine(environment.WebRootPath, oldImage.Path));
+                                        oldProduct.RemoveImage(editImage.Id.Value);
+                                        break;
+                                }
+                            }
+                        }
                         break;
                 }
             }

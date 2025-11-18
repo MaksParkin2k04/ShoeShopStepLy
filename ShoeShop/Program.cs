@@ -29,6 +29,9 @@ namespace ShoeShop {
 
             builder.Services.AddSession();
             builder.Services.AddRazorPages();
+            builder.Services.AddControllers();
+            builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddSwaggerGen();
             builder.Services.AddScoped<IImageManager, ImageManager>();
             builder.Services.AddScoped<IProductManager, ProductManager>();
             builder.Services.AddScoped<IAdminRepository, AdminRepository>();
@@ -41,6 +44,10 @@ namespace ShoeShop {
             builder.Services.AddScoped<ReviewService>();
             builder.Services.AddHttpClient<YooKassaService>();
             builder.Services.AddHttpClient<YandexMetrikaService>();
+            builder.Services.AddHttpClient<TelegramBotService>();
+            builder.Services.AddScoped<TelegramBotHandler>();
+            builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
+            builder.Services.AddHostedService<TelegramShopService>();
 
             builder.Services.Configure<IdentityOptions>(options => {
                 // Параметры для требований к паролю..
@@ -165,6 +172,57 @@ namespace ShoeShop {
                     // Колонка уже существует
                 }
                 
+                // Добавляем колонки для Telegram интеграции в таблицу Orders
+                try {
+                    context.Database.ExecuteSqlRaw(
+                        "IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'Orders' AND COLUMN_NAME = 'Source') " +
+                        "ALTER TABLE Orders ADD Source nvarchar(50) NULL");
+                    
+                    context.Database.ExecuteSqlRaw(
+                        "IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'Orders' AND COLUMN_NAME = 'TelegramUserId') " +
+                        "ALTER TABLE Orders ADD TelegramUserId bigint NULL");
+                    
+                    context.Database.ExecuteSqlRaw(
+                        "IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'Orders' AND COLUMN_NAME = 'OrderNumber') " +
+                        "ALTER TABLE Orders ADD OrderNumber nvarchar(50) NULL");
+                    
+                    context.Database.ExecuteSqlRaw(
+                        "IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'Orders' AND COLUMN_NAME = 'WebUserId') " +
+                        "ALTER TABLE Orders ADD WebUserId uniqueidentifier NULL");
+                    
+                    // Обновляем старые заказы
+                    context.Database.ExecuteSqlRaw(
+                        "UPDATE Orders SET Source = 'Сайт' WHERE Source IS NULL AND Coment NOT LIKE '%Telegram%'");
+                    context.Database.ExecuteSqlRaw(
+                        "UPDATE Orders SET Source = 'Telegram' WHERE Source IS NULL AND Coment LIKE '%Telegram%'");
+                    
+                    // Генерируем номера для старых заказов
+                    context.Database.ExecuteSqlRaw(
+                        "UPDATE Orders SET OrderNumber = 'WEB' + FORMAT(CreatedDate, 'yyyyMMdd') + LEFT(CAST(Id AS NVARCHAR(36)), 6) WHERE OrderNumber IS NULL");
+                } catch {
+                    // Колонки уже существуют
+                }
+                
+                // Создаем таблицу TelegramUsers
+                try {
+                    context.Database.ExecuteSqlRaw(
+                        "IF OBJECT_ID('TelegramUsers', 'U') IS NULL " +
+                        "CREATE TABLE TelegramUsers (" +
+                        "TelegramId bigint NOT NULL PRIMARY KEY, " +
+                        "FirstName nvarchar(100) NULL, " +
+                        "LastName nvarchar(100) NULL, " +
+                        "Username nvarchar(100) NULL, " +
+                        "Phone nvarchar(20) NULL, " +
+                        "Address nvarchar(500) NULL, " +
+                        "CreatedDate datetime2 NOT NULL, " +
+                        "LastActivity datetime2 NOT NULL, " +
+                        "WebUserId uniqueidentifier NULL, " +
+                        "Email nvarchar(256) NULL, " +
+                        "IsLinkedToWebsite bit NOT NULL DEFAULT 0)");
+                } catch {
+                    // Таблица уже существует
+                }
+                
                 // Создаем таблицу ProductReviews
                 try {
                     context.Database.ExecuteSqlRaw(
@@ -196,6 +254,13 @@ namespace ShoeShop {
                     // Таблица уже существует
                 }
                 
+                // Инициализируем тестовые данные
+                try {
+                    await ShoeShop.Data.Initialization.TestDataInitializer.InitializeAsync(context);
+                } catch {
+                    // Ошибка инициализации
+                }
+                
                 // Инициализируем тестовые остатки
                 try {
                     await ShoeShop.Data.Initialization.StockInitializer.InitializeAsync(context, stockService);
@@ -222,7 +287,18 @@ namespace ShoeShop {
             app.UseSession();
             app.UseAuthentication();
             app.UseAuthorization();
+            
+            // Swagger для API
+            if (app.Environment.IsDevelopment()) {
+                app.UseSwagger();
+                app.UseSwaggerUI(c => {
+                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "ShoeShop API v1");
+                    c.RoutePrefix = "api-docs";
+                });
+            }
+            
             app.MapRazorPages();
+            app.MapControllers();
 
             app.Run();
         }

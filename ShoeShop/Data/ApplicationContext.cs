@@ -14,6 +14,7 @@ namespace ShoeShop.Data {
         public DbSet<OrderDetail> OrderDetails { get; private set; }
         public DbSet<Category> Categories { get; private set; }
         public DbSet<PromoCode> PromoCodes { get; private set; }
+        public DbSet<TelegramUser> TelegramUsers { get; private set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
             base.OnModelCreating(modelBuilder);
@@ -73,6 +74,14 @@ namespace ShoeShop.Data {
             modelBuilder.Entity<PromoCode>().Property(p => p.Code).IsRequired().HasMaxLength(20);
             modelBuilder.Entity<PromoCode>().Property(p => p.DiscountPercent).IsRequired();
             modelBuilder.Entity<PromoCode>().HasIndex(p => p.Code).IsUnique();
+
+            modelBuilder.Entity<TelegramUser>().HasKey(t => t.TelegramId);
+            modelBuilder.Entity<TelegramUser>().Property(t => t.FirstName).HasMaxLength(100);
+            modelBuilder.Entity<TelegramUser>().Property(t => t.LastName).HasMaxLength(100);
+            modelBuilder.Entity<TelegramUser>().Property(t => t.Username).HasMaxLength(100);
+            modelBuilder.Entity<TelegramUser>().Property(t => t.Phone).HasMaxLength(20);
+            modelBuilder.Entity<TelegramUser>().Property(t => t.Address).HasMaxLength(500);
+            modelBuilder.Entity<TelegramUser>().Property(t => t.Email).HasMaxLength(256);
 
         }
     }

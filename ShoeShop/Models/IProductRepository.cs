@@ -3,6 +3,8 @@
         Task<IEnumerable<Product>> GetProducts(IReadOnlyCollection<Guid> productIds);
         Task<IEnumerable<Product>> GetProducts(ProductSorting sorting, int start, int count);
         Task<Product?> GetProduct(Guid productId);
+        Task<Product?> GetByIdAsync(Guid productId);
+        Task<IEnumerable<Product>> GetAllAsync();
         Task<int> ProductCount();
 
         Task<IEnumerable<Order>> GetOrders(Guid customerId, OrderStatusFilter filter, OrderSorting sorting, int start, int count);
