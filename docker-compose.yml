@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  shoeshop-api:
+    build:
+      context: ./ShoeShop.API
+      dockerfile: Dockerfile
+    ports:
+      - "7001:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    networks:
+      - shoeshop-network
+
+  shoeshop-web:
+    build:
+      context: ./ShoeShop
+      dockerfile: Dockerfile
+    ports:
+      - "7002:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - API_BASE_URL=http://shoeshop-api:80/api
+    depends_on:
+      - shoeshop-api
+    networks:
+      - shoeshop-network
+
+  shoeshop-telegram-bot:
+    build:
+      context: ./ShoeShop.TelegramBot
+      dockerfile: Dockerfile
+    environment:
+      - API_BASE_URL=http://shoeshop-api:80/api
+    depends_on:
+      - shoeshop-api
+    networks:
+      - shoeshop-network
+
+  shoeshop-vk-bot:
+    build:
+      context: ./ShoeShop.VKBot
+      dockerfile: Dockerfile
+    environment:
+      - API_BASE_URL=http://shoeshop-api:80/api
+    depends_on:
+      - shoeshop-api
+    networks:
+      - shoeshop-network
+
+networks:
+  shoeshop-network:
+    driver: bridge

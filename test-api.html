@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test API</title>
+</head>
+<body>
+    <h1>API Test</h1>
+    <button onclick="testProducts()">Test Products</button>
+    <button onclick="testOrder()">Test Order</button>
+    <div id="result"></div>
+
+    <script>
+        const API_URL = 'https://jxpc5n7p-7002.euw.devtunnels.ms/api';
+        
+        async function testProducts() {
+            try {
+                const response = await fetch(`${API_URL}/products`);
+                const data = await response.json();
+                document.getElementById('result').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            } catch (error) {
+                document.getElementById('result').innerHTML = 'Error: ' + error.message;
+            }
+        }
+        
+        async function testOrder() {
+            try {
+                const orderData = {
+                    items: [
+                        {
+                            productId: "123e4567-e89b-12d3-a456-426614174000",
+                            name: "Test Product",
+                            price: 1000,
+                            size: 42
+                        }
+                    ],
+                    customer: {
+                        name: "Test User",
+                        phone: "+7 900 123-45-67",
+                        address: "Test Address"
+                    },
+                    source: "Test",
+                    telegramUserId: 123456789
+                };
+                
+                const response = await fetch(`${API_URL}/orders`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(orderData)
+                });
+                
+                const data = await response.json();
+                document.getElementById('result').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            } catch (error) {
+                document.getElementById('result').innerHTML = 'Error: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>

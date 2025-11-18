@@ -122,7 +122,7 @@
                                 <h5>Выберите размер:</h5>
                                 <div class="sizes-list">
                                     @for (int size = 36; size <= 45; size++) {
-                                        var sizeFlag = (ProductSize)Enum.Parse(typeof(ProductSize), $"S{size}");
+                                        var sizeFlag = (ProductSize)(1UL << (size - 1));
                                         if (Model.Product.Sizes.HasFlag(sizeFlag)) {
                                             var quantity = Model.SizeQuantities.GetValueOrDefault(size, 0);
                                             var isAvailable = quantity > 0;
@@ -299,6 +299,32 @@
                         border: 1px solid #ffeaa7;
                     }
                     </style>
+
+                    @if (User.IsInRole("Admin")) {
+                        <div class="admin-section mt-4 p-3 border rounded bg-light">
+                            <h6>Админ панель</h6>
+                            <div class="mb-3">
+                                <strong>Печать этикеток по размерам:</strong>
+                                <div class="mt-2">
+                                    @for (int size = 36; size <= 45; size++) {
+                                        var sizeFlag = (ProductSize)(1UL << (size - 1));
+                                        if (Model.Product.Sizes.HasFlag(sizeFlag)) {
+                                            <a asp-page="/ProductSizeLabel" asp-route-productId="@Model.Product.Id" asp-route-size="@size" 
+                                               class="btn btn-sm btn-outline-success me-1 mb-1" target="_blank" title="Печать этикетки размер @size">
+                                                @size
+                                            </a>
+                                        }
+                                    }
+                                </div>
+                            </div>
+                            <div>
+                                <a asp-page="/ProductLabel" asp-route-productId="@Model.Product.Id" 
+                                   class="btn btn-sm btn-outline-primary" target="_blank" title="Печать общей этикетки">
+                                    <i class="fas fa-print me-1"></i>Общая этикетка
+                                </a>
+                            </div>
+                        </div>
+                    }
 
                     <div class="product-features">
                         <div class="feature-item">

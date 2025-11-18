@@ -89,6 +89,20 @@ body {
     margin-top: 10px;
 }
 
+.qr-section {
+    text-align: center;
+    margin-top: 15px;
+    border-top: 1px solid #ccc;
+    padding-top: 10px;
+}
+
+.qr-code {
+    width: 150px;
+    height: 150px;
+    margin: 5px auto;
+    display: block;
+}
+
 @media print {
     body { 
         margin: 0; 
@@ -104,5 +118,9 @@ body {
     .unpaid {
         background: #e8e8e8 !important;
         color: #000 !important;
+    }
+    .qr-code {
+        width: 150px;
+        height: 150px;
     }
 }

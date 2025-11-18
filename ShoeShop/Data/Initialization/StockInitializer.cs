@@ -25,7 +25,9 @@ namespace ShoeShop.Data.Initialization {
             foreach (var product in products) {
                 // Для каждого товара создаем остатки по размерам
                 for (int size = 36; size <= 45; size++) {
-                    var sizeFlag = (ProductSize)Enum.Parse(typeof(ProductSize), $"S{size}");
+                    if (size < 1 || size > 64) continue;
+                    
+                    var sizeFlag = (ProductSize)(1UL << (size - 1));
                     
                     // Проверяем, есть ли этот размер у товара
                     if (product.Sizes.HasFlag(sizeFlag)) {

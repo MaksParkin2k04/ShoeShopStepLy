@@ -20,6 +20,19 @@ namespace ShoeShop.Services {
         /// <param name="size">Размер</param>
         /// <param name="quantity">Количество</param>
         /// <param name="purchasePrice">Цена закупки</param>
+        public async Task SetStockAsync(Guid productId, int size, int quantity, double purchasePrice = 0) {
+            var existing = await _stockRepository.GetByProductAndSizeAsync(productId, size);
+            
+            if (existing == null) {
+                var newStock = ProductStock.Create(productId, size, quantity, purchasePrice);
+                await _stockRepository.SaveAsync(newStock);
+            } else {
+                existing.SetQuantity(quantity);
+                existing.SetPurchasePrice(purchasePrice);
+                await _stockRepository.SaveAsync(existing);
+            }
+        }
+
         public async Task AddStockAsync(Guid productId, int size, int quantity, double purchasePrice = 0) {
             var existing = await _stockRepository.GetByProductAndSizeAsync(productId, size);
             
@@ -146,7 +159,9 @@ namespace ShoeShop.Services {
         /// <param name="size">Размер</param>
         /// <returns>true если размер валиден</returns>
         private bool IsValidSize(Product product, int size) {
-            var sizeFlag = (ProductSize)Enum.Parse(typeof(ProductSize), $"S{size}");
+            if (size < 1 || size > 64) return false;
+            
+            var sizeFlag = (ProductSize)(1UL << (size - 1));
             return product.Sizes.HasFlag(sizeFlag);
         }
     }

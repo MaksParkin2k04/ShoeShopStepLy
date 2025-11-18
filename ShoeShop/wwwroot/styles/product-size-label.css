@@ -1,0 +1,146 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background: white;
+}
+
+.product-size-label {
+    width: 100mm;
+    height: 70mm;
+    border: 2px solid #000;
+    padding: 10px;
+    box-sizing: border-box;
+    page-break-after: always;
+}
+
+.header {
+    text-align: center;
+    border-bottom: 1px solid #000;
+    padding-bottom: 4px;
+    margin-bottom: 6px;
+}
+
+.company-name {
+    font-size: 12px;
+    font-weight: bold;
+    margin-bottom: 2px;
+}
+
+.product-id {
+    font-size: 8px;
+    color: #666;
+}
+
+.product-info {
+    text-align: center;
+    margin-bottom: 6px;
+}
+
+.product-name {
+    font-size: 10px;
+    font-weight: bold;
+    margin-bottom: 2px;
+}
+
+.size-badge {
+    background: #2c5aa0;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: bold;
+    margin: 2px 0;
+    display: inline-block;
+}
+
+.product-price {
+    font-size: 12px;
+    font-weight: bold;
+    color: #2c5aa0;
+    margin: 2px 0;
+}
+
+.sale-badge {
+    background: #ff4444;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 7px;
+    font-weight: bold;
+    margin-top: 2px;
+    display: inline-block;
+}
+
+.stock-info {
+    margin: 3px 0;
+}
+
+.stock-badge {
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 7px;
+    font-weight: bold;
+    display: inline-block;
+}
+
+.stock-badge.in-stock {
+    background: #28a745;
+    color: white;
+}
+
+.stock-badge.out-of-stock {
+    background: #dc3545;
+    color: white;
+}
+
+.product-details {
+    font-size: 7px;
+    line-height: 1.2;
+    margin-bottom: 6px;
+    text-align: center;
+}
+
+.qr-section {
+    text-align: center;
+}
+
+.qr-code {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 5px;
+    display: block;
+}
+
+.qr-text {
+    font-size: 5px;
+    color: #666;
+}
+
+@media print {
+    body { 
+        margin: 0; 
+        padding: 0; 
+    }
+    .no-print { 
+        display: none; 
+    }
+    .sale-badge, .size-badge {
+        background: #ccc !important;
+        color: #000 !important;
+    }
+    .stock-badge.in-stock {
+        background: #ddd !important;
+        color: #000 !important;
+        border: 1px solid #999 !important;
+    }
+    .stock-badge.out-of-stock {
+        background: #f0f0f0 !important;
+        color: #000 !important;
+        border: 1px solid #ccc !important;
+    }
+    .qr-code {
+        width: 55px;
+        height: 55px;
+    }
+}

@@ -254,19 +254,9 @@ namespace ShoeShop {
                     // Таблица уже существует
                 }
                 
-                // Инициализируем тестовые данные
-                try {
-                    await ShoeShop.Data.Initialization.TestDataInitializer.InitializeAsync(context);
-                } catch {
-                    // Ошибка инициализации
-                }
+                // Инициализация тестовых данных отключена
                 
-                // Инициализируем тестовые остатки
-                try {
-                    await ShoeShop.Data.Initialization.StockInitializer.InitializeAsync(context, stockService);
-                } catch {
-                    // Ошибка инициализации - продолжаем без остатков
-                }
+                // Инициализация остатков отключена
             }
 
             // Configure the HTTP request pipeline.

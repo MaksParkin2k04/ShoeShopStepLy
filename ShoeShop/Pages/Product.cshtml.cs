@@ -1,22 +1,26 @@
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using ShoeShop.Models;
 using ShoeShop.Services;
 
 namespace ShoeShop.Pages {
+    [Authorize(Roles = "Admin")]
     public class ProductModel : PageModel {
-        public ProductModel(IProductRepository repository, IBasketShoppingService basketShopping, StockService stockService, ReviewService reviewService) {
+        public ProductModel(IProductRepository repository, IBasketShoppingService basketShopping, StockService stockService, ReviewService reviewService, IProductStockRepository stockRepository) {
             this.repository = repository;
             this.basketShopping = basketShopping;
             this.stockService = stockService;
             this.reviewService = reviewService;
+            this.stockRepository = stockRepository;
         }
 
         private IProductRepository repository;
         private readonly IBasketShoppingService basketShopping;
         private readonly StockService stockService;
         private readonly ReviewService reviewService;
+        private readonly IProductStockRepository stockRepository;
 
         public Product? Product { get; private set; }
         public ProductAvailabilityStatus AvailabilityStatus { get; private set; }
@@ -30,8 +34,19 @@ namespace ShoeShop.Pages {
         public async Task OnGetAsync(Guid id) {
             Product = await repository.GetProduct(id);
             if (Product != null) {
-                AvailabilityStatus = await stockService.GetAvailabilityStatusAsync(Product.Id);
-                SizeQuantities = await stockService.GetSizeQuantitiesAsync(Product.Id);
+                // Получаем остатки напрямую из репозитория
+                var stocks = await stockRepository.GetByProductIdAsync(Product.Id);
+                SizeQuantities = stocks.ToDictionary(s => s.Size, s => s.Quantity);
+                
+                // Определяем статус наличия
+                var totalStock = SizeQuantities.Values.Sum();
+                if (totalStock == 0) {
+                    AvailabilityStatus = ProductAvailabilityStatus.OutOfStock;
+                } else if (totalStock < 5) {
+                    AvailabilityStatus = ProductAvailabilityStatus.LowStock;
+                } else {
+                    AvailabilityStatus = ProductAvailabilityStatus.InStock;
+                }
                 Reviews = await reviewService.GetProductReviewsAsync(Product.Id);
                 AverageRating = await reviewService.GetAverageRatingAsync(Product.Id);
                 ReviewCount = await reviewService.GetReviewCountAsync(Product.Id);

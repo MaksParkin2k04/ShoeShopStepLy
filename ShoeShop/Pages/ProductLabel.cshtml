@@ -1,0 +1,71 @@
+@page "/ProductLabel/{productId:guid}"
+@model ShoeShop.Pages.ProductLabelModel
+@{
+    ViewData["Title"] = "Этикетка товара";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Этикетка товара @Model.Product?.Name</title>
+    <link rel="stylesheet" href="~/styles/product-label.css" />
+</head>
+<body>
+    @if (Model.Product != null)
+    {
+        <div class="product-label">
+            <div class="header">
+                <div class="company-name">StepLy</div>
+                <div class="product-id">ID: @Model.Product.Id.ToString().Substring(0, 8)</div>
+            </div>
+
+            <div class="product-info">
+                <div class="product-name">@Model.Product.Name</div>
+                <div class="product-price">@Model.Product.Price₽</div>
+                @if (Model.Product.IsSale)
+                {
+                    <div class="sale-badge">СКИДКА</div>
+                }
+            </div>
+
+            <div class="product-details">
+                <div class="category">Категория: @Model.Product.Category?.Name</div>
+                <div class="sizes">Размеры: @Model.GetSizesString(Model.Product.Sizes)</div>
+                <div class="stock-total">Общий остаток: @Model.TotalStock шт.</div>
+                <div class="size-stocks">
+                    @foreach (var sizeStock in Model.SizeStocks)
+                    {
+                        <span class="size-stock @(sizeStock.Value > 0 ? "in-stock" : "out-of-stock")">
+                            @sizeStock.Key: @sizeStock.Value
+                        </span>
+                    }
+                </div>
+                <div class="date">Добавлен: @Model.Product.DateAdded.ToString("dd.MM.yyyy")</div>
+            </div>
+
+            @if (!string.IsNullOrEmpty(Model.QRCodeBase64))
+            {
+                <div class="qr-section">
+                    <img src="data:image/png;base64,@Model.QRCodeBase64" alt="QR код товара" class="qr-code" />
+                    <div class="qr-text">Сканируйте для просмотра</div>
+                </div>
+            }
+        </div>
+    }
+
+    <div class="no-print" style="margin-top: 20px; text-align: center;">
+        <button onclick="window.print()" class="btn btn-primary">Печать</button>
+        <button onclick="window.close()" class="btn btn-secondary">Закрыть</button>
+    </div>
+
+    <script>
+        window.onload = function() {
+            setTimeout(function() {
+                window.print();
+            }, 500);
+        };
+    </script>
+</body>
+</html>

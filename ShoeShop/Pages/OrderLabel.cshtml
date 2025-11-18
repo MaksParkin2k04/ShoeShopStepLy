@@ -90,6 +90,15 @@
                     <div>Комментарий: @Model.Order.Coment</div>
                 }
             </div>
+
+            @if (!string.IsNullOrEmpty(Model.QRCodeBase64))
+            {
+                <div class="qr-section">
+                    <div class="section-title">Отслеживание заказа:</div>
+                    <img src="data:image/png;base64,@Model.QRCodeBase64" alt="QR код заказа" class="qr-code" />
+                    <div style="font-size: 8px; text-align: center; margin-top: 5px;">Сканируйте для отслеживания</div>
+                </div>
+            }
         </div>
     }
 

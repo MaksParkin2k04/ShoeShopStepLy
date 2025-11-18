@@ -30,7 +30,7 @@ namespace ShoeShop.Data {
             if (existing == null) {
                 _context.ProductStocks.Add(productStock);
             } else {
-                existing.SetQuantity(productStock.Quantity);
+                _context.Entry(existing).CurrentValues.SetValues(productStock);
             }
             
             await _context.SaveChangesAsync();

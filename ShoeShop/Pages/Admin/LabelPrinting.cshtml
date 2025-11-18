@@ -1,0 +1,418 @@
+@page
+@using ShoeShop.Models
+@model ShoeShop.Pages.Admin.LabelPrintingModel
+@{
+    ViewData["Title"] = "Печать этикеток";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>🏷️ Печать этикеток и заказов</h1>
+    <a asp-page="/Admin/Index" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Админ панель
+    </a>
+</div>
+
+<!-- Вкладки -->
+<ul class="nav nav-tabs mb-4" id="labelTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <a class="nav-link @(Model.ActiveTab == "search" ? "active" : "")" 
+           href="?tab=search" role="tab">
+            <i class="fas fa-search me-2"></i>Поиск товаров
+        </a>
+    </li>
+    <li class="nav-item" role="presentation">
+        <a class="nav-link @(Model.ActiveTab == "products" ? "active" : "")" 
+           href="?tab=products" role="tab">
+            <i class="fas fa-box me-2"></i>Все товары
+        </a>
+    </li>
+    <li class="nav-item" role="presentation">
+        <a class="nav-link @(Model.ActiveTab == "orders" ? "active" : "")" 
+           href="?tab=orders" role="tab">
+            <i class="fas fa-clipboard-list me-2"></i>Заказы
+        </a>
+    </li>
+    <li class="nav-item" role="presentation">
+        <a class="nav-link" href="/Admin/QRScanner" role="tab">
+            <i class="fas fa-qrcode me-2"></i>QR Сканер
+        </a>
+    </li>
+</ul>
+
+<!-- Содержимое вкладок -->
+<div class="tab-content" id="labelTabsContent">
+    <!-- Вкладка поиска товаров -->
+    <div class="tab-pane fade @(Model.ActiveTab == "search" ? "show active" : "")" id="search" role="tabpanel">
+        <div class="row">
+            <div class="col-md-10 mx-auto">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Поиск товара для печати этикетки</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="get" class="mb-4">
+                            <input type="hidden" name="tab" value="search" />
+                            <div class="input-group">
+                                <input type="text" name="search" value="@Model.SearchTerm" 
+                                       class="form-control" placeholder="Введите название товара..." 
+                                       autocomplete="off">
+                                <button class="btn btn-primary" type="submit">
+                                    <i class="fas fa-search"></i> Найти
+                                </button>
+                            </div>
+                        </form>
+
+                        @if (!string.IsNullOrEmpty(Model.SearchTerm))
+                        {
+                            @if (Model.Products.Any())
+                            {
+                                <div class="products-list">
+                                    @foreach (var product in Model.Products)
+                                    {
+                                        <div class="product-item border rounded p-3 mb-3">
+                                            <div class="row align-items-center">
+                                                <div class="col-md-3">
+                                                    @if (product.Images?.Any() == true)
+                                                    {
+                                                        <img src="@product.Images.First().Path" class="img-thumbnail" style="max-height: 80px;" alt="@product.Name">
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="bg-light d-flex align-items-center justify-content-center" style="height: 80px; width: 80px;">
+                                                            <i class="fas fa-image text-muted"></i>
+                                                        </div>
+                                                    }
+                                                </div>
+                                                <div class="col-md-5">
+                                                    <h6 class="mb-1">@product.Name</h6>
+                                                    <p class="text-muted mb-1">@product.Category?.Name</p>
+                                                    <p class="mb-0">
+                                                        <strong>@product.FinalPrice ₽</strong>
+                                                        @if (product.HasDiscount)
+                                                        {
+                                                            <span class="badge bg-danger ms-1">Скидка</span>
+                                                        }
+                                                    </p>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="mb-2">
+                                                        <small class="text-muted">Доступные размеры:</small>
+                                                    </div>
+                                                    <div class="size-buttons">
+                                                        @foreach (var size in Model.GetAvailableSizes(product.Sizes))
+                                                        {
+                                                            var stockQty = Model.GetStockQuantity(product.Id, size);
+                                                            <a asp-page="/ProductSizeLabel" 
+                                                               asp-route-productId="@product.Id" 
+                                                               asp-route-size="@size" 
+                                                               class="btn btn-sm @(stockQty > 0 ? "btn-outline-success" : "btn-outline-danger") me-1 mb-1" 
+                                                               target="_blank" 
+                                                               title="Печать этикетки размер @size (остаток: @stockQty)">
+                                                                @size (@stockQty)
+                                                            </a>
+                                                        }
+                                                    </div>
+                                                    <div class="mt-2">
+                                                        <a asp-page="/ProductLabel" 
+                                                           asp-route-productId="@product.Id" 
+                                                           class="btn btn-sm btn-outline-primary" 
+                                                           target="_blank" 
+                                                           title="Общая этикетка">
+                                                            <i class="fas fa-print me-1"></i>Общая
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    По запросу "<strong>@Model.SearchTerm</strong>" товары не найдены
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="text-center text-muted py-5">
+                                <i class="fas fa-search fa-3x mb-3"></i>
+                                <p>Введите название товара для поиска</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Вкладка всех товаров -->
+    <div class="tab-pane fade @(Model.ActiveTab == "products" ? "show active" : "")" id="products" role="tabpanel">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Все товары (последние 50)</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.AllProducts.Any())
+                {
+                    <div class="products-list">
+                        @foreach (var product in Model.AllProducts)
+                        {
+                            <div class="product-item border rounded p-3 mb-3">
+                                <div class="row align-items-center">
+                                    <div class="col-md-2">
+                                        @if (product.Images?.Any() == true)
+                                        {
+                                            <img src="@product.Images.First().Path" class="img-thumbnail" style="max-height: 60px;" alt="@product.Name">
+                                        }
+                                        else
+                                        {
+                                            <div class="bg-light d-flex align-items-center justify-content-center" style="height: 60px; width: 60px;">
+                                                <i class="fas fa-image text-muted"></i>
+                                            </div>
+                                        }
+                                    </div>
+                                    <div class="col-md-4">
+                                        <h6 class="mb-1">@product.Name</h6>
+                                        <p class="text-muted mb-1">@product.Category?.Name</p>
+                                        <p class="mb-0">
+                                            <strong>@product.FinalPrice ₽</strong>
+                                            @if (product.HasDiscount)
+                                            {
+                                                <span class="badge bg-danger ms-1">Скидка</span>
+                                            }
+                                        </p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-2">
+                                            <small class="text-muted">Размеры с остатками:</small>
+                                        </div>
+                                        <div class="size-buttons">
+                                            @foreach (var size in Model.GetAvailableSizes(product.Sizes))
+                                            {
+                                                var stockQty = Model.GetStockQuantity(product.Id, size);
+                                                <a asp-page="/ProductSizeLabel" 
+                                                   asp-route-productId="@product.Id" 
+                                                   asp-route-size="@size" 
+                                                   class="btn btn-sm @(stockQty > 0 ? "btn-outline-success" : "btn-outline-danger") me-1 mb-1" 
+                                                   target="_blank" 
+                                                   title="Печать этикетки размер @size (остаток: @stockQty)">
+                                                    @size (@stockQty)
+                                                </a>
+                                            }
+                                        </div>
+                                        <div class="mt-2">
+                                            <a asp-page="/ProductLabel" 
+                                               asp-route-productId="@product.Id" 
+                                               class="btn btn-sm btn-outline-primary" 
+                                               target="_blank" 
+                                               title="Общая этикетка">
+                                                <i class="fas fa-print me-1"></i>Общая
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center text-muted py-5">
+                        <i class="fas fa-box fa-3x mb-3"></i>
+                        <p>Товары не найдены</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Вкладка заказов -->
+    <div class="tab-pane fade @(Model.ActiveTab == "orders" ? "show active" : "")" id="orders" role="tabpanel">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Последние заказы (20 шт.)</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.RecentOrders.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Заказ</th>
+                                    <th>Дата</th>
+                                    <th>Клиент</th>
+                                    <th>Источник</th>
+                                    <th>Статус</th>
+                                    <th>Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var order in Model.RecentOrders)
+                                {
+                                    <tr>
+                                        <td>
+                                            <strong>#@order.Id.ToString().Substring(0, 8)</strong>
+                                        </td>
+                                        <td>
+                                            @order.CreatedDate.ToString("dd.MM.yyyy HH:mm")
+                                        </td>
+                                        <td>
+                                            <div><strong>@order.Recipient?.Name</strong></div>
+                                            <small class="text-muted">@order.Recipient?.Phone</small>
+                                        </td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(order.Source))
+                                            {
+                                                <span class="badge bg-light text-dark">
+                                                    @if (order.Source == "Telegram")
+                                                    {
+                                                        <i class="fab fa-telegram me-1"></i>
+                                                    }
+                                                    else
+                                                    {
+                                                        <i class="fas fa-globe me-1"></i>
+                                                    }
+                                                    @order.Source
+                                                </span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-@(order.Status == OrderStatus.Completed ? "success" : order.Status == OrderStatus.Canceled ? "danger" : order.Status == OrderStatus.Paid ? "info" : "warning")">
+                                                @switch (order.Status) {
+                                                    case OrderStatus.Created:
+                                                        <span>Создан</span>
+                                                        break;
+                                                    case OrderStatus.Paid:
+                                                        <span>Оплачен</span>
+                                                        break;
+                                                    case OrderStatus.Processing:
+                                                        <span>В обработке</span>
+                                                        break;
+                                                    case OrderStatus.Completed:
+                                                        <span>Выполнен</span>
+                                                        break;
+                                                    case OrderStatus.Canceled:
+                                                        <span>Отменен</span>
+                                                        break;
+                                                }
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a href="/OrderLabel/@order.Id" target="_blank" class="btn btn-sm btn-primary" title="Печать этикетки">
+                                                    <i class="fas fa-print"></i>
+                                                </a>
+                                                <a asp-page="/Admin/OrderDetail" asp-route-orderId="@order.Id" class="btn btn-sm btn-outline-info" title="Подробности">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center text-muted py-5">
+                        <i class="fas fa-clipboard-list fa-3x mb-3"></i>
+                        <p>Заказы не найдены</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.product-item:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: box-shadow 0.2s;
+}
+
+.order-item:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: box-shadow 0.2s;
+}
+
+.size-buttons .btn {
+    min-width: 45px;
+    font-size: 0.8rem;
+}
+
+.nav-tabs .nav-link {
+    color: #495057;
+    border: 1px solid transparent;
+    border-top-left-radius: 0.375rem;
+    border-top-right-radius: 0.375rem;
+}
+
+.nav-tabs .nav-link:hover {
+    border-color: #e9ecef #e9ecef #dee2e6;
+    isolation: isolate;
+}
+
+.nav-tabs .nav-link.active {
+    color: #495057;
+    background-color: #fff;
+    border-color: #dee2e6 #dee2e6 #fff;
+}
+
+.tab-content {
+    border: 1px solid #dee2e6;
+    border-top: none;
+    padding: 1.5rem;
+    background-color: #fff;
+}
+
+.orders-list .order-item {
+    background: #f8f9fa;
+}
+
+.products-list .product-item {
+    background: #f8f9fa;
+}
+
+.btn-outline-success.btn-sm {
+    font-size: 0.75rem;
+}
+
+.btn-outline-danger.btn-sm {
+    font-size: 0.75rem;
+}
+</style>
+
+<script>
+// Автоматическая загрузка данных при переключении вкладок
+document.addEventListener('DOMContentLoaded', function() {
+    // Обработчик для ссылок на вкладки
+    const tabLinks = document.querySelectorAll('.nav-tabs .nav-link');
+    tabLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const url = new URL(this.href);
+            window.location.href = url.href;
+        });
+    });
+    
+    // Подсветка кнопок с остатками
+    const sizeButtons = document.querySelectorAll('.size-buttons .btn');
+    sizeButtons.forEach(button => {
+        button.addEventListener('mouseenter', function() {
+            const title = this.getAttribute('title');
+            if (title && title.includes('остаток: 0')) {
+                this.style.transform = 'scale(1.05)';
+            }
+        });
+        
+        button.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1)';
+        });
+    });
+});
+</script>

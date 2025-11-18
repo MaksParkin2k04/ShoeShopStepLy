@@ -1,0 +1,190 @@
+@page "/ProductSize/{productId:guid}/{size:int}"
+@model ShoeShop.Pages.ProductSizeModel
+@{
+    ViewData["Title"] = $"{Model.Product?.Name} - Размер {Model.Size}";
+}
+
+@if (Model.Product == null)
+{
+    <div class="alert alert-danger">Товар не найден</div>
+}
+else
+{
+    <div class="container mt-4">
+        <nav class="breadcrumb-nav mb-4">
+            <a asp-page="/Index" class="breadcrumb-link">Главная</a>
+            <span class="breadcrumb-separator">/</span>
+            <a asp-page="/Product" asp-route-id="@Model.Product.Id" class="breadcrumb-link">@Model.Product.Name</a>
+            <span class="breadcrumb-separator">/</span>
+            <span class="breadcrumb-current">Размер @Model.Size</span>
+        </nav>
+
+        <div class="row">
+            <div class="col-lg-6">
+                @if (Model.Product.Images?.Any() == true)
+                {
+                    <div class="product-image-large">
+                        <img src="@Model.Product.Images.First().Path" class="img-fluid rounded" alt="@Model.Product.Name">
+                    </div>
+                }
+                else
+                {
+                    <div class="product-image-placeholder">
+                        <i class="fas fa-image fa-4x text-muted"></i>
+                        <p class="text-muted">Изображение недоступно</p>
+                    </div>
+                }
+            </div>
+
+            <div class="col-lg-6">
+                <div class="product-size-info">
+                    <h1 class="product-title">@Model.Product.Name</h1>
+                    
+                    <div class="size-badge-large mb-3">
+                        <span class="badge bg-primary fs-4 p-3">Размер @Model.Size</span>
+                    </div>
+
+                    @if (Model.Product.Category != null)
+                    {
+                        <div class="mb-3">
+                            <span class="badge bg-secondary">@Model.Product.Category.Name</span>
+                        </div>
+                    }
+
+                    <div class="price-section mb-4">
+                        @if (Model.Product.HasDiscount)
+                        {
+                            <div class="price-old">@Model.Product.Price ₽</div>
+                            <div class="price-current">@Model.Product.SalePrice ₽</div>
+                            <span class="badge bg-danger">Скидка @(Math.Round((1 - (Model.Product.SalePrice ?? 0) / Model.Product.Price) * 100))%</span>
+                        }
+                        else
+                        {
+                            <div class="price-current">@Model.Product.Price ₽</div>
+                        }
+                    </div>
+
+                    <div class="stock-info mb-4">
+                        <h5>Наличие на складе:</h5>
+                        @if (Model.StockQuantity > 0)
+                        {
+                            <div class="alert alert-success">
+                                <i class="fas fa-check-circle me-2"></i>
+                                <strong>В наличии: @Model.StockQuantity шт.</strong>
+                                @if (Model.StockQuantity < 5)
+                                {
+                                    <br><small class="text-warning">⚠️ Осталось мало</small>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="alert alert-danger">
+                                <i class="fas fa-times-circle me-2"></i>
+                                <strong>Нет в наличии</strong>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="product-description mb-4">
+                        <h5>Описание:</h5>
+                        <p>@Model.Product.Description</p>
+                        @if (!string.IsNullOrEmpty(Model.Product.Content))
+                        {
+                            <div class="content-detail">
+                                @Model.Product.Content
+                            </div>
+                        }
+                    </div>
+
+                    <div class="product-details mb-4">
+                        <h5>Характеристики:</h5>
+                        <table class="table table-sm">
+                            <tr>
+                                <td><strong>Размер:</strong></td>
+                                <td>@Model.Size</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Категория:</strong></td>
+                                <td>@Model.Product.Category?.Name</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Артикул:</strong></td>
+                                <td>@Model.Product.Id.ToString().Substring(0, 8).ToUpper()</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Дата добавления:</strong></td>
+                                <td>@Model.Product.DateAdded.ToString("dd.MM.yyyy")</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div class="action-buttons">
+                        @if (Model.StockQuantity > 0)
+                        {
+                            <form asp-page="/Product" method="post" class="d-inline">
+                                <input type="hidden" name="productId" value="@Model.Product.Id" />
+                                <input type="hidden" name="selectedSize" value="@Model.Size" />
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-shopping-cart me-2"></i>
+                                    Добавить в корзину
+                                </button>
+                            </form>
+                        }
+                        
+                        <a asp-page="/Product" asp-route-id="@Model.Product.Id" class="btn btn-outline-secondary btn-lg ms-2">
+                            <i class="fas fa-eye me-2"></i>
+                            Все размеры
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+.product-image-placeholder {
+    height: 400px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.price-old {
+    font-size: 1.2em;
+    color: #999;
+    text-decoration: line-through;
+}
+
+.price-current {
+    font-size: 2em;
+    font-weight: bold;
+    color: #333;
+}
+
+.breadcrumb-nav {
+    font-size: 0.9em;
+}
+
+.breadcrumb-link {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.breadcrumb-link:hover {
+    text-decoration: underline;
+}
+
+.breadcrumb-separator {
+    margin: 0 8px;
+    color: #6c757d;
+}
+
+.breadcrumb-current {
+    color: #6c757d;
+}
+</style>

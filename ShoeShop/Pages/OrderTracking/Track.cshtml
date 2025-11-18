@@ -1,0 +1,106 @@
+@page "/OrderTracking/Track/{orderId:guid}"
+@model ShoeShop.Pages.OrderTracking.TrackModel
+@{
+    ViewData["Title"] = "Отслеживание заказа";
+}
+
+<div class="container mt-4">
+    @if (Model.Order != null)
+    {
+        <div class="row">
+            <div class="col-md-8 mx-auto">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0">📦 Заказ №@Model.Order.Id.ToString().Substring(0, 8)</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <h6>Статус заказа:</h6>
+                                <span class="badge badge-@(Model.Order.Status == ShoeShop.Models.OrderStatus.Paid ? "success" : "warning") fs-6">
+                                    @Model.Order.Status
+                                </span>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Дата создания:</h6>
+                                <p>@Model.Order.CreatedDate.ToString("dd.MM.yyyy HH:mm")</p>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <h6>Получатель:</h6>
+                                <p class="mb-1"><strong>@Model.Order.Recipient.Name</strong></p>
+                                <p class="mb-1">📞 @Model.Order.Recipient.Phone</p>
+                                <p class="mb-0">📍 @Model.Order.Recipient.City, @Model.Order.Recipient.Street @Model.Order.Recipient.House</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Оплата:</h6>
+                                @if (Model.Order.PaymentType == ShoeShop.Models.PaymentType.Online)
+                                {
+                                    <p class="mb-1">💳 Онлайн оплата</p>
+                                    @if (Model.Order.PaymentDate.HasValue)
+                                    {
+                                        <p class="text-success mb-0">✅ Оплачено @Model.Order.PaymentDate.Value.ToString("dd.MM.yyyy HH:mm")</p>
+                                    }
+                                    else
+                                    {
+                                        <p class="text-warning mb-0">⏳ Ожидает оплаты</p>
+                                    }
+                                }
+                                else
+                                {
+                                    <p class="mb-0">💰 Оплата при получении</p>
+                                }
+                            </div>
+                        </div>
+
+                        <h6>Товары в заказе:</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Товар</th>
+                                        <th>Размер</th>
+                                        <th class="text-end">Цена</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.Order.OrderDetails)
+                                    {
+                                        <tr>
+                                            <td>@item.Name</td>
+                                            <td>@item.Size</td>
+                                            <td class="text-end">@item.Price₽</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                                <tfoot>
+                                    <tr class="fw-bold">
+                                        <td colspan="2">Итого:</td>
+                                        <td class="text-end">@Model.Order.OrderDetails.Sum(x => x.Price)₽</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(Model.Order.Coment))
+                        {
+                            <div class="mt-3">
+                                <h6>Комментарий:</h6>
+                                <p class="text-muted">@Model.Order.Coment</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-danger">
+            <h4>Заказ не найден</h4>
+            <p>Проверьте правильность ссылки или обратитесь в службу поддержки.</p>
+        </div>
+    }
+</div>

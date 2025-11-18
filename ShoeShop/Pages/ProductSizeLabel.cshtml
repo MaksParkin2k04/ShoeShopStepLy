@@ -1,0 +1,67 @@
+@page "/ProductSizeLabel/{productId:guid}/{size:int}"
+@model ShoeShop.Pages.ProductSizeLabelModel
+@{
+    ViewData["Title"] = "Этикетка товара с размером";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Этикетка @Model.Product?.Name размер @Model.Size</title>
+    <link rel="stylesheet" href="~/styles/product-size-label.css" />
+</head>
+<body>
+    @if (Model.Product != null)
+    {
+        <div class="product-size-label">
+            <div class="header">
+                <div class="company-name">StepLy</div>
+                <div class="product-id">ID: @Model.Product.Id.ToString().Substring(0, 8)</div>
+            </div>
+
+            <div class="product-info">
+                <div class="product-name">@Model.Product.Name</div>
+                <div class="size-badge">РАЗМЕР @Model.Size</div>
+                <div class="product-price">@Model.Product.FinalPrice₽</div>
+                <div class="stock-info">
+                    <span class="stock-badge @(Model.StockQuantity > 0 ? "in-stock" : "out-of-stock")">
+                        Остаток: @Model.StockQuantity шт.
+                    </span>
+                </div>
+                @if (Model.Product.HasDiscount)
+                {
+                    <div class="sale-badge">СКИДКА</div>
+                }
+            </div>
+
+            <div class="product-details">
+                <div class="category">@Model.Product.Category?.Name</div>
+                <div class="date">@Model.Product.DateAdded.ToString("dd.MM.yyyy")</div>
+            </div>
+
+            @if (!string.IsNullOrEmpty(Model.QRCodeBase64))
+            {
+                <div class="qr-section">
+                    <img src="data:image/png;base64,@Model.QRCodeBase64" alt="QR код товара" class="qr-code" />
+                    <div class="qr-text">Сканируйте для просмотра</div>
+                </div>
+            }
+        </div>
+    }
+
+    <div class="no-print" style="margin-top: 20px; text-align: center;">
+        <button onclick="window.print()" class="btn btn-primary">Печать</button>
+        <button onclick="window.close()" class="btn btn-secondary">Закрыть</button>
+    </div>
+
+    <script>
+        window.onload = function() {
+            setTimeout(function() {
+                window.print();
+            }, 500);
+        };
+    </script>
+</body>
+</html>

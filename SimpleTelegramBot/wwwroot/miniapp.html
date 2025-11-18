@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini App</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: var(--tg-theme-bg-color, #ffffff);
+            color: var(--tg-theme-text-color, #000000);
+        }
+        .container { max-width: 400px; margin: 0 auto; }
+        .product { 
+            border: 1px solid #ddd; 
+            border-radius: 8px; 
+            padding: 15px; 
+            margin: 10px 0; 
+            background: var(--tg-theme-secondary-bg-color, #f8f8f8);
+        }
+        .btn { 
+            background: var(--tg-theme-button-color, #007bff); 
+            color: var(--tg-theme-button-text-color, white); 
+            border: none; 
+            padding: 10px 20px; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            width: 100%;
+            margin: 5px 0;
+        }
+        .price { font-weight: bold; color: #28a745; }
+        .cart { position: fixed; bottom: 20px; right: 20px; }
+        .cart-count { 
+            background: red; 
+            color: white; 
+            border-radius: 50%; 
+            padding: 5px 10px; 
+            font-size: 12px; 
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛍️ Mini Shop</h1>
+        
+        <div id="loading">🔄 Загрузка товаров...</div>
+        <div id="products"></div>
+        
+        <div class="cart">
+            🛒 <span id="cart-count" class="cart-count">0</span>
+        </div>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        const API_URL = 'https://jxpc5n7p-7002.euw.devtunnels.ms/api';
+        let cart = [];
+
+        tg.ready();
+        tg.expand();
+
+        async function loadProducts() {
+            try {
+                const response = await fetch(`${API_URL}/products`);
+                const products = await response.json();
+                
+                document.getElementById('loading').style.display = 'none';
+                
+                const container = document.getElementById('products');
+                container.innerHTML = products.map(product => `
+                    <div class="product">
+                        <h3>${product.name}</h3>
+                        <p>${product.content}</p>
+                        <div class="price">${product.finalPrice.toLocaleString()} ₽</div>
+                        <button class="btn" onclick="addToCart('${product.id}', '${product.name}', ${product.finalPrice})">
+                            Добавить в корзину
+                        </button>
+                    </div>
+                `).join('');
+                
+            } catch (error) {
+                document.getElementById('loading').innerHTML = '❌ Ошибка загрузки';
+                console.error('Error:', error);
+            }
+        }
+
+        function addToCart(id, name, price) {
+            cart.push({ id, name, price });
+            updateCartCount();
+            tg.showAlert(`${name} добавлен в корзину!`);
+        }
+
+        function updateCartCount() {
+            document.getElementById('cart-count').textContent = cart.length;
+        }
+
+        function checkout() {
+            if (cart.length === 0) {
+                tg.showAlert('Корзина пуста');
+                return;
+            }
+
+            const orderData = {
+                items: cart.map(item => ({
+                    productId: item.id,
+                    name: item.name,
+                    price: item.price,
+                    size: 42
+                })),
+                customer: {
+                    name: tg.initDataUnsafe.user?.first_name || 'Пользователь',
+                    phone: '+7 900 123-45-67',
+                    address: 'Адрес доставки'
+                },
+                source: 'MiniApp',
+                telegramUserId: tg.initDataUnsafe.user?.id
+            };
+
+            fetch(`${API_URL}/orders`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(orderData)
+            })
+            .then(response => response.json())
+            .then(order => {
+                tg.showAlert(`Заказ ${order.orderNumber} оформлен!`);
+                cart = [];
+                updateCartCount();
+            })
+            .catch(error => {
+                tg.showAlert('Ошибка оформления заказа');
+                console.error('Error:', error);
+            });
+        }
+
+        // Setup main button
+        if (cart.length > 0) {
+            tg.MainButton.setText('Оформить заказ');
+            tg.MainButton.onClick(checkout);
+            tg.MainButton.show();
+        }
+
+        // Load products on start
+        loadProducts();
+    </script>
+</body>
+</html>
