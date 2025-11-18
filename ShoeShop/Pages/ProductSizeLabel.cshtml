@@ -11,47 +11,98 @@
     <meta charset="utf-8" />
     <title>Этикетка @Model.Product?.Name размер @Model.Size</title>
     <link rel="stylesheet" href="~/styles/product-size-label.css" />
+    <style>
+        .labels-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .product-size-label {
+            width: 300px;
+            margin-bottom: 20px;
+            break-inside: avoid;
+        }
+        
+        .page-break {
+            page-break-before: always;
+        }
+        
+        @@media print {
+            .labels-container {
+                display: block;
+            }
+            
+            .product-size-label {
+                width: 100%;
+                max-width: 300px;
+                margin: 0 auto 20px;
+                display: inline-block;
+                vertical-align: top;
+            }
+            
+            .page-break {
+                page-break-before: auto;
+                margin-left: 20px;
+            }
+        }
+    </style>
 </head>
 <body>
     @if (Model.Product != null)
     {
-        <div class="product-size-label">
-            <div class="header">
-                <div class="company-name">StepLy</div>
-                <div class="product-id">ID: @Model.Product.Id.ToString().Substring(0, 8)</div>
-            </div>
-
-            <div class="product-info">
-                <div class="product-name">@Model.Product.Name</div>
-                <div class="size-badge">РАЗМЕР @Model.Size</div>
-                <div class="product-price">@Model.Product.FinalPrice₽</div>
-                <div class="stock-info">
-                    <span class="stock-badge @(Model.StockQuantity > 0 ? "in-stock" : "out-of-stock")">
-                        Остаток: @Model.StockQuantity шт.
-                    </span>
-                </div>
-                @if (Model.Product.HasDiscount)
-                {
-                    <div class="sale-badge">СКИДКА</div>
-                }
-            </div>
-
-            <div class="product-details">
-                <div class="category">@Model.Product.Category?.Name</div>
-                <div class="date">@Model.Product.DateAdded.ToString("dd.MM.yyyy")</div>
-            </div>
-
-            @if (!string.IsNullOrEmpty(Model.QRCodeBase64))
+        <div class="labels-container">
+            @for (int i = 0; i < Model.Count; i++)
             {
-                <div class="qr-section">
-                    <img src="data:image/png;base64,@Model.QRCodeBase64" alt="QR код товара" class="qr-code" />
-                    <div class="qr-text">Сканируйте для просмотра</div>
+                <div class="product-size-label @(i > 0 ? "page-break" : "")">
+                    <div class="header">
+                        <div class="company-name">StepLy</div>
+                        <div class="product-id">ID: @Model.Product.Id.ToString().Substring(0, 8)</div>
+                    </div>
+
+                    <div class="product-info">
+                        <div class="product-name">@Model.Product.Name</div>
+                        <div class="size-badge">РАЗМЕР @Model.Size</div>
+                        <div class="product-price">@Model.Product.FinalPrice₽</div>
+                        <div class="stock-info">
+                            <span class="stock-badge @(Model.StockQuantity > 0 ? "in-stock" : "out-of-stock")">
+                                Остаток: @Model.StockQuantity шт.
+                            </span>
+                        </div>
+                        @if (Model.Product.HasDiscount)
+                        {
+                            <div class="sale-badge">СКИДКА</div>
+                        }
+                    </div>
+
+                    <div class="product-details">
+                        <div class="category">@Model.Product.Category?.Name</div>
+                        <div class="date">@Model.Product.DateAdded.ToString("dd.MM.yyyy")</div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.QRCodeBase64))
+                    {
+                        <div class="qr-section">
+                            <img src="data:image/png;base64,@Model.QRCodeBase64" alt="QR код товара" class="qr-code" />
+                            <div class="qr-text">Сканируйте для просмотра</div>
+                        </div>
+                    }
                 </div>
             }
         </div>
     }
 
     <div class="no-print" style="margin-top: 20px; text-align: center;">
+        <div class="mb-3">
+            <label for="countSelect" class="form-label">Количество этикеток:</label>
+            <select id="countSelect" class="form-select" style="width: 100px; display: inline-block; margin: 0 10px;">
+                @for (int i = 1; i <= 50; i++)
+                {
+                    <option value="@i" selected="@(i == Model.Count)">@i</option>
+                }
+            </select>
+            <button onclick="updateLabels()" class="btn btn-info">Обновить</button>
+        </div>
         <button onclick="window.print()" class="btn btn-primary">Печать</button>
         <button onclick="window.close()" class="btn btn-secondary">Закрыть</button>
     </div>
@@ -62,6 +113,13 @@
                 window.print();
             }, 500);
         };
+        
+        function updateLabels() {
+            const count = document.getElementById('countSelect').value;
+            const url = new URL(window.location);
+            url.searchParams.set('count', count);
+            window.location.href = url.toString();
+        }
     </script>
 </body>
 </html>

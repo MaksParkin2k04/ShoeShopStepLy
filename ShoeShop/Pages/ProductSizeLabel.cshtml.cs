@@ -24,8 +24,9 @@ namespace ShoeShop.Pages
         public int Size { get; set; }
         public int StockQuantity { get; set; }
         public string? QRCodeBase64 { get; set; }
+        public int Count { get; set; } = 1;
 
-        public async Task<IActionResult> OnGetAsync(Guid productId, int size)
+        public async Task<IActionResult> OnGetAsync(Guid productId, int size, int count = 1)
         {
             Product = await repository.GetProduct(productId);
             Size = size;
@@ -41,6 +42,7 @@ namespace ShoeShop.Pages
             // Генерируем QR-код для товара с размером
             var productUrl = $"https://jxpc5n7p-7002.euw.devtunnels.ms/ProductSize?productId={productId}&size={size}";
             QRCodeBase64 = GenerateQRCode(productUrl);
+            Count = Math.Max(1, Math.Min(50, count)); // Ограничиваем от 1 до 50
 
             return Page();
         }
