@@ -6,7 +6,6 @@ using ShoeShop.Models;
 using ShoeShop.Services;
 
 namespace ShoeShop.Pages {
-    [Authorize(Roles = "Admin")]
     public class ProductModel : PageModel {
         public ProductModel(IProductRepository repository, IBasketShoppingService basketShopping, StockService stockService, ReviewService reviewService, IProductStockRepository stockRepository) {
             this.repository = repository;

@@ -2,14 +2,17 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using ShoeShop.Models;
 using ShoeShop.Data;
+using ShoeShop.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace ShoeShop.Pages.Admin {
     public class TestDataModel : PageModel {
         private readonly ApplicationContext _context;
+        private readonly StockService _stockService;
         
-        public TestDataModel(ApplicationContext context) {
+        public TestDataModel(ApplicationContext context, StockService stockService) {
             _context = context;
+            _stockService = stockService;
         }
         
         public string Message { get; set; } = "";
@@ -109,7 +112,17 @@ namespace ShoeShop.Pages.Admin {
                 _context.Products.AddRange(products);
                 await _context.SaveChangesAsync();
                 
-                Message = $"Добавлено {products.Count} товаров!";
+                // Создаем остатки для всех товаров
+                foreach (var product in products) {
+                    var sizes = GetAvailableSizes(product.Sizes);
+                    foreach (var size in sizes) {
+                        var quantity = Random.Shared.Next(5, 25); // От 5 до 25 штук
+                        var purchasePrice = product.Price * 0.6; // Закупочная цена 60% от продажной
+                        await _stockService.SetStockAsync(product.Id, size, quantity, purchasePrice);
+                    }
+                }
+                
+                Message = $"Добавлено {products.Count} товаров с остатками!";
                 IsSuccess = true;
             }
             catch (Exception ex) {
@@ -143,6 +156,17 @@ namespace ShoeShop.Pages.Admin {
             CategoriesCount = await _context.Categories.CountAsync();
             ProductsCount = await _context.Products.CountAsync();
             Categories = await _context.Categories.Select(c => c.Name).ToListAsync();
+        }
+        
+        private List<int> GetAvailableSizes(ProductSize sizes) {
+            var availableSizes = new List<int>();
+            for (int size = 1; size <= 64; size++) {
+                var sizeFlag = (ProductSize)(1UL << (size - 1));
+                if (sizes.HasFlag(sizeFlag)) {
+                    availableSizes.Add(size);
+                }
+            }
+            return availableSizes;
         }
     }
 }

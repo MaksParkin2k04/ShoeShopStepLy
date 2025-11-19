@@ -24,10 +24,15 @@ namespace ShoeShop.Pages.Admin {
         public string? Message { get; set; }
         public string? SearchQuery { get; set; }
         public string? StatusFilter { get; set; }
+        public int CurrentPage { get; private set; }
+        public int ElementsPerPage { get; private set; }
+        public int TotalElementsCount { get; private set; }
 
-        public async Task OnGetAsync(string? search = null, string? status = null) {
+        public async Task OnGetAsync(string? search = null, string? status = null, int pageIndex = 1) {
             SearchQuery = search;
             StatusFilter = status;
+            CurrentPage = pageIndex;
+            ElementsPerPage = 50;
             
             Products = await _productRepository.GetProducts(ProductSorting.Default, 0, int.MaxValue);
             
@@ -56,10 +61,13 @@ namespace ShoeShop.Pages.Admin {
                 };
             }
             
-            ProductStocks = filteredStocks.OrderBy(s => {
+            var sortedStocks = filteredStocks.OrderBy(s => {
                 var product = Products.FirstOrDefault(p => p.Id == s.ProductId);
                 return product?.Name ?? "";
             }).ThenBy(s => s.Size);
+            
+            TotalElementsCount = sortedStocks.Count();
+            ProductStocks = sortedStocks.Skip((pageIndex - 1) * ElementsPerPage).Take(ElementsPerPage);
         }
 
         public async Task<IActionResult> OnPostAddStockAsync(Guid productId, int size, int quantity, double purchasePrice = 0) {

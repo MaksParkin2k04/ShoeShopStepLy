@@ -30,9 +30,16 @@
 </div>
 
 @* Catalog Header *@
-<div class="catalog-header d-flex justify-content-between align-items-center">
-    <h2 class="catalog-title">Коллекция</h2>
-    <div class="catalog-controls d-flex gap-2">
+<div class="catalog-header">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="catalog-title mb-0">Коллекция</h2>
+        <button class="btn btn-outline-secondary d-md-none" type="button" data-bs-toggle="collapse" data-bs-target="#filtersCollapse">
+            <i class="fas fa-filter"></i>
+        </button>
+    </div>
+    
+    <!-- Десктоп контролы -->
+    <div class="catalog-controls d-none d-md-flex gap-2 justify-content-end">
         <button class="btn btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#filtersCollapse">
             <i class="fas fa-filter me-2"></i>Фильтры
         </button>
@@ -69,23 +76,23 @@
     <div class="filters-panel">
         <form asp-page="/Index" method="get" class="filters-form">
             <div class="row g-3">
-                <div class="col-md-3">
+                <div class="col-12 col-md-3">
                     <label class="form-label">Цена</label>
                     <div class="d-flex gap-2">
                         <input type="number" name="minPrice" class="form-control" placeholder="От" min="0" value="@Model.MinPrice">
                         <input type="number" name="maxPrice" class="form-control" placeholder="До" min="0" value="@Model.MaxPrice">
                     </div>
                 </div>
-                <div class="col-md-3">
+                <div class="col-12 col-md-3">
                     <label class="form-label">Категория</label>
                     <select name="categoryId" class="form-select">
                         <option value="">Все категории</option>
                         @await Component.InvokeAsync("CategoriesOptions", new { selectedCategoryId = Model.CategoryId })
                     </select>
                 </div>
-                <div class="col-md-2">
+                <div class="col-12 col-md-4">
                     <label class="form-label">Размеры</label>
-                    <div class="sizes-filter">
+                    <div class="sizes-filter-mobile">
                         @for (int size = 36; size <= 45; size++) {
                             <div class="form-check form-check-inline">
                                 <input class="form-check-input" type="checkbox" name="sizes" value="@size" id="filterSize@(size)" @(Model.Sizes?.Contains(size) == true ? "checked" : "")>
@@ -94,7 +101,7 @@
                         }
                     </div>
                 </div>
-                <div class="col-md-2">
+                <div class="col-12 col-md-2 d-md-none">
                     <label class="form-label">Сортировка</label>
                     <select name="sort" class="form-select">
                         @if (Model.Sorting == ProductSorting.Default) {
@@ -119,10 +126,10 @@
                         }
                     </select>
                 </div>
-                <div class="col-md-2 d-flex align-items-end">
-                    <div class="d-flex gap-2 w-100">
+                <div class="col-12">
+                    <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-primary flex-fill">Применить</button>
-                        <a asp-page="/Index" class="btn btn-outline-secondary">Очистить</a>
+                        <a asp-page="/Index" class="btn btn-outline-secondary flex-fill text-center">Очистить</a>
                     </div>
                 </div>
             </div>
@@ -252,8 +259,8 @@
     }
 </div>
 
-@* Pagination *@
-<div class="d-flex justify-content-center mt-5">
+@* Pagination - десктоп *@
+<div class="d-none d-md-flex justify-content-center mt-5">
     @{
         var routeData = new Dictionary<string, string> {
             ["sort"] = Model.Sorting.ToString()
@@ -274,6 +281,62 @@
             page = "/Index",
             routeData = routeData
         })
+</div>
+
+@* Pagination - мобильная *@
+<div class="d-md-none">
+    @if (Model.TotalElementsCount > Model.ElementsPerPage) {
+        var totalPages = (int)Math.Ceiling((double)Model.TotalElementsCount / Model.ElementsPerPage);
+        var currentPage = Model.CurrentPage;
+        
+        <div class="mobile-pagination">
+            <div class="pagination-controls">
+                @if (currentPage > 1) {
+                    <a class="pagination-btn prev" href="@Url.Page("/Index", new { 
+                        pageIndex = currentPage - 1,
+                        sort = Model.Sorting,
+                        categoryId = Model.CategoryId,
+                        minPrice = Model.MinPrice,
+                        maxPrice = Model.MaxPrice,
+                        sizes = Model.Sizes
+                    })">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                } else {
+                    <span class="pagination-btn prev disabled">
+                        <i class="fas fa-chevron-left"></i>
+                    </span>
+                }
+                
+                <div class="pagination-info">
+                    <span class="current-page">@currentPage</span>
+                    <span class="separator">из</span>
+                    <span class="total-pages">@totalPages</span>
+                </div>
+                
+                @if (currentPage < totalPages) {
+                    <a class="pagination-btn next" href="@Url.Page("/Index", new { 
+                        pageIndex = currentPage + 1,
+                        sort = Model.Sorting,
+                        categoryId = Model.CategoryId,
+                        minPrice = Model.MinPrice,
+                        maxPrice = Model.MaxPrice,
+                        sizes = Model.Sizes
+                    })">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                } else {
+                    <span class="pagination-btn next disabled">
+                        <i class="fas fa-chevron-right"></i>
+                    </span>
+                }
+            </div>
+            
+            <div class="pagination-summary">
+                @((Model.CurrentPage - 1) * Model.ElementsPerPage + 1)–@(Math.Min(Model.CurrentPage * Model.ElementsPerPage, Model.TotalElementsCount)) из @Model.TotalElementsCount
+            </div>
+        </div>
+    }
 </div>
 
 <style>
@@ -316,6 +379,199 @@
 
 .product-rating .stars i {
     font-size: 0.9em;
+}
+
+/* Мобильная адаптивность */
+@@media (max-width: 768px) {
+    .hero-section {
+        padding: 2rem 1rem;
+        text-align: center;
+    }
+    
+    .hero-title {
+        font-size: 2rem;
+    }
+    
+    .hero-features {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .catalog-title {
+        font-size: 1.5rem;
+    }
+    
+    .product-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        padding: 0 0.5rem;
+    }
+    
+    .product-card {
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .product-info {
+        padding: 0.75rem;
+    }
+    
+    .product-name {
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+        line-height: 1.2;
+    }
+    
+    .product-description {
+        font-size: 0.8rem;
+        margin-bottom: 0.5rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    .product-price {
+        font-size: 0.9rem;
+    }
+    
+    .btn-sm {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+    }
+    
+    .sizes-filter-mobile {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .sizes-filter-mobile .form-check {
+        margin: 0;
+    }
+    
+    .filters-panel {
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+    }
+    
+    .product-sizes-preview {
+        display: block;
+    }
+    
+    .sizes-preview {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        margin-top: 4px;
+    }
+    
+    .size-preview {
+        font-size: 0.7rem;
+        padding: 2px 6px;
+        background: #e9ecef;
+        border-radius: 4px;
+        color: #495057;
+    }
+    
+    .size-preview.unavailable {
+        background: #f8d7da;
+        color: #721c24;
+        text-decoration: line-through;
+    }
+    
+    .product-category {
+        display: none;
+    }
+}
+
+@@media (max-width: 576px) {
+    .product-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .hero-section {
+        padding: 1.5rem 1rem;
+    }
+    
+    .hero-title {
+        font-size: 1.75rem;
+    }
+}
+
+/* Мобильная пагинация */
+.mobile-pagination {
+    margin: 2rem 0;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 12px;
+}
+
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.pagination-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid #dee2e6;
+    color: #495057;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.pagination-btn:hover:not(.disabled) {
+    background: #007bff;
+    border-color: #007bff;
+    color: white;
+    transform: scale(1.05);
+}
+
+.pagination-btn.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.pagination-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+}
+
+.current-page {
+    font-size: 1.25rem;
+    color: #007bff;
+    font-weight: 600;
+}
+
+.separator {
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.total-pages {
+    color: #495057;
+}
+
+.pagination-summary {
+    text-align: center;
+    font-size: 0.875rem;
+    color: #6c757d;
+    margin-top: 0.5rem;
 }
 </style>
 

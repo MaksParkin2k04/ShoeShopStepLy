@@ -125,22 +125,32 @@
 
                 <h5 class="card-title m-2">@product.Price руб.</h5>
 
-                <div class="d-flex mx-1 justify-content-between">
-                    <div class="d-flex mx-1 justify-content-between">
-                        <p class="me-1"><a asp-page="/Admin/EditProduct" asp-route-productId="@product.Id" class="btn btn btn-lg btn-outline-primary"><i class="fa-solid fa-pen-to-square"></i></a></p>
-                        <p class="me-1"><a asp-page="/ProductLabel" asp-route-productId="@product.Id" class="btn btn btn-lg btn-outline-success" target="_blank" title="Печать этикетки"><i class="fa-solid fa-print"></i></a></p>
-                        <p><a asp-page="/Admin/DeleteProduct" asp-route-productId="@product.Id" class="btn btn btn-lg btn-outline-danger"><i class="fa-solid fa-trash-can"></i></a></p>
+                <div class="d-flex flex-column gap-2 mx-1">
+                    <div class="d-flex gap-1 justify-content-center">
+                        <a asp-page="/Admin/EditProduct" asp-route-productId="@product.Id" class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-pen-to-square"></i></a>
+                        <a asp-page="/ProductLabel" asp-route-productId="@product.Id" class="btn btn-sm btn-outline-success" target="_blank" title="Печать этикетки"><i class="fa-solid fa-print"></i></a>
+                        <a asp-page="/Admin/DeleteProduct" asp-route-productId="@product.Id" class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-trash-can"></i></a>
                     </div>
-
-                    <p> <a asp-page="/Product" asp-route-id="@product.Id" class="btn btn-primary m-1">Подробнее...</a></p>
+                    <a asp-page="/Product" asp-route-id="@product.Id" class="btn btn-primary btn-sm">Подробнее</a>
                 </div>
             </div>
         </div>
     }
 </div>
 
-@* Панель пагинации *@
-<div class="d-flex flex-row-reverse border border-1 p-1 mt-3">
+@* Панель пагинации - десктоп *@
+<div class="d-none d-md-flex flex-row-reverse border border-1 p-1 mt-3">
+    @await Component.InvokeAsync(typeof(ShoeShop.Paginations.Components.PaginationViewComponent), new {
+            currentPage = Model.CurrentPage,
+            elementsPerPage = Model.ElementsPerPage,
+            totalElementsCount = Model.TotalElementsCount,
+            page = "/Admin/Catalog",
+            routeData = new Dictionary<string, string>([new KeyValuePair<string, string>("sorting", Model.Sorting.ToString()), new KeyValuePair<string, string>("saleFilter", Model.IsSaleFilter.ToString()), new KeyValuePair<string, string>("partproductname", Model.PartProductName)])
+        })
+</div>
+
+@* Панель пагинации - мобильная *@
+<div class="d-md-none">
     @await Component.InvokeAsync(typeof(ShoeShop.Paginations.Components.PaginationViewComponent), new {
             currentPage = Model.CurrentPage,
             elementsPerPage = Model.ElementsPerPage,

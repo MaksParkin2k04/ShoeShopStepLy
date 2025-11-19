@@ -64,10 +64,23 @@ namespace ShoeShop.Pages {
                 });
             }
             
-            TotalElementsCount = filteredProducts.Count();
-            Products = filteredProducts.Skip((pageIndex - 1) * 20).Take(20);
+            // Загружаем информацию о наличии для всех отфильтрованных товаров
+            var productsWithAvailability = new List<(Product product, ProductAvailabilityStatus availability)>();
+            foreach (var product in filteredProducts) {
+                var availability = await stockService.GetAvailabilityStatusAsync(product.Id);
+                productsWithAvailability.Add((product, availability));
+            }
             
-            // Загружаем информацию о наличии и рейтингах для отображаемых товаров
+            // Сортируем: сначала в наличии, потом нет в наличии
+            var sortedProducts = productsWithAvailability
+                .OrderByDescending(x => x.availability == ProductAvailabilityStatus.InStock)
+                .ThenBy(x => x.product.Name)
+                .Select(x => x.product);
+            
+            TotalElementsCount = sortedProducts.Count();
+            Products = sortedProducts.Skip((pageIndex - 1) * 20).Take(20);
+            
+            // Загружаем дополнительную информацию для отображаемых товаров
             foreach (var product in Products) {
                 ProductAvailability[product.Id] = await stockService.GetAvailabilityStatusAsync(product.Id);
                 ProductSizeQuantities[product.Id] = await stockService.GetSizeQuantitiesAsync(product.Id);

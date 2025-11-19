@@ -1,0 +1,80 @@
+/* Мобильные стили для пагинации */
+@media (max-width: 768px) {
+    .pagination {
+        margin: 0;
+        padding: 0;
+    }
+    
+    .pagination .page-item {
+        margin: 0 3px;
+    }
+    
+    .pagination .page-link {
+        padding: 0.6rem 1rem;
+        font-size: 1rem;
+        border-radius: 8px;
+        min-width: 44px;
+        min-height: 44px;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 500;
+        border: 2px solid #dee2e6;
+        transition: all 0.2s ease;
+    }
+    
+    .pagination .page-item.active .page-link {
+        background-color: white !important;
+        border-color: #333 !important;
+        color: #333 !important;
+        font-weight: 600;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+    }
+    
+    .pagination .page-link:hover {
+        background-color: #e9ecef;
+        border-color: #adb5bd;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .pagination .page-item.active .page-link:hover {
+        background-color: #0056b3 !important;
+        border-color: #0056b3 !important;
+        transform: translateY(-1px);
+    }
+    
+    /* Стили для контейнера пагинации */
+    .mobile-pagination-container {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 1rem;
+        margin: 1rem 0;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .mobile-pagination-info {
+        font-size: 0.9rem;
+        color: #6c757d;
+        margin-top: 0.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .pagination .page-link {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.9rem;
+        min-width: 40px;
+        min-height: 40px;
+    }
+    
+    .mobile-pagination-container {
+        padding: 0.75rem;
+        margin: 0.75rem 0;
+    }
+    
+    .mobile-pagination-info {
+        font-size: 0.8rem;
+    }
+}

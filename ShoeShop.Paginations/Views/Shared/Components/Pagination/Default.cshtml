@@ -6,7 +6,8 @@
 }
 
 @if (Model != null && Model.Pagination.HasPagination) {
-    <div class="d-flex justify-content-center">
+    <!-- Десктоп пагинация -->
+    <div class="d-none d-md-flex justify-content-center">
         <nav aria-label="...">
             <ul class="pagination m-0">
                 @if (Model.Pagination.HasPrevious) {
@@ -61,4 +62,109 @@
             </ul>
         </nav>
     </div>
+    
+    <!-- Мобильная пагинация -->
+    <div class="d-md-none">
+        <div class="mobile-pagination">
+            <div class="pagination-controls">
+                @if (Model.Pagination.HasPrevious) {
+                    <a class="pagination-btn prev" asp-page="@Model.Route.Page" asp-all-route-data="@Model.Route.Data" asp-route-pageindex="@Model.Pagination.Previous">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                } else {
+                    <span class="pagination-btn prev disabled">
+                        <i class="fas fa-chevron-left"></i>
+                    </span>
+                }
+                
+                <div class="pagination-info">
+                    <span class="current-page">@Model.Pagination.CurrentPage</span>
+                    <span class="separator">из</span>
+                    <span class="total-pages">@Model.Pagination.PageCount</span>
+                </div>
+                
+                @if (Model.Pagination.HasNext) {
+                    <a class="pagination-btn next" asp-page="@Model.Route.Page" asp-all-route-data="@Model.Route.Data" asp-route-pageindex="@Model.Pagination.Next">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                } else {
+                    <span class="pagination-btn next disabled">
+                        <i class="fas fa-chevron-right"></i>
+                    </span>
+                }
+            </div>
+        </div>
+    </div>
 }
+
+<style>
+/* Мобильная пагинация */
+.mobile-pagination {
+    margin: 2rem 0;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 12px;
+}
+
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.pagination-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid #dee2e6;
+    color: #495057;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.pagination-btn:hover:not(.disabled) {
+    background: #007bff;
+    border-color: #007bff;
+    color: white;
+    transform: scale(1.05);
+}
+
+.pagination-btn.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.pagination-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+}
+
+.current-page {
+    font-size: 1.25rem;
+    color: #007bff;
+    font-weight: 600;
+}
+
+.separator {
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.total-pages {
+    color: #495057;
+}
+
+.pagination-summary {
+    text-align: center;
+    font-size: 0.875rem;
+    color: #6c757d;
+    margin-top: 0.5rem;
+}
+</style>

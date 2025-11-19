@@ -150,14 +150,15 @@
             </div>
             <div class="card-body">
                 @if (Model.ProductStocks.Any()) {
-                    <div class="table-responsive">
+                    <!-- Десктопная таблица -->
+                    <div class="table-responsive d-none d-md-block">
                         <table class="table table-striped">
                             <thead>
                                 <tr>
                                     <th>Товар</th>
                                     <th>Размер</th>
-                                    <th>Количество</th>
-                                    <th>Цена закупки</th>
+                                    <th>Кол-во</th>
+                                    <th>Цена</th>
                                     <th>Статус</th>
                                     <th>Действия</th>
                                 </tr>
@@ -165,20 +166,20 @@
                             <tbody>
                                 @foreach (var stock in Model.ProductStocks) {
                                     var statusClass = stock.Quantity == 0 ? "text-danger" : (stock.Quantity < 5 ? "text-warning" : "text-success");
-                                    var statusText = stock.Quantity == 0 ? "Нет в наличии" : (stock.Quantity < 5 ? "Мало товара" : "В наличии");
+                                    var statusText = stock.Quantity == 0 ? "Нет" : (stock.Quantity < 5 ? "Мало" : "Есть");
                                     var product = Model.Products.FirstOrDefault(p => p.Id == stock.ProductId);
                                     <tr>
-                                        <td>@(product?.Name ?? "Неизвестный товар")</td>
+                                        <td>@(product?.Name ?? "Неизвестный")</td>
                                         <td>@stock.Size</td>
                                         <td>@stock.Quantity</td>
-                                        <td>@(stock.PurchasePrice > 0 ? stock.PurchasePrice.ToString("F2") + " ₽" : "-")</td>
+                                        <td>@(stock.PurchasePrice > 0 ? stock.PurchasePrice.ToString("F0") + "₽" : "-")</td>
                                         <td class="@statusClass">@statusText</td>
                                         <td>
                                             <form method="post" asp-page-handler="UpdatePrice" class="d-inline">
                                                 <input type="hidden" name="productId" value="@stock.ProductId" />
                                                 <input type="hidden" name="size" value="@stock.Size" />
-                                                <div class="input-group input-group-sm" style="width: 120px;">
-                                                    <input type="number" name="purchasePrice" class="form-control" step="0.01" min="0" value="@stock.PurchasePrice" placeholder="0.00">
+                                                <div class="input-group input-group-sm" style="width: 100px;">
+                                                    <input type="number" name="purchasePrice" class="form-control" step="0.01" min="0" value="@stock.PurchasePrice" placeholder="0">
                                                     <button type="submit" class="btn btn-outline-primary btn-sm">
                                                         <i class="fas fa-check"></i>
                                                     </button>
@@ -190,12 +191,79 @@
                             </tbody>
                         </table>
                     </div>
+                    
+                    <!-- Мобильные карточки -->
+                    <div class="d-md-none">
+                        @foreach (var stock in Model.ProductStocks) {
+                            var statusClass = stock.Quantity == 0 ? "text-danger" : (stock.Quantity < 5 ? "text-warning" : "text-success");
+                            var statusText = stock.Quantity == 0 ? "Нет в наличии" : (stock.Quantity < 5 ? "Мало товара" : "В наличии");
+                            var product = Model.Products.FirstOrDefault(p => p.Id == stock.ProductId);
+                            <div class="card mb-2">
+                                <div class="card-body p-3">
+                                    <h6 class="card-title mb-2">@(product?.Name ?? "Неизвестный товар")</h6>
+                                    <div class="row g-2 mb-2">
+                                        <div class="col-4"><small class="text-muted">Размер:</small><br><strong>@stock.Size</strong></div>
+                                        <div class="col-4"><small class="text-muted">Кол-во:</small><br><strong>@stock.Quantity</strong></div>
+                                        <div class="col-4"><small class="text-muted">Статус:</small><br><span class="@statusClass"><strong>@statusText</strong></span></div>
+                                    </div>
+                                    <div class="row g-2">
+                                        <div class="col-6"><small class="text-muted">Цена:</small><br>@(stock.PurchasePrice > 0 ? stock.PurchasePrice.ToString("F0") + " ₽" : "-")</div>
+                                        <div class="col-6">
+                                            <form method="post" asp-page-handler="UpdatePrice">
+                                                <input type="hidden" name="productId" value="@stock.ProductId" />
+                                                <input type="hidden" name="size" value="@stock.Size" />
+                                                <div class="input-group input-group-sm">
+                                                    <input type="number" name="purchasePrice" class="form-control" step="0.01" min="0" value="@stock.PurchasePrice" placeholder="0">
+                                                    <button type="submit" class="btn btn-outline-primary btn-sm">
+                                                        <i class="fas fa-check"></i>
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
                 } else {
                     <p class="text-muted">Остатки не найдены</p>
                 }
             </div>
         </div>
     </div>
+</div>
+
+@* Панель пагинации - десктоп *@
+<div class="d-none d-md-flex flex-row-reverse border border-1 p-1 mt-3">
+    @await Component.InvokeAsync(typeof(ShoeShop.Paginations.Components.PaginationViewComponent), new {
+            currentPage = Model.CurrentPage,
+            elementsPerPage = Model.ElementsPerPage,
+            totalElementsCount = Model.TotalElementsCount,
+            page = "/Admin/Stock",
+            routeData = new Dictionary<string, string>([
+                new KeyValuePair<string, string>("search", Model.SearchQuery ?? ""), 
+                new KeyValuePair<string, string>("status", Model.StatusFilter ?? "")
+            ])
+        })
+</div>
+
+@* Панель пагинации - мобильная *@
+<div class="d-md-none">
+    @if (Model.TotalElementsCount > Model.ElementsPerPage) {
+        var totalPages = (int)Math.Ceiling((double)Model.TotalElementsCount / Model.ElementsPerPage);
+        var currentPage = Model.CurrentPage;
+        
+        @await Component.InvokeAsync(typeof(ShoeShop.Paginations.Components.PaginationViewComponent), new {
+                currentPage = Model.CurrentPage,
+                elementsPerPage = Model.ElementsPerPage,
+                totalElementsCount = Model.TotalElementsCount,
+                page = "/Admin/Stock",
+                routeData = new Dictionary<string, string>([
+                    new KeyValuePair<string, string>("search", Model.SearchQuery ?? ""), 
+                    new KeyValuePair<string, string>("status", Model.StatusFilter ?? "")
+                ])
+            })
+    }
 </div>
 
 <script>
