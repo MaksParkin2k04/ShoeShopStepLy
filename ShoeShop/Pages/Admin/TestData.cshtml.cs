@@ -60,64 +60,70 @@ namespace ShoeShop.Pages.Admin {
                 var kidsCategory = categories.FirstOrDefault(c => c.Name.Contains("Детская"));
                 
                 var products = new List<Product>();
+                var brands = new[] { "Nike", "Adidas", "Puma", "New Balance", "Reebok", "Asics", "Converse", "Vans", "Skechers", "Under Armour" };
+                var models = new[] { "Air Max", "Boost", "Classic", "Sport", "Run", "Flex", "Pro", "Elite", "Speed", "Comfort" };
+                var colors = new[] { "Черные", "Белые", "Красные", "Синие", "Серые", "Зеленые", "Розовые", "Желтые" };
                 
-                // Мужские кроссовки
-                if (menCategory != null) {
-                    var menShoes = new[] {
-                        ("Nike Air Max 270", 12990, "Стильные мужские кроссовки Nike Air Max 270"),
-                        ("Adidas Ultraboost 22", 15990, "Беговые кроссовки Adidas Ultraboost"),
-                        ("Puma RS-X", 8990, "Ретро кроссовки Puma RS-X"),
-                        ("New Balance 574", 7990, "Классические кроссовки New Balance"),
-                        ("Reebok Classic Leather", 6990, "Кожаные кроссовки Reebok Classic")
-                    };
+                for (int i = 0; i < 100; i++) {
+                    var brand = brands[Random.Shared.Next(brands.Length)];
+                    var model = models[Random.Shared.Next(models.Length)];
+                    var color = colors[Random.Shared.Next(colors.Length)];
+                    var number = Random.Shared.Next(100, 999);
                     
-                    foreach (var (name, price, desc) in menShoes) {
-                        var product = Product.Create(name, true, price, ProductSize.All, DateTime.Now, desc, desc, menCategory.Id);
-                        products.Add(product);
-                    }
-                }
-                
-                // Женские кроссовки
-                if (womenCategory != null) {
-                    var womenShoes = new[] {
-                        ("Nike Air Force 1", 11990, "Женские кроссовки Nike Air Force 1"),
-                        ("Adidas Stan Smith", 8990, "Женские кеды Adidas Stan Smith"),
-                        ("Puma Cali", 7990, "Женские кроссовки Puma Cali"),
-                        ("New Balance 327", 9490, "Ретро кроссовки New Balance 327"),
-                        ("Reebok Club C 85", 6990, "Женские кеды Reebok Club C")
-                    };
+                    var name = $"{brand} {model} {number} {color}";
+                    var price = Random.Shared.Next(3000, 25000);
+                    var desc = $"Кроссовки {name} - стильная и комфортная обувь для повседневной носки";
                     
-                    foreach (var (name, price, desc) in womenShoes) {
-                        var product = Product.Create(name, true, price, ProductSize.All, DateTime.Now, desc, desc, womenCategory.Id);
-                        products.Add(product);
-                    }
-                }
-                
-                // Детские кроссовки
-                if (kidsCategory != null) {
-                    var kidsShoes = new[] {
-                        ("Nike Air Max Kids", 6990, "Детские кроссовки Nike Air Max"),
-                        ("Adidas Superstar Kids", 5990, "Детские кеды Adidas Superstar"),
-                        ("Puma Smash Kids", 3990, "Детские кеды Puma Smash"),
-                        ("New Balance Kids", 4990, "Детские кроссовки New Balance"),
-                        ("Skechers Lights", 4990, "Светящиеся кроссовки Skechers")
-                    };
+                    Guid categoryId;
+                    ProductSize sizes;
                     
-                    foreach (var (name, price, desc) in kidsShoes) {
-                        var product = Product.Create(name, true, price, ProductSize.From26To32, DateTime.Now, desc, desc, kidsCategory.Id);
-                        products.Add(product);
+                    var categoryType = i % 3;
+                    if (categoryType == 0 && menCategory != null) {
+                        categoryId = menCategory.Id;
+                        sizes = ProductSize.All;
+                    } else if (categoryType == 1 && womenCategory != null) {
+                        categoryId = womenCategory.Id;
+                        sizes = ProductSize.All;
+                    } else if (kidsCategory != null) {
+                        categoryId = kidsCategory.Id;
+                        sizes = ProductSize.From26To32;
+                    } else {
+                        continue;
                     }
+                    
+                    var product = Product.Create(name, true, price, sizes, DateTime.Now, desc, desc, categoryId);
+                    products.Add(product);
                 }
                 
                 _context.Products.AddRange(products);
                 await _context.SaveChangesAsync();
                 
+                // Получаем все доступные изображения
+                var allImageFiles = Directory.GetFiles(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", "products"), "*.jpg")
+                    .Select(f => Path.GetFileName(f))
+                    .ToArray();
+                
+                // Добавляем изображения к товарам
+                foreach (var product in products) {
+                    var imageCount = Random.Shared.Next(4, Math.Min(8, allImageFiles.Length + 1));
+                    var selectedImages = allImageFiles.OrderBy(x => Random.Shared.Next()).Take(imageCount);
+                    
+                    foreach (var imageFile in selectedImages) {
+                        var imagePath = $"/images/products/{imageFile}";
+                        
+                        // Устанавливаем ProductId через SQL
+                        await _context.Database.ExecuteSqlRawAsync(
+                            "INSERT INTO ProductImages (Id, Path, Alt, ProductId) VALUES ({0}, {1}, {2}, {3})",
+                            Guid.NewGuid(), imagePath, $"Изображение {product.Name}", product.Id);
+                    }
+                }
+                
                 // Создаем остатки для всех товаров
                 foreach (var product in products) {
                     var sizes = GetAvailableSizes(product.Sizes);
                     foreach (var size in sizes) {
-                        var quantity = Random.Shared.Next(5, 25); // От 5 до 25 штук
-                        var purchasePrice = product.Price * 0.6; // Закупочная цена 60% от продажной
+                        var quantity = Random.Shared.Next(0, 15);
+                        var purchasePrice = product.Price * 0.6;
                         await _stockService.SetStockAsync(product.Id, size, quantity, purchasePrice);
                     }
                 }
@@ -136,9 +142,14 @@ namespace ShoeShop.Pages.Admin {
         
         public async Task<IActionResult> OnPostClearDataAsync() {
             try {
-                var products = await _context.Products.ToListAsync();
-                _context.Products.RemoveRange(products);
-                await _context.SaveChangesAsync();
+                // Удаляем связанные данные сначала
+                await _context.Database.ExecuteSqlRawAsync("DELETE FROM ProductStocks");
+                await _context.Database.ExecuteSqlRawAsync("DELETE FROM ProductImages");
+                await _context.Database.ExecuteSqlRawAsync("DELETE FROM ProductReviews");
+                await _context.Database.ExecuteSqlRawAsync("DELETE FROM OrderDetails");
+                
+                // Теперь удаляем товары
+                await _context.Database.ExecuteSqlRawAsync("DELETE FROM Products");
                 
                 Message = "Все товары удалены!";
                 IsSuccess = true;

@@ -33,7 +33,7 @@
 
         <div class="row g-5">
             @* Product Images *@
-            <div class="col-lg-6">
+            <div class="col-lg-6 d-none d-lg-block">
                 <div class="product-gallery">
                     @if (Model.Product.Images?.Count > 0) {
                         <div id="productCarousel" class="carousel slide" data-bs-ride="false">
@@ -57,10 +57,41 @@
                             <div class="gallery-thumbnails">
                                 @for (int i = 0; i < Model.Product.Images.Count; i++) {
                                     <img src="@Model.Product.Images[i].Path" class="gallery-thumb @(i == 0 ? "active" : "")" 
-                                         data-bs-target="#productCarousel" data-bs-slide-to="@i" alt="@Model.Product.Images[i].Alt">
+                                         data-bs-target="#productCarousel" data-bs-slide-to="@i" alt="@Model.Product.Images[i].Alt"
+                                         onclick="setActiveThumb(@i)">
                                 }
                             </div>
                         }
+                    } else {
+                        <div class="gallery-placeholder">
+                            <i class="fas fa-image fa-4x"></i>
+                            <p>Изображение недоступно</p>
+                        </div>
+                    }
+                </div>
+            </div>
+            
+            @* Mobile Product Images *@
+            <div class="col-12 d-lg-none px-0">
+                <div class="product-gallery">
+                    @if (Model.Product.Images?.Count > 0) {
+                        <div id="productCarouselMobile" class="carousel slide" data-bs-ride="false">
+                            <div class="carousel-inner">
+                                @for (int i = 0; i < Model.Product.Images.Count; i++) {
+                                    <div class="carousel-item @(i == 0 ? "active" : "")">
+                                        <img src="@Model.Product.Images[i].Path" class="gallery-main-image-mobile" alt="@Model.Product.Images[i].Alt">
+                                    </div>
+                                }
+                            </div>
+                            @if (Model.Product.Images.Count > 1) {
+                                <button class="carousel-control-prev" type="button" data-bs-target="#productCarouselMobile" data-bs-slide="prev">
+                                    <span class="carousel-control-prev-icon"></span>
+                                </button>
+                                <button class="carousel-control-next" type="button" data-bs-target="#productCarouselMobile" data-bs-slide="next">
+                                    <span class="carousel-control-next-icon"></span>
+                                </button>
+                            }
+                        </div>
                     } else {
                         <div class="gallery-placeholder">
                             <i class="fas fa-image fa-4x"></i>
@@ -178,6 +209,25 @@
                                 sizeInfo.style.display = 'block';
                             }
                         }
+                        
+                        function setActiveThumb(index) {
+                            // Убираем активный класс со всех миниатюр
+                            document.querySelectorAll('.gallery-thumb').forEach(thumb => {
+                                thumb.classList.remove('active');
+                            });
+                            // Добавляем активный класс к выбранной миниатюре
+                            document.querySelectorAll('.gallery-thumb')[index].classList.add('active');
+                        }
+                        
+                        // Обработчик события смены слайда
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const carousel = document.getElementById('productCarousel');
+                            if (carousel) {
+                                carousel.addEventListener('slide.bs.carousel', function(event) {
+                                    setActiveThumb(event.to);
+                                });
+                            }
+                        });
                     </script>
 
                     <style>
@@ -297,6 +347,74 @@
                         background-color: #fff3cd;
                         border-radius: 4px;
                         border: 1px solid #ffeaa7;
+                    }
+                    
+                    .gallery-main-image {
+                        width: 100%;
+                        height: 600px;
+                        object-fit: cover;
+                        border-radius: 8px;
+                        background: white;
+                    }
+                    
+                    .gallery-main-image-mobile {
+                        width: 100vw;
+                        height: 400px;
+                        object-fit: cover;
+                        background: white;
+                    }
+                    
+                    .product-gallery .carousel-control-prev,
+                    .product-gallery .carousel-control-next {
+                        width: 40px;
+                        height: 40px;
+                        background: rgba(0,0,0,0.8);
+                        border-radius: 50%;
+                        border: 2px solid white;
+                        opacity: 1;
+                        top: 50%;
+                        transform: translateY(-50%);
+                    }
+                    
+                    .product-gallery .carousel-control-prev {
+                        left: 15px;
+                    }
+                    
+                    .product-gallery .carousel-control-next {
+                        right: 15px;
+                    }
+                    
+                    .product-gallery .carousel-control-prev-icon,
+                    .product-gallery .carousel-control-next-icon {
+                        width: 20px;
+                        height: 20px;
+                        background-size: 20px 20px;
+                    }
+                    
+                    .gallery-thumbnails {
+                        display: flex;
+                        gap: 10px;
+                        margin-top: 15px;
+                        justify-content: center;
+                        flex-wrap: wrap;
+                        overflow: visible;
+                        padding-bottom: 10px;
+                    }
+                    
+                    .gallery-thumb {
+                        width: 80px;
+                        height: 80px;
+                        object-fit: cover;
+                        border-radius: 6px;
+                        cursor: pointer;
+                        border: 2px solid transparent;
+                        transition: all 0.2s;
+                    }
+                    
+                    .gallery-thumb:hover,
+                    .gallery-thumb.active {
+                        border-color: #007bff;
+                        transform: scale(1.05);
                     }
                     </style>
 
