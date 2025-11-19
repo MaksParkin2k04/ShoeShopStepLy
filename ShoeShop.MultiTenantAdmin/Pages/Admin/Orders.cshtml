@@ -1,0 +1,277 @@
+﻿@page
+@using ShoeShop.Models
+@model ShoeShop.Pages.Admin.OrdersModel
+@{
+    ViewData["Title"] = "Управление заказами";
+    
+    Dictionary<string, string> statusFilterDictionary = new Dictionary<string, string>(new KeyValuePair<string, string>[] {
+        new KeyValuePair<string, string>("Аll", "Все"),
+        new KeyValuePair<string, string>("Created", "Созданные"),
+        new KeyValuePair<string, string>("Paid", "Оплаченные"),
+        new KeyValuePair<string, string>("Processing", "В обработке"),
+        new KeyValuePair<string, string>("Completed", "Выполненные"),
+        new KeyValuePair<string, string>("Canceled", "Отмененные")
+    });
+
+    Dictionary<string, string> orderSortingDictionary = new Dictionary<string, string>(new KeyValuePair<string, string>[] {
+        new KeyValuePair<string, string>("ByDateDesc", "Сначала новые"),
+        new KeyValuePair<string, string>("ByDateAsc", "Сначала старые")
+    });
+}
+
+<div class="admin-page">
+    @* Header *@
+    <div class="admin-header">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="admin-title-section">
+                <h1 class="admin-title">
+                    <i class="fas fa-clipboard-list me-3"></i>
+                    Управление заказами
+                </h1>
+                <p class="admin-subtitle">Просмотр и управление всеми заказами в системе</p>
+            </div>
+            <div class="d-flex gap-2">
+                @if (Model.TotalElementsCount > 0) {
+                    <form asp-page="/Admin/Orders" asp-page-handler="DeleteAll" method="post" class="d-inline" onsubmit="return confirm('ВНИМАНИЕ! Это действие удалит ВСЕ заказы из системы. Вы уверены?')">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash me-2"></i>Удалить все заказы
+                        </button>
+                    </form>
+                }
+                <a asp-page="/Admin/Index" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Админ панель
+                </a>
+            </div>
+        </div>
+        
+        @* Stats Cards *@
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon bg-primary">
+                    <i class="fas fa-shopping-bag"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-number">@Model.TotalElementsCount</div>
+                    <div class="stat-label">Всего заказов</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon bg-warning">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-number">@(Model.Orders?.Count(o => o.Status == OrderStatus.Processing) ?? 0)</div>
+                    <div class="stat-label">На странице</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon bg-success">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-number">@(Model.Orders?.Count(o => o.Status == OrderStatus.Completed) ?? 0)</div>
+                    <div class="stat-label">На странице</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* Filters *@
+    <div class="admin-filters">
+        <form id="sortingForm" asp-page="/Admin/Orders" method="get" class="filters-form">
+            <div class="filter-group">
+                <label class="filter-label">Статус заказа:</label>
+                <select id="filterStatus" name="filter" class="form-select" onchange="document.getElementById('sortingForm').submit()">
+                    @foreach (string key in statusFilterDictionary.Keys) {
+                        if (key == Model.Filter.ToString()) {
+                            <option value="@key" selected>@statusFilterDictionary[key]</option>
+                        } else {
+                            <option value="@key">@statusFilterDictionary[key]</option>
+                        }
+                    }
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label class="filter-label">Сортировка:</label>
+                <select id="sorting" name="sorting" class="form-select" onchange="document.getElementById('sortingForm').submit()">
+                    @foreach (string key in orderSortingDictionary.Keys) {
+                        if (key == Model.Sorting.ToString()) {
+                            <option value="@key" selected>@orderSortingDictionary[key]</option>
+                        } else {
+                            <option value="@key">@orderSortingDictionary[key]</option>
+                        }
+                    }
+                </select>
+            </div>
+        </form>
+    </div>
+
+    @* Orders Table *@
+    <div class="admin-content">
+        @if (Model.Orders == null || Model.Orders.Count() == 0) {
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-inbox fa-4x"></i>
+                </div>
+                <h3 class="empty-title">Заказы не найдены</h3>
+                <p class="empty-text">Попробуйте изменить фильтры или дождитесь новых заказов</p>
+            </div>
+        } else {
+            <div class="orders-table-container">
+                <table class="table orders-table">
+                    <thead>
+                        <tr>
+                            <th>Номер заказа</th>
+                            <th>Дата создания</th>
+                            <th>Получатель</th>
+                            <th>Статус</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (Order order in Model.Orders) {
+                            <tr class="order-row">
+                                <td class="order-id">
+                                    <a asp-page="/Admin/OrderDetail" asp-route-orderId="@order.Id" class="order-link">
+                                        #@order.Id.ToString().Substring(0, 8)
+                                    </a>
+                                </td>
+                                <td class="order-date">
+                                    <div class="date-info">
+                                        <div class="date-main">@order.CreatedDate.ToString("dd.MM.yyyy")</div>
+                                        <div class="date-time">@order.CreatedDate.ToString("HH:mm")</div>
+                                    </div>
+                                </td>
+                                <td class="order-recipient">
+                                    <div class="recipient-info">
+                                        <div class="recipient-name">@order.Recipient?.Name</div>
+                                        <div class="recipient-phone">@order.Recipient?.Phone</div>
+                                    </div>
+                                </td>
+                                <td class="order-status">
+                                    <div class="status-info">
+                                        <span class="status-badge status-@order.Status.ToString().ToLower()">
+                                            @switch (order.Status) {
+                                                case OrderStatus.Created:
+                                                    <i class="fas fa-plus-circle me-1"></i>
+                                                    <span>Создан</span>
+                                                    break;
+                                                case OrderStatus.Paid:
+                                                    <i class="fas fa-credit-card me-1"></i>
+                                                    <span>Оплачен</span>
+                                                    break;
+                                                case OrderStatus.Processing:
+                                                    <i class="fas fa-clock me-1"></i>
+                                                    <span>В обработке</span>
+                                                    break;
+                                                case OrderStatus.Completed:
+                                                    <i class="fas fa-check-circle me-1"></i>
+                                                    <span>Выполнен</span>
+                                                    break;
+                                                case OrderStatus.Canceled:
+                                                    <i class="fas fa-times-circle me-1"></i>
+                                                    <span>Отменен</span>
+                                                    break;
+                                            }
+                                        </span>
+                                        @if (order.PaymentDate.HasValue || order.Status == OrderStatus.Paid)
+                                        {
+                                            <small class="text-success d-block mt-1">
+                                                <i class="fas fa-check-circle me-1"></i>Оплачено
+                                            </small>
+                                        }
+                                        else
+                                        {
+                                            <small class="text-warning d-block mt-1">
+                                                <i class="fas fa-clock me-1"></i>Ожидает оплаты
+                                            </small>
+                                        }
+                                        <div class="payment-info">
+                                            @if (order.PaymentType == PaymentType.Online) {
+                                                <small class="text-primary">Онлайн оплата</small>
+                                            } else {
+                                                <small class="text-muted">Оплата при получении</small>
+                                            }
+                                            @if (order.PaymentDate.HasValue) {
+                                                <small class="text-success d-block">Оплачено: @order.PaymentDate.Value.ToString("dd.MM.yyyy HH:mm")</small>
+                                            }
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="order-actions">
+                                    <div class="action-buttons">
+                                        <a asp-page="/Admin/OrderDetail" asp-route-orderId="@order.Id" class="btn btn-sm btn-outline-primary" title="Просмотреть детали">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="/OrderLabel/@order.Id" target="_blank" class="btn btn-sm btn-outline-info" title="Печать этикетки">
+                                            <i class="fas fa-print"></i>
+                                        </a>
+                                        <form asp-page="/Admin/Orders" asp-page-handler="Delete" method="post" class="d-inline" onsubmit="return confirm('Вы уверены, что хотите удалить этот заказ?')">
+                                            <input type="hidden" name="orderId" value="@order.Id" />
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Удалить заказ">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                        @if (order.Status != OrderStatus.Completed && order.Status != OrderStatus.Canceled) {
+                                            <div class="dropdown">
+                                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" title="Изменить статус">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                    @if (order.Status != OrderStatus.Processing) {
+                                                        <li>
+                                                            <form asp-page="/Admin/Orders" asp-page-handler="UpdateStatus" method="post" class="d-inline">
+                                                                <input type="hidden" name="orderId" value="@order.Id" />
+                                                                <input type="hidden" name="status" value="@((int)OrderStatus.Processing)" />
+                                                                <button type="submit" class="dropdown-item">
+                                                                    <i class="fas fa-clock me-2"></i>В обработку
+                                                                </button>
+                                                            </form>
+                                                        </li>
+                                                    }
+                                                    <li>
+                                                        <form asp-page="/Admin/Orders" asp-page-handler="UpdateStatus" method="post" class="d-inline">
+                                                            <input type="hidden" name="orderId" value="@order.Id" />
+                                                            <input type="hidden" name="status" value="@((int)OrderStatus.Completed)" />
+                                                            <button type="submit" class="dropdown-item">
+                                                                <i class="fas fa-check-circle me-2"></i>Выполнить
+                                                            </button>
+                                                        </form>
+                                                    </li>
+                                                    <li>
+                                                        <form asp-page="/Admin/Orders" asp-page-handler="UpdateStatus" method="post" class="d-inline">
+                                                            <input type="hidden" name="orderId" value="@order.Id" />
+                                                            <input type="hidden" name="status" value="@((int)OrderStatus.Canceled)" />
+                                                            <button type="submit" class="dropdown-item text-danger">
+                                                                <i class="fas fa-times-circle me-2"></i>Отменить
+                                                            </button>
+                                                        </form>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+
+    @* Pagination *@
+    <div class="admin-pagination">
+        @await Component.InvokeAsync(typeof(ShoeShop.Paginations.Components.PaginationViewComponent), new {
+                currentPage = Model.CurrentPage,
+                elementsPerPage = Model.ElementsPerPage,
+                totalElementsCount = Model.TotalElementsCount,
+                page = "/Admin/Orders",
+                routeData = new Dictionary<string, string>([
+                    new KeyValuePair<string, string>("sorting", Model.Sorting.ToString()), 
+                    new KeyValuePair<string, string>("filter", Model.Filter.ToString())
+                ])
+            })
+    </div>
+</div>

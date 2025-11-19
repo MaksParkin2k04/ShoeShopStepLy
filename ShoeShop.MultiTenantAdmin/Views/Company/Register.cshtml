@@ -1,0 +1,56 @@
+@model ShoeShop.MultiTenantAdmin.Controllers.CompanyRegistrationModel
+@{
+    ViewData["Title"] = "Регистрация компании";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Регистрация новой компании</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Register" method="post">
+                        <div class="mb-3">
+                            <label asp-for="Name" class="form-label">Название компании</label>
+                            <input asp-for="Name" class="form-control" required />
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="ShortName" class="form-label">Сокращенное название</label>
+                            <input asp-for="ShortName" class="form-control" placeholder="mycompany" required />
+                            <div class="form-text">
+                                Будет использоваться в URL: https://site.com/<strong>mycompany</strong>
+                            </div>
+                            <span asp-validation-for="ShortName" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="ContactEmail" class="form-label">Email для связи</label>
+                            <input asp-for="ContactEmail" type="email" class="form-control" required />
+                            <span asp-validation-for="ContactEmail" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="ContactPhone" class="form-label">Телефон (необязательно)</label>
+                            <input asp-for="ContactPhone" class="form-control" />
+                            <span asp-validation-for="ContactPhone" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label">Описание (необязательно)</label>
+                            <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Зарегистрировать компанию</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,71 @@
+@page
+@model ShoeShop.Pages.Admin.TelegramTestModel
+@{
+    ViewData["Title"] = "Тест Telegram";
+}
+
+<div class="container-fluid">
+    <div class="card">
+        <div class="card-header">
+            <h3>Тестирование Telegram бота</h3>
+        </div>
+        <div class="card-body">
+            @if (!string.IsNullOrEmpty(Model.Message))
+            {
+                <div class="alert alert-@(Model.IsSuccess ? "success" : "danger")">
+                    @Model.Message
+                </div>
+            }
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>1. Проверка webhook</h5>
+                    <p>URL: <code>@($"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}/api/telegram/webhook")</code></p>
+                    <form method="post" asp-page-handler="CheckWebhook">
+                        <button type="submit" class="btn btn-info">Проверить webhook</button>
+                    </form>
+                </div>
+                
+                <div class="col-md-6">
+                    <h5>2. Отправить сообщение</h5>
+                    <form method="post" asp-page-handler="SendMessage">
+                        <div class="form-group">
+                            <input type="number" name="chatId" class="form-control" placeholder="Chat ID" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" name="message" class="form-control" placeholder="Сообщение" value="Тест от StepLy!" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Отправить</button>
+                    </form>
+                </div>
+            </div>
+            
+            <hr>
+            
+            <div class="row">
+                <div class="col-12">
+                    <h5>3. Настройка webhook через API</h5>
+                    <form method="post" asp-page-handler="SetWebhook">
+                        <div class="form-group">
+                            <label>Webhook URL:</label>
+                            <input type="text" name="webhookUrl" class="form-control" 
+                                   value="@($"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}/api/telegram/webhook")" required>
+                        </div>
+                        <button type="submit" class="btn btn-success">Установить webhook</button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="mt-4">
+                <h5>Инструкции:</h5>
+                <ol>
+                    <li>Убедитесь, что приложение доступно по HTTPS</li>
+                    <li>Установите webhook через форму выше</li>
+                    <li>Найдите ваш Chat ID у <code>@@userinfobot</code></li>
+                    <li>Отправьте тестовое сообщение</li>
+                    <li>Напишите боту /start</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>

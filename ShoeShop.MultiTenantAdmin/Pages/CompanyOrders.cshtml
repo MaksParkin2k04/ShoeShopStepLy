@@ -1,0 +1,32 @@
+@page "/{companyName}/orders"
+@model ShoeShop.MultiTenantAdmin.Pages.CompanyOrdersModel
+@{
+    ViewData["Title"] = $"Заказы - {Model.Company?.Name}";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>Заказы: @Model.Company?.Name</h1>
+                <div>
+                    <a href="/@Model.Company?.ShortName" class="btn btn-outline-secondary">Назад к админке</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Управление заказами</h5>
+                </div>
+                <div class="card-body">
+                    <p>Здесь будет список заказов компании @Model.Company?.Name</p>
+                    <p class="text-muted">Функционал в разработке...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

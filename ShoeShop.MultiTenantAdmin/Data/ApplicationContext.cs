@@ -1,0 +1,126 @@
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+using ShoeShop.MultiTenantAdmin.MultiTenantAdmin.Models;
+
+namespace ShoeShop.MultiTenantAdmin.MultiTenantAdmin.Data {
+    public class ApplicationContext : IdentityDbContext<ApplicationUser, ApplicationRole, Guid> {
+        public ApplicationContext(DbContextOptions<ApplicationContext> options) : base(options) { }
+
+        public DbSet<Product> Products { get; private set; }
+        public DbSet<ProductImage> ProductImages { get; private set; }
+        public DbSet<ProductStock> ProductStocks { get; private set; }
+        public DbSet<Order> Orders { get; private set; }
+        public DbSet<OrderDetail> OrderDetails { get; private set; }
+        public DbSet<Category> Categories { get; private set; }
+        public DbSet<PromoCode> PromoCodes { get; private set; }
+        public DbSet<TelegramUser> TelegramUsers { get; private set; }
+        public DbSet<Company> Companies { get; set; }
+        public DbSet<CompanyUser> CompanyUsers { get; set; }
+        public DbSet<Product> Products { get; set; }
+        public DbSet<Category> Categories { get; set; }
+        public DbSet<ProductImage> ProductImages { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder) {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<Product>().Property(b => b.Name).IsRequired().HasMaxLength(50);
+            modelBuilder.Entity<Product>().Property(b => b.Price).IsRequired();
+            modelBuilder.Entity<Product>().Property(b => b.SalePrice);
+            modelBuilder.Entity<Product>().Property(b => b.DateAdded).IsRequired();
+            modelBuilder.Entity<Product>().Property(b => b.Description).IsRequired().HasMaxLength(120);
+            modelBuilder.Entity<Product>().Property(b => b.Content).IsRequired();
+            modelBuilder.Entity<Product>().Property(b => b.Sizes).HasField("_sizes");
+
+            modelBuilder.Entity<ProductImage>().Property(b => b.Path).IsRequired().HasMaxLength(256);
+            modelBuilder.Entity<ProductImage>().Property(b => b.Alt).IsRequired().HasMaxLength(100);
+
+            modelBuilder.Entity<OrderDetail>().Property(o => o.Name).IsRequired().HasMaxLength(50);
+            modelBuilder.Entity<OrderDetail>().Property(o => o.Image).IsRequired().HasMaxLength(256);
+            modelBuilder.Entity<OrderDetail>().Property(o => o.Price).IsRequired();
+            modelBuilder.Entity<OrderDetail>().Property(o => o.Size).IsRequired();
+            modelBuilder.Entity<OrderDetail>().ToTable(o => o.HasCheckConstraint("ValidPrice", $"{nameof(OrderDetail.Price)} > 0"));
+
+            modelBuilder.Entity<Order>(o => {
+                o.Property(p => p.PaymentType).IsRequired();
+                o.Property(p => p.PaymentDate);
+                
+                o.OwnsOne(p => p.Recipient, r => {
+                    r.Property(p => p.Name).HasColumnName("RecipientName").IsRequired().HasMaxLength(50);
+                    r.Property(p => p.City).HasColumnName("City").IsRequired().HasMaxLength(50);
+                    r.Property(p => p.Street).HasColumnName("Street").IsRequired().HasMaxLength(256);
+                    r.Property(p => p.House).HasColumnName("House").IsRequired().HasMaxLength(50);
+                    r.Property(p => p.Apartment).HasColumnName("Apartment").IsRequired().HasMaxLength(50);
+                    r.Property(p => p.Phone).HasColumnName("Phone").IsRequired().HasMaxLength(20);
+                });
+
+                o.Navigation(o => o.Recipient).IsRequired();
+            });
+
+            modelBuilder.Entity<Category>().Property(c => c.Name).IsRequired().HasMaxLength(100);
+
+            modelBuilder.Entity<ProductStock>().Property(s => s.Size).IsRequired();
+            modelBuilder.Entity<ProductStock>().Property(s => s.Quantity).IsRequired();
+            modelBuilder.Entity<ProductStock>().Property(s => s.PurchasePrice).IsRequired();
+            modelBuilder.Entity<ProductStock>().HasIndex(s => new { s.ProductId, s.Size }).IsUnique();
+
+            modelBuilder.Entity<Product>()
+                .HasOne(p => p.Category)
+                .WithMany()
+                .HasForeignKey(p => p.CategoryId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<ProductStock>()
+                .HasOne(s => s.Product)
+                .WithMany()
+                .HasForeignKey(s => s.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<PromoCode>().Property(p => p.Code).IsRequired().HasMaxLength(20);
+            modelBuilder.Entity<PromoCode>().Property(p => p.DiscountPercent).IsRequired();
+            modelBuilder.Entity<PromoCode>().HasIndex(p => p.Code).IsUnique();
+
+            modelBuilder.Entity<TelegramUser>().HasKey(t => t.TelegramId);
+            modelBuilder.Entity<TelegramUser>().Property(t => t.FirstName).HasMaxLength(100);
+            modelBuilder.Entity<TelegramUser>().Property(t => t.LastName).HasMaxLength(100);
+            modelBuilder.Entity<TelegramUser>().Property(t => t.Username).HasMaxLength(100);
+            modelBuilder.Entity<TelegramUser>().Property(t => t.Phone).HasMaxLength(20);
+            modelBuilder.Entity<TelegramUser>().Property(t => t.Address).HasMaxLength(500);
+            modelBuilder.Entity<TelegramUser>().Property(t => t.Email).HasMaxLength(256);
+
+            // Company configuration
+            modelBuilder.Entity<Company>()
+                .HasIndex(c => c.ShortName)
+                .IsUnique();
+
+            // CompanyUser configuration
+            modelBuilder.Entity<CompanyUser>()
+                .HasOne(cu => cu.Company)
+                .WithMany()
+                .HasForeignKey(cu => cu.CompanyId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<CompanyUser>()
+                .HasOne(cu => cu.User)
+                .WithMany()
+                .HasForeignKey(cu => cu.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<CompanyUser>()
+                .HasIndex(cu => new { cu.CompanyId, cu.UserId })
+                .IsUnique();
+
+            // Product configuration
+            modelBuilder.Entity<Product>()
+                .HasOne(p => p.Category)
+                .WithMany()
+                .HasForeignKey(p => p.CategoryId);
+
+            modelBuilder.Entity<ProductImage>()
+                .HasOne<Product>()
+                .WithMany(p => p.Images)
+                .HasForeignKey(pi => pi.ProductId);
+
+        }
+    }
+}

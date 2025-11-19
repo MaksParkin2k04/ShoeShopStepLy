@@ -1,0 +1,56 @@
+@page
+@model ShoeShop.Pages.Admin.StockManagementModel
+@{
+    ViewData["Title"] = "Управление остатками";
+}
+
+<h2>Управление остатками товаров</h2>
+
+<form method="post">
+    <div class="mb-3">
+        <label class="form-label">Товар:</label>
+        <select name="productId" class="form-select" required>
+            <option value="">Выберите товар</option>
+            @foreach (var product in Model.Products)
+            {
+                <option value="@product.Id">@product.Name</option>
+            }
+        </select>
+    </div>
+    
+    <div class="mb-3">
+        <label class="form-label">Размер:</label>
+        <input type="number" name="size" class="form-control" min="1" max="64" required>
+    </div>
+    
+    <div class="mb-3">
+        <label class="form-label">Количество:</label>
+        <input type="number" name="quantity" class="form-control" min="0" required>
+    </div>
+    
+    <button type="submit" class="btn btn-primary">Установить остаток</button>
+</form>
+
+@if (Model.CurrentStocks.Any())
+{
+    <h3 class="mt-4">Текущие остатки</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Товар</th>
+                <th>Размер</th>
+                <th>Количество</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var stock in Model.CurrentStocks)
+            {
+                <tr>
+                    <td>@stock.Product?.Name</td>
+                    <td>@stock.Size</td>
+                    <td>@stock.Quantity</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

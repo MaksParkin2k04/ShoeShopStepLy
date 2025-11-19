@@ -1,0 +1,183 @@
+@page
+@model ShoeShop.Pages.Admin.QRScannerModel
+@{
+    ViewData["Title"] = "QR Сканер";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>📱 QR Сканер</h1>
+    <a asp-page="/Admin/Index" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Админ панель
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Сканирование QR-кодов товаров</h5>
+            </div>
+            <div class="card-body">
+                <div id="scanner-container">
+                    <video id="video" width="100%" height="300" style="border: 1px solid #ccc; border-radius: 8px;"></video>
+                    <div class="text-center mt-3">
+                        <button id="start-scan" class="btn btn-primary">
+                            <i class="fas fa-camera me-2"></i>Начать сканирование
+                        </button>
+                        <button id="stop-scan" class="btn btn-secondary" style="display: none;">
+                            <i class="fas fa-stop me-2"></i>Остановить
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="result" class="mt-4" style="display: none;">
+                    <div class="alert alert-success">
+                        <h6>QR-код распознан:</h6>
+                        <p id="qr-result"></p>
+                        <button id="open-link" class="btn btn-sm btn-primary">Открыть ссылку</button>
+                    </div>
+                </div>
+                
+                <div id="error" class="mt-4" style="display: none;">
+                    <div class="alert alert-danger">
+                        <p id="error-message"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<script>
+const video = document.getElementById('video');
+const startBtn = document.getElementById('start-scan');
+const stopBtn = document.getElementById('stop-scan');
+const resultDiv = document.getElementById('result');
+const errorDiv = document.getElementById('error');
+const qrResult = document.getElementById('qr-result');
+const openLink = document.getElementById('open-link');
+
+let stream = null;
+let scanning = false;
+let canvas, context;
+
+startBtn.addEventListener('click', startScanning);
+stopBtn.addEventListener('click', stopScanning);
+
+async function startScanning() {
+    try {
+        const constraints = {
+            video: {
+                facingMode: 'environment',
+                width: { ideal: 1280 },
+                height: { ideal: 720 }
+            }
+        };
+        
+        stream = await navigator.mediaDevices.getUserMedia(constraints);
+        video.srcObject = stream;
+        
+        video.onloadedmetadata = () => {
+            video.play();
+            canvas = document.createElement('canvas');
+            context = canvas.getContext('2d');
+            
+            startBtn.style.display = 'none';
+            stopBtn.style.display = 'inline-block';
+            scanning = true;
+            
+            requestAnimationFrame(scanQRCode);
+        };
+        
+        hideError();
+    } catch (err) {
+        showError('Ошибка доступа к камере: ' + err.message);
+    }
+}
+
+function stopScanning() {
+    scanning = false;
+    
+    if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+        stream = null;
+    }
+    
+    video.srcObject = null;
+    
+    startBtn.style.display = 'inline-block';
+    stopBtn.style.display = 'none';
+    
+    hideResult();
+}
+
+function scanQRCode() {
+    if (!scanning || !video.videoWidth || !video.videoHeight) {
+        if (scanning) requestAnimationFrame(scanQRCode);
+        return;
+    }
+    
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    
+    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+    
+    try {
+        const code = jsQR(imageData.data, imageData.width, imageData.height, {
+            inversionAttempts: "dontInvert"
+        });
+        
+        if (code && code.data) {
+            showResult(code.data);
+            // Пауза перед продолжением сканирования
+            setTimeout(() => {
+                if (scanning) requestAnimationFrame(scanQRCode);
+            }, 2000);
+            return;
+        }
+    } catch (e) {
+        console.log('QR scan error:', e);
+    }
+    
+    requestAnimationFrame(scanQRCode);
+}
+
+function showResult(data) {
+    // Автоматический переход по ссылке
+    if (data.startsWith('http')) {
+        window.open(data, '_blank');
+    } else {
+        window.location.href = data;
+    }
+}
+
+function hideResult() {
+    resultDiv.style.display = 'none';
+}
+
+function showError(message) {
+    document.getElementById('error-message').textContent = message;
+    errorDiv.style.display = 'block';
+}
+
+function hideError() {
+    errorDiv.style.display = 'none';
+}
+</script>
+
+<style>
+#scanner-container {
+    text-align: center;
+}
+
+#video {
+    max-width: 100%;
+    height: auto;
+}
+
+.alert {
+    margin-bottom: 0;
+}
+</style>

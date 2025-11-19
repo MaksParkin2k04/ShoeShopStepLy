@@ -1,0 +1,249 @@
+@page
+@using ShoeShop.Models
+@model ShoeShop.Pages.Admin.StatisticsModel
+@{
+    ViewData["Title"] = "Статистика продаж";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Статистика продаж</h2>
+    <a asp-page="/Admin/Index" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Админ панель
+    </a>
+</div>
+
+@* Фильтры по датам *@
+<div class="card mb-4">
+    <div class="card-header">
+        <h6 class="mb-0">Период анализа</h6>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">С даты</label>
+                <input type="date" name="fromDate" class="form-control" value="@Model.FromDate?.ToString("yyyy-MM-dd")">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">По дату</label>
+                <input type="date" name="toDate" class="form-control" value="@Model.ToDate?.ToString("yyyy-MM-dd")">
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary me-2">Применить</button>
+                <a href="?" class="btn btn-outline-secondary">Сбросить</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@* Общая статистика *@
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title text-primary">@Model.Statistics.TotalQuantitySold</h5>
+                <p class="card-text">Продано пар</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title text-success">@Model.Statistics.TotalRevenue.ToString("F2") ₽</h5>
+                <p class="card-text">Выручка</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title text-danger">@Model.Statistics.TotalCosts.ToString("F2") ₽</h5>
+                <p class="card-text">Затраты</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title text-info">@Model.Statistics.NetProfit.ToString("F2") ₽</h5>
+                <p class="card-text">Прибыль</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* Графики *@
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h6>Выручка vs Затраты</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="revenueChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h6>Топ товаров по выручке</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="productsChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* Таблица по товарам *@
+<div class="card mt-4">
+    <div class="card-header">
+        <h6>Детальная статистика по товарам</h6>
+    </div>
+    <div class="card-body">
+        @if (Model.ProductStatistics.Any()) {
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Товар</th>
+                            <th>Продано пар</th>
+                            <th>Выручка</th>
+                            <th>Затраты</th>
+                            <th>Прибыль</th>
+                            <th>Рентабельность</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var product in Model.ProductStatistics) {
+                            var profitMargin = product.Costs > 0 ? (product.Profit / product.Costs) * 100 : 0;
+                            <tr>
+                                <td>@product.ProductName</td>
+                                <td>@product.QuantitySold</td>
+                                <td>@product.Revenue.ToString("F2") ₽</td>
+                                <td>@product.Costs.ToString("F2") ₽</td>
+                                <td class="@(product.Profit >= 0 ? "text-success" : "text-danger")">@product.Profit.ToString("F2") ₽</td>
+                                <td class="@(profitMargin >= 0 ? "text-success" : "text-danger")">@profitMargin.ToString("F1")%</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        } else {
+            <p class="text-muted">Нет данных для отображения</p>
+        }
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// График выручки vs затрат
+const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+new Chart(revenueCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Прибыль', 'Затраты'],
+        datasets: [{
+            data: [@Model.Statistics.NetProfit, @Model.Statistics.TotalCosts],
+            backgroundColor: ['#28a745', '#dc3545']
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+// График топ товаров
+const productsCtx = document.getElementById('productsChart').getContext('2d');
+const topProducts = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ProductStatistics.Take(5).Select(p => new { name = p.ProductName, revenue = p.Revenue })));
+new Chart(productsCtx, {
+    type: 'bar',
+    data: {
+        labels: topProducts.map(p => p.name),
+        datasets: [{
+            label: 'Выручка (₽)',
+            data: topProducts.map(p => p.revenue),
+            backgroundColor: '#007bff'
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+</script>
+
+@* AI-ассистент с советами *@
+<div class="card mt-4">
+    <div class="card-header bg-info text-white">
+        <h6 class="mb-0">
+            <i class="fas fa-robot me-2"></i>AI-ассистент: Рекомендации по улучшению продаж
+        </h6>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            @{
+                var aiProfitMargin = Model.Statistics.TotalCosts > 0 ? (Model.Statistics.NetProfit / Model.Statistics.TotalCosts) * 100 : 0;
+                var topProduct = Model.ProductStatistics.OrderByDescending(p => p.Revenue).FirstOrDefault();
+                var worstProduct = Model.ProductStatistics.Where(p => p.Profit < 0).OrderBy(p => p.Profit).FirstOrDefault();
+            }
+            
+            @if (aiProfitMargin < 20) {
+                <div class="col-md-6 mb-3">
+                    <div class="alert alert-warning">
+                        <strong>⚠️ Низкая рентабельность (@aiProfitMargin.ToString("F1")%)</strong><br>
+                        Рекомендую пересмотреть ценообразование или найти поставщиков с лучшими условиями.
+                    </div>
+                </div>
+            }
+            
+            @if (topProduct != null) {
+                <div class="col-md-6 mb-3">
+                    <div class="alert alert-success">
+                        <strong>🏆 Лидер продаж: @topProduct.ProductName</strong><br>
+                        Увеличьте закупки этого товара и рассмотрите похожие модели.
+                    </div>
+                </div>
+            }
+            
+            @if (worstProduct != null) {
+                <div class="col-md-6 mb-3">
+                    <div class="alert alert-danger">
+                        <strong>📉 Убыточный товар: @worstProduct.ProductName</strong><br>
+                        Рассмотрите скидки для распродажи или прекратите закупки.
+                    </div>
+                </div>
+            }
+            
+            @if (Model.Statistics.TotalQuantitySold < 50) {
+                <div class="col-md-6 mb-3">
+                    <div class="alert alert-info">
+                        <strong>📈 Низкие продажи</strong><br>
+                        Попробуйте маркетинговые акции, скидки или улучшите презентацию товаров.
+                    </div>
+                </div>
+            }
+            
+            <div class="col-12">
+                <div class="alert alert-light border">
+                    <strong>💡 Общие рекомендации:</strong>
+                    <ul class="mb-0 mt-2">
+                        <li>Анализируйте сезонность продаж для планирования закупок</li>
+                        <li>Отслеживайте остатки популярных размеров</li>
+                        <li>Рассмотрите программу лояльности для постоянных клиентов</li>
+                        <li>Изучайте отзывы покупателей для улучшения ассортимента</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

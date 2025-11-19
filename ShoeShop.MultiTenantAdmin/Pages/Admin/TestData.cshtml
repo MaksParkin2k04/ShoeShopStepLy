@@ -1,0 +1,59 @@
+@page
+@model ShoeShop.Pages.Admin.TestDataModel
+@{
+    ViewData["Title"] = "Тестовые данные";
+}
+
+<div class="container-fluid">
+    <div class="card">
+        <div class="card-header">
+            <h3>Управление тестовыми данными</h3>
+        </div>
+        <div class="card-body">
+            @if (!string.IsNullOrEmpty(Model.Message))
+            {
+                <div class="alert alert-@(Model.IsSuccess ? "success" : "danger")">
+                    @Model.Message
+                </div>
+            }
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Категории</h5>
+                    <p>Найдено категорий: <strong>@Model.CategoriesCount</strong></p>
+                    @if (Model.Categories.Any())
+                    {
+                        <ul>
+                            @foreach (var category in Model.Categories)
+                            {
+                                <li>@category</li>
+                            }
+                        </ul>
+                    }
+                    <form method="post" asp-page-handler="CreateCategories">
+                        <button type="submit" class="btn btn-primary">Создать категории</button>
+                    </form>
+                </div>
+                
+                <div class="col-md-6">
+                    <h5>Товары</h5>
+                    <p>Найдено товаров: <strong>@Model.ProductsCount</strong></p>
+                    <form method="post" asp-page-handler="CreateProducts">
+                        <button type="submit" class="btn btn-success">Добавить тестовые товары</button>
+                    </form>
+                </div>
+            </div>
+            
+            <hr>
+            
+            <div class="row">
+                <div class="col-12">
+                    <h5>Очистка данных</h5>
+                    <form method="post" asp-page-handler="ClearData" onsubmit="return confirm('Удалить все товары?')">
+                        <button type="submit" class="btn btn-danger">Очистить все товары</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

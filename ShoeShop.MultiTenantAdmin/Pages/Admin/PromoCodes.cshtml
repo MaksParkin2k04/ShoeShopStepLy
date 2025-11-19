@@ -1,0 +1,103 @@
+@page
+@model ShoeShop.Pages.Admin.PromoCodesModel
+@{
+    ViewData["Title"] = "Управление промокодами";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-6">
+            <h2>Создать промокод</h2>
+            <form method="post" asp-page-handler="Create">
+                <div class="mb-3">
+                    <label asp-for="NewPromoCode.Code" class="form-label">Код промокода</label>
+                    <input asp-for="NewPromoCode.Code" class="form-control" required />
+                    <span asp-validation-for="NewPromoCode.Code" class="text-danger"></span>
+                </div>
+                
+                <div class="mb-3">
+                    <label asp-for="NewPromoCode.DiscountPercent" class="form-label">Скидка (%)</label>
+                    <input asp-for="NewPromoCode.DiscountPercent" class="form-control" type="number" step="0.01" min="0" max="100" required />
+                    <span asp-validation-for="NewPromoCode.DiscountPercent" class="text-danger"></span>
+                </div>
+                
+                <div class="mb-3">
+                    <label asp-for="NewPromoCode.MaxDiscountAmount" class="form-label">Максимальная сумма скидки (₽)</label>
+                    <input asp-for="NewPromoCode.MaxDiscountAmount" class="form-control" type="number" step="0.01" min="0" />
+                </div>
+                
+                <div class="mb-3">
+                    <label asp-for="NewPromoCode.ExpiresAt" class="form-label">Дата окончания</label>
+                    <input asp-for="NewPromoCode.ExpiresAt" class="form-control" type="datetime-local" />
+                </div>
+                
+                <div class="mb-3">
+                    <label asp-for="NewPromoCode.UsageLimit" class="form-label">Лимит использований</label>
+                    <input asp-for="NewPromoCode.UsageLimit" class="form-control" type="number" min="1" />
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Создать промокод</button>
+            </form>
+        </div>
+        
+        <div class="col-md-6">
+            <h2>Существующие промокоды</h2>
+            @if (Model.PromoCodes.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Код</th>
+                                <th>Скидка</th>
+                                <th>Статус</th>
+                                <th>Использований</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var promo in Model.PromoCodes)
+                            {
+                                <tr>
+                                    <td><strong>@promo.Code</strong></td>
+                                    <td>@promo.DiscountPercent%
+                                        @if (promo.MaxDiscountAmount.HasValue)
+                                        {
+                                            <small class="text-muted">(макс. @promo.MaxDiscountAmount₽)</small>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (promo.CanUse())
+                                        {
+                                            <span class="badge bg-success">Активен</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">Неактивен</span>
+                                        }
+                                    </td>
+                                    <td>@promo.UsageCount
+                                        @if (promo.UsageLimit.HasValue)
+                                        {
+                                            <span>/@promo.UsageLimit</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <form method="post" asp-page-handler="Delete" style="display: inline;">
+                                            <input type="hidden" name="id" value="@promo.Id" />
+                                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Удалить промокод?')">Удалить</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <p class="text-muted">Промокоды не созданы</p>
+            }
+        </div>
+    </div>
+</div>

@@ -1,0 +1,114 @@
+@page "/{companyName}/products"
+@using ShoeShop.MultiTenantAdmin.Models
+@model ShoeShop.MultiTenantAdmin.Pages.CompanyProductsModel
+@{
+    ViewData["Title"] = $"Товары - {Model.Company?.Name}";
+
+    Dictionary<string, string> sortDictionary = new Dictionary<string, string> {
+        {"Default", "По умолчанию"},
+        {"Cheaper", "Сначала дешевле"},
+        {"Expensive", "Сначала дороже"},
+        {"ByDate", "По дате"}
+    };
+
+    Dictionary<string, string> saleFilterDictionary = new Dictionary<string, string> {
+        {"All", "Все товары"},
+        {"IsSale", "Товары в продаже"},
+        {"IsNotSale", "Товары снятые с продажи"}
+    };
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Управление товарами - @Model.Company?.Name</h1>
+    <a href="/@Model.Company?.ShortName" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Назад в админку
+    </a>
+</div>
+
+<div class="row border border-1 mx-2">
+    <form id="sortingForm" method="get">
+        <div class="row p-2 justify-content-end">
+            <div class="col-md-4">
+                <label for="saleFilter" class="form-label">Фильтр товаров</label>
+                <select id="saleFilter" name="salefilter" class="form-select" onchange="document.getElementById('sortingForm').submit()">
+                    @foreach (string item in Enum.GetNames(typeof(IsSaleFilter))) {
+                        <option value="@item" selected="@(Model.IsSaleFilter.ToString() == item)">@saleFilterDictionary[item]</option>
+                    }
+                </select>
+            </div>
+
+            <div class="col-md-4">
+                <label for="sortingPrice" class="form-label">Сортировка</label>
+                <select id="sortingPrice" name="sorting" class="form-select" onchange="document.getElementById('sortingForm').submit()">
+                    @foreach (string item in Enum.GetNames(typeof(ProductSorting))) {
+                        <option value="@item" selected="@(Model.Sorting.ToString() == item)">@sortDictionary[item]</option>
+                    }
+                </select>
+            </div>
+
+            <div class="col-md-4">
+                <label for="partProductName" class="form-label">Поиск по названию</label>
+                <div class="input-group">
+                    <input id="partProductName" name="partproductname" type="text" value="@Model.PartProductName" class="form-control">
+                    <button class="btn btn-secondary" type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div class="row mt-3 p-2 text-end">
+    <p>
+        <a href="/@Model.Company?.ShortName/products/add" class="btn btn-lg btn-outline-primary">
+            <i class="fa-solid fa-circle-plus"></i> Добавить товар
+        </a>
+    </p>
+</div>
+
+@if (Model.Products == null || Model.Products.Count == 0) {
+    <div class="row mt-3">
+        <p class="text-center display-4">Товары не найдены</p>
+    </div>
+}
+
+<div class="row row-cols g-3">
+    @foreach (Product product in Model.Products ?? Enumerable.Empty<Product>()) {
+        <div class="col-sm-12 col-md-6 col-lg-4 col-xl-3">
+            <div class="col-12 card h-100 d-flex flex-column justify-content-between">
+                <div id="carousel-@product.Id" class="carousel slide">
+                    <div class="carousel-inner card-img">
+                        @if (product.Images?.Count > 0) {
+                            <div class="carousel-item active">
+                                <img src="@product.Images[0].Path" class="d-block w-100" alt="@product.Images[0].Alt">
+                            </div>
+                            @for (int x = 1; x < product.Images.Count; x++) {
+                                <div class="carousel-item">
+                                    <img src="@product.Images[x].Path" class="d-block w-100" alt="@product.Images[x].Alt">
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <h5 class="card-title">@product.Name</h5>
+                    <p class="card-text">@product.Description</p>
+                </div>
+
+                <h5 class="card-title m-2">@product.Price руб.</h5>
+
+                <div class="d-flex mx-1 justify-content-between">
+                    <div class="d-flex mx-1">
+                        <a href="/@Model.Company?.ShortName/products/edit/@product.Id" class="btn btn-outline-primary me-1">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </a>
+                        <a href="/@Model.Company?.ShortName/products/delete/@product.Id" class="btn btn-outline-danger">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </a>
+                    </div>
+                    <a href="/Product/@product.Id" class="btn btn-primary">Подробнее</a>
+                </div>
+            </div>
+        </div>
+    }
+</div>

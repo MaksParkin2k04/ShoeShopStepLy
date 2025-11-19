@@ -1,0 +1,201 @@
+﻿@page
+@using ShoeShop.Models
+@model ShoeShop.Pages.Admin.EditProductModel
+@{
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Редактировать товар</h1>
+    <a asp-page="/Admin/Index" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Админ панель
+    </a>
+</div>
+
+<div class="row">
+    <form data-role="edit-product-form" method="post" enctype="multipart/form-data" data-form="form" class="needs-validation" novalidate>
+        <div class="row">
+            <input id="input-product-id" name="id" value="@Model.Product?.Id" type="hidden" />
+            <div class="mb-3">
+                <label for="titleInput" class="form-label">Название:</label>
+                <input id="titleInput" name="name" value="@Model.Product?.Name" type="text" class="form-control form-control-lg" placeholder="Название" minlength="1" maxlength="30" required />
+                <div class="invalid-feedback">
+                    Обязательное поле. Длинна текста от 1 до 30 символов.
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="mb-3">
+                <label for="isSale" class="form-label">Товар продается:</label>
+                <select id="isSale" name="issale" class="form-select form-select-lg">
+                    @if (Model.Product?.IsSale == true) {
+                        <option value="true" selected>Да</option>
+                        <option value="false">Нет</option>
+                    } else {
+                        <option value="true">Да</option>
+                        <option value="false" selected>Нет</option>
+                    }
+                </select>
+                <div class="invalid-feedback">
+                    Обязательное поле.
+                </div>
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="descriptionTextarea" class="form-label">Краткое описание:</label>
+            <textarea id="descriptionTextarea" name="description" class="form-control  form-control-lg" style="height: 150px;" minlength="10" maxlength="300" required>@Model.Product?.Description</textarea>
+            <div class="invalid-feedback">
+                Обязательное поле. Длинна текста от 10 до 300 символов.
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="contentTextarea" class="form-label">Описание:</label>
+            <textarea id="contentTextarea" name="content" value="@Model.Product?.Content" class="form-control  form-control-lg" style="height: 150px;" minlength="10" maxlength="300" required>@Model.Product?.Content</textarea>
+            <div class="invalid-feedback">
+                Обязательное поле. Длинна текста от 10 до 300 символов.
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="priceInput" class="form-label">Цена:</label>
+            <input id="priceInput" name="price" value="@Model.Product?.Price" type="number" class="form-control  form-control-lg" placeholder="0.00" step="0.01" min="0" max="1000000" required />
+            <div class="invalid-feedback">
+                Обязательное поле. Стоимость от 0 до 1 000 000 рублей. Не более двух знаков после запятой.
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="salePriceInput" class="form-label">Акционная цена (необязательно):</label>
+            <input id="salePriceInput" name="saleprice" value="@Model.Product?.SalePrice" type="number" class="form-control  form-control-lg" placeholder="0.00" step="0.01" min="0" max="1000000" />
+            <div class="form-text">Оставьте пустым, чтобы убрать скидку</div>
+        </div>
+        <div class="mb-3">
+            <label for="categorySelect" class="form-label">Категория:</label>
+            <select id="categorySelect" name="categoryid" class="form-select form-select-lg" required>
+                <option value="">Выберите категорию</option>
+                @foreach (var category in Model.Categories)
+                {
+                    @if (Model.Product?.CategoryId == category.Id)
+                    {
+                        <option value="@category.Id" selected>@category.Name</option>
+                    }
+                    else
+                    {
+                        <option value="@category.Id">@category.Name</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Размеры:</label>
+            <div class="row">
+                @for (int size = 36; size <= 45; size++) {
+                    var sizeFlag = (ProductSize)Enum.Parse(typeof(ProductSize), $"S{size}");
+                    bool isChecked = Model.Product?.Sizes.HasFlag(sizeFlag) == true;
+                    <div class="col-md-3">
+                        @if (isChecked)
+                        {
+                            <input type="checkbox" name="sizes" value="@((ulong)sizeFlag)" id="size@(size)" checked>
+                        }
+                        else
+                        {
+                            <input type="checkbox" name="sizes" value="@((ulong)sizeFlag)" id="size@(size)">
+                        }
+                        <label for="size@(size)">@size</label>
+                    </div>
+                }
+            </div>
+        </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        <div class="mb-3 d-grid gap-2">
+            <button data-role="button-add-image" class="btn btn-primary" type="button">Добавить изображение</button>
+        </div>
+        <div data-role="images_panel">
+            @foreach (ProductImage image in Model.Product?.Images ?? Enumerable.Empty<ProductImage>()) {
+                <div data-role="elemen-troot" class="position-relative w-100">
+                    <div class="mb-3 p-1 d-flex border border-secondary-subtle" style="z-index: 1;width: 100%;">
+                        <input data-role="input-image-id" type="hidden" value="@image.Id" />
+                        <div class="border border-secondary-subtle" style="width: 90px; height: 120px;">
+                            <img data-role="image-priview" src="~/@image.Path" class="img-fluid" />
+                            <input data-role="input-image-file" type="file" accept="image/jpeg" style="opacity:0; width: 1px; height: 1px;" />
+                            <input data-role="input-image-mode" type="hidden" value="Original" />
+                        </div>
+                        <div class="flex-grow-1" style="margin-left: 0.5em;">
+                            <label data-role="label-input-image-alt">Описание изображения:</label>
+                            <input data-role="input-image-alt" type="text" class="form-control form-control-lg" value="@image.Alt" minlength="1" maxlength="50" required />
+                            <div class="invalid-feedback is-invalid">
+                                Обязательное поле. Длинна текста от 1 до 30 символов.
+                            </div>
+                            <div class="d-flex justify-content-end" style="margin-top: 0.8em;">
+                                <div data-role="input-image-file-error" class="invalid-feedback">
+                                    Выберите изображение формата '.jpg', размером не более 150 килобайт. Ширина изображения 600 пикселов, высота 800 пикселов.
+                                </div>
+                                <label data-role="label-input-image-file" class="btn btn-primary btn-sm" style="margin-right: 0.5em;">Изменить</label>
+                                <button data-role="button-delete-image" type="button" class="btn btn-danger btn-sm" style="margin-right: 0.5em;">Удалить</button>
+                                <button data-role="button-cansel-image" type="button" class="btn btn-success btn-sm" style="z-index: 5000">Отменить</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div data-role="overlay-image-panel" class="d-flex justify-content-center align-items-center position-absolute opacity-50 bg-secondary d-none" style="top:0; z-index: 2000; width: 100%; height: 100%;">
+                        <h2 class="text-danger text-center align-middle">Удалено</h2>
+                    </div>
+                </div>
+            }
+        </div>
+        <div class="mb-3 d-flex justify-content-end">
+            <button data-role="button-submit" class="btn btn-primary" type="submit">Изменить <i class="fa-solid fa-pen-to-square"></i></button>
+        </div>
+    </form>
+</div>
+
+<template data-role="template-product-image">
+    <div data-role="elemen-troot" class="position-relative w-100">
+        <div class="mb-3 p-1 d-flex border border-secondary-subtle" style="z-index: 1;width: 100%;">
+            <input data-role="input-image-id" type="hidden" />
+            <div class="border border-secondary-subtle" style="width: 90px; height: 120px;">
+                <img data-role="image-priview" src="~/images/template/no_photo.jpg" class="img-fluid" />
+                <input data-role="input-image-file" type="file" accept="image/jpeg" style="opacity:0; width: 1px; height: 1px;" />
+                <input data-role="input-image-mode" type="hidden" value="New" />
+            </div>
+            <div class="flex-grow-1" style="margin-left: 0.5em;">
+                <label data-role="label-input-image-alt">Описание изображения:</label>
+                <input data-role="input-image-alt" type="text" class="form-control form-control-lg" minlength="1" maxlength="50" required />
+                <div class="invalid-feedback is-invalid">
+                    Обязательное поле. Длинна текста от 1 до 30 символов.
+                </div>
+                <div class="d-flex justify-content-end" style="margin-top: 0.8em;">
+                    <div data-role="input-image-file-error" class="invalid-feedback">
+                        Выберите изображение формата '.jpg', размером не более 150 килобайт. Ширина изображения 600 пикселов, высота 800 пикселов.
+                    </div>
+                    <label data-role="label-input-image-file" class="btn btn-primary btn-sm" style="margin-right: 0.5em;">Изменить</label>
+                    <button data-role="button-delete-image" type="button" class="btn btn-danger btn-sm" style="margin-right: 0.5em;">Удалить</button>
+                    <button data-role="button-cansel-image" type="button" class="btn btn-success btn-sm" style="z-index: 5000">Отменить</button>
+                </div>
+            </div>
+        </div>
+        <div data-role="overlay-image-panel" class="d-flex justify-content-center align-items-center position-absolute opacity-50 bg-secondary d-none" style="top:0; z-index: 2000; width: 100%; height: 100%;">
+            <h2 class="text-danger text-center align-middle">Удалено</h2>
+        </div>
+    </div>
+</template>
+
+@section Scripts {
+    <script type="text/javascript" src="~/scripts/productedit.js"></script>
+}
