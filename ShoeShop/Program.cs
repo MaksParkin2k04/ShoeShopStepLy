@@ -19,7 +19,15 @@ namespace ShoeShop {
 
             // Add services to the container.
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Строка подключения 'DefaultConnection' не найдена.");
-            builder.Services.AddDbContext<ApplicationContext>(options => options.UseSqlServer(connectionString));
+            builder.Services.AddDbContext<ApplicationContext>(options => 
+                options.UseSqlServer(connectionString, sqlOptions => 
+                {
+                    sqlOptions.CommandTimeout(15);
+                    sqlOptions.EnableRetryOnFailure(3);
+                })
+                .EnableSensitiveDataLogging(false)
+                .EnableServiceProviderCaching()
+                .EnableThreadSafetyChecks(false));
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
             builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = false).AddRoles<ApplicationRole>().AddEntityFrameworkStores<ApplicationContext>();
@@ -27,24 +35,54 @@ namespace ShoeShop {
 
 
 
-            builder.Services.AddSession();
+            builder.Services.AddMemoryCache();
+            builder.Services.AddResponseCaching();
+            builder.Services.AddResponseCompression(options =>
+            {
+                options.EnableForHttps = true;
+                options.Providers.Add<Microsoft.AspNetCore.ResponseCompression.GzipCompressionProvider>();
+            });
+            builder.Services.AddSession(options =>
+            {
+                options.IdleTimeout = TimeSpan.FromMinutes(30);
+                options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
+            });
             builder.Services.AddRazorPages();
             builder.Services.AddControllers();
+            
+            // Настройки Kestrel для разработки
+            builder.Services.Configure<Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions>(options =>
+            {
+                options.Limits.MaxConcurrentConnections = 1000;
+                options.Limits.MaxConcurrentUpgradedConnections = 1000;
+                options.Limits.RequestHeadersTimeout = TimeSpan.FromSeconds(30);
+                options.Limits.KeepAliveTimeout = TimeSpan.FromMinutes(2);
+                options.AllowSynchronousIO = true;
+            });
+            
+            // Отключаем проверку синхронных IO
+            builder.Services.Configure<Microsoft.AspNetCore.Http.Features.IISServerOptions>(options =>
+            {
+                options.AllowSynchronousIO = true;
+            });
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
             builder.Services.AddScoped<IImageManager, ImageManager>();
             builder.Services.AddScoped<IProductManager, ProductManager>();
-            builder.Services.AddScoped<IAdminRepository, AdminRepository>();
-            builder.Services.AddScoped<IProductRepository, ProductRepository>();
-            builder.Services.AddScoped<IProductStockRepository, ProductStockRepository>();
-            builder.Services.AddScoped<StockService>();
-            builder.Services.AddScoped<SalesStatisticsService>();
+            builder.Services.AddTransient<IAdminRepository, AdminRepository>();
+            builder.Services.AddTransient<ProductRepository>();
+            builder.Services.AddTransient<IProductRepository, CachedProductRepository>();
+            builder.Services.AddTransient<IProductStockRepository, ProductStockRepository>();
+            builder.Services.AddTransient<StockService>();
+            builder.Services.AddTransient<SalesStatisticsService>();
             builder.Services.AddScoped<IBasketShoppingService, BasketShoppingCookies>();
-            builder.Services.AddScoped<PromoCodeService>();
-            builder.Services.AddScoped<ReviewService>();
+            builder.Services.AddTransient<PromoCodeService>();
+            builder.Services.AddTransient<ReviewService>();
             builder.Services.AddHttpClient<YooKassaService>();
             builder.Services.AddHttpClient<YandexMetrikaService>();
-            builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
+            builder.Services.AddTransient<ICustomerRepository, CustomerRepository>();
+            builder.Services.AddSingleton<ICacheService, CacheService>();
             // Telegram сервисы отключены
             // builder.Services.AddHttpClient<TelegramBotService>();
             // builder.Services.AddScoped<TelegramBotHandler>();
@@ -281,8 +319,16 @@ namespace ShoeShop {
             // Обработка 404 ошибок
             app.UseStatusCodePagesWithReExecute("/404");
 
+            app.UseResponseCompression();
             app.UseHttpsRedirection();
-            app.UseStaticFiles();
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                OnPrepareResponse = ctx =>
+                {
+                    ctx.Context.Response.Headers.Append("Cache-Control", "public,max-age=86400"); // 24 часа
+                }
+            });
+            app.UseResponseCaching();
             app.UseRouting();
             app.UseSession();
             app.UseAuthentication();

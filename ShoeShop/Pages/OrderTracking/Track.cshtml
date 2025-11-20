@@ -17,52 +17,9 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <h6>Статус заказа:</h6>
-                                @if (User.IsInRole("Admin"))
-                                {
-                                    <form method="post" asp-page-handler="UpdateStatus" class="d-inline">
-                                        <input type="hidden" name="orderId" value="@Model.Order.Id" />
-                                        <select name="status" class="form-select form-select-sm d-inline-block" style="width: auto;" onchange="this.form.submit()">
-                                            @foreach (var status in Enum.GetValues<ShoeShop.Models.OrderStatus>())
-                                            {
-                                                <option value="@status" selected="@(status == Model.Order.Status)">
-                                                    @switch (status)
-                                                    {
-                                                        case ShoeShop.Models.OrderStatus.Created: <text>Заказ создан</text> break;
-                                                        case ShoeShop.Models.OrderStatus.Paid: <text>Оплачен</text> break;
-                                                        case ShoeShop.Models.OrderStatus.Processing: <text>В обработке</text> break;
-                                                        case ShoeShop.Models.OrderStatus.AwaitingShipment: <text>Ожидает отправления</text> break;
-                                                        case ShoeShop.Models.OrderStatus.Shipped: <text>Отправлен</text> break;
-                                                        case ShoeShop.Models.OrderStatus.InTransit: <text>В пути</text> break;
-                                                        case ShoeShop.Models.OrderStatus.Arrived: <text>Прибыл</text> break;
-                                                        case ShoeShop.Models.OrderStatus.ReadyForPickup: <text>Готов к выдаче</text> break;
-                                                        case ShoeShop.Models.OrderStatus.Completed: <text>Выполнен</text> break;
-                                                        case ShoeShop.Models.OrderStatus.Returned: <text>Возвращен</text> break;
-                                                        case ShoeShop.Models.OrderStatus.Canceled: <text>Отменен</text> break;
-                                                    }
-                                                </option>
-                                            }
-                                        </select>
-                                    </form>
-                                }
-                                else
-                                {
-                                    <span class="badge bg-@(Model.Order.Status == ShoeShop.Models.OrderStatus.Completed ? "success" : "primary") fs-6">
-                                        @switch (Model.Order.Status)
-                                        {
-                                            case ShoeShop.Models.OrderStatus.Created: <text>Заказ создан</text> break;
-                                            case ShoeShop.Models.OrderStatus.Paid: <text>Оплачен</text> break;
-                                            case ShoeShop.Models.OrderStatus.Processing: <text>В обработке</text> break;
-                                            case ShoeShop.Models.OrderStatus.AwaitingShipment: <text>Ожидает отправления</text> break;
-                                            case ShoeShop.Models.OrderStatus.Shipped: <text>Отправлен</text> break;
-                                            case ShoeShop.Models.OrderStatus.InTransit: <text>В пути</text> break;
-                                            case ShoeShop.Models.OrderStatus.Arrived: <text>Прибыл</text> break;
-                                            case ShoeShop.Models.OrderStatus.ReadyForPickup: <text>Готов к выдаче</text> break;
-                                            case ShoeShop.Models.OrderStatus.Completed: <text>Выполнен</text> break;
-                                            case ShoeShop.Models.OrderStatus.Returned: <text>Возвращен</text> break;
-                                            case ShoeShop.Models.OrderStatus.Canceled: <text>Отменен</text> break;
-                                        }
-                                    </span>
-                                }
+                                <span class="badge bg-@(Model.Order.Status == ShoeShop.Models.OrderStatus.Paid ? "success" : "warning") fs-6">
+                                    @Model.Order.Status
+                                </span>
                             </div>
                             <div class="col-md-6">
                                 <h6>Дата создания:</h6>
@@ -158,11 +115,35 @@
                                 <p class="text-muted">@Model.Order.Coment</p>
                             </div>
                         }
-
+                        
                         @if (User.IsInRole("Admin"))
                         {
                             <div class="mt-4 pt-3 border-top">
                                 <h6>Администратор:</h6>
+                                <form asp-page="/OrderTracking/Track" asp-page-handler="UpdateStatus" method="post" class="d-inline">
+                                    <input type="hidden" name="orderId" value="@Model.Order.Id" />
+                                    <select name="status" class="form-select form-select-sm d-inline-block" style="width: auto;" onchange="this.form.submit()">
+                                        @foreach (var status in Enum.GetValues<ShoeShop.Models.OrderStatus>())
+                                        {
+                                            <option value="@status" selected="@(status == Model.Order.Status)">
+                                                @switch (status)
+                                                {
+                                                    case ShoeShop.Models.OrderStatus.Created: <text>Заказ создан</text> break;
+                                                    case ShoeShop.Models.OrderStatus.Paid: <text>Оплачен</text> break;
+                                                    case ShoeShop.Models.OrderStatus.Processing: <text>В обработке</text> break;
+                                                    case ShoeShop.Models.OrderStatus.AwaitingShipment: <text>Ожидает отправления</text> break;
+                                                    case ShoeShop.Models.OrderStatus.Shipped: <text>Отправлен</text> break;
+                                                    case ShoeShop.Models.OrderStatus.InTransit: <text>В пути</text> break;
+                                                    case ShoeShop.Models.OrderStatus.Arrived: <text>Прибыл</text> break;
+                                                    case ShoeShop.Models.OrderStatus.ReadyForPickup: <text>Готов к выдаче</text> break;
+                                                    case ShoeShop.Models.OrderStatus.Completed: <text>Выполнен</text> break;
+                                                    case ShoeShop.Models.OrderStatus.Returned: <text>Возвращен</text> break;
+                                                    case ShoeShop.Models.OrderStatus.Canceled: <text>Отменен</text> break;
+                                                }
+                                            </option>
+                                        }
+                                    </select>
+                                </form>
                                 <a asp-page="/Admin/OrderDetail" asp-route-id="@Model.Order.Id" class="btn btn-primary btn-sm">
                                     <i class="fas fa-edit me-1"></i>Редактировать заказ
                                 </a>
