@@ -45,15 +45,39 @@ namespace ShoeShop.Data {
         }
 
         public async Task<IReadOnlyList<Order>> GetOrders(OrderStatusFilter filter, OrderSorting sorting, int start, int count) {
-            IQueryable<Order> query = context.Orders.StatusFilter(filter).OrderByDate(sorting).Page(start, count);
+            IQueryable<Order> query = context.Orders
+                .Include(o => o.Recipient)
+                .Include(o => o.OrderDetails)
+                .StatusFilter(filter)
+                .OrderByDate(sorting)
+                .Page(start, count);
             return await query.ToArrayAsync();
         }
 
         public async Task<int> OrderCount(OrderStatusFilter filter) {
             return await context.Orders.StatusFilter(filter).CountAsync();
         }
+        
+        public async Task<Dictionary<OrderStatus, int>> GetOrderStatsByStatus(OrderStatusFilter filter) {
+            var query = context.Orders.StatusFilter(filter);
+            
+            var stats = await query
+                .GroupBy(o => o.Status)
+                .Select(g => new { Status = g.Key, Count = g.Count() })
+                .ToDictionaryAsync(x => x.Status, x => x.Count);
+                
+            // Заполняем отсутствующие статусы нулями
+            var allStatuses = Enum.GetValues<OrderStatus>();
+            foreach (var status in allStatuses) {
+                if (!stats.ContainsKey(status)) {
+                    stats[status] = 0;
+                }
+            }
+            
+            return stats;
+        }
 
-        public async Task<Order?> GetOrder(Guid orderId) {
+        public async Task<Order?> GetOrder(string orderId) {
             return await context.Orders.Include(o => o.OrderDetails).FirstOrDefaultAsync(o => o.Id == orderId);
         }
 
@@ -62,7 +86,7 @@ namespace ShoeShop.Data {
             await context.SaveChangesAsync();
         }
 
-        public async Task DeleteOrder(Guid orderId) {
+        public async Task DeleteOrder(string orderId) {
             Order? order = await GetOrder(orderId);
             if (order != null) {
                 context.Orders.Remove(order);
@@ -93,6 +117,52 @@ namespace ShoeShop.Data {
                 context.Categories.Remove(category);
                 await context.SaveChangesAsync();
             }
+        }
+        
+        // Быстрые методы с минимальными запросами
+        public async Task<IEnumerable<Order>> GetOrdersFast(OrderStatusFilter filter, OrderSorting sorting, int skip, int take) {
+            return await context.Orders
+                .Include(o => o.Recipient)
+                .StatusFilter(filter)
+                .OrderByDate(sorting)
+                .Skip(skip)
+                .Take(take)
+                .AsNoTracking()
+                .ToListAsync();
+        }
+        
+        public async Task<int> OrderCountFast(OrderStatusFilter filter) {
+            return await context.Orders
+                .StatusFilter(filter)
+                .AsNoTracking()
+                .CountAsync();
+        }
+        
+        private static Dictionary<OrderStatus, int>? _cachedStats;
+        private static DateTime _cacheTime = DateTime.MinValue;
+        
+        public async Task<Dictionary<OrderStatus, int>> GetOrderStatsCache() {
+            // Кеш на 60 секунд
+            if (_cachedStats == null || DateTime.Now - _cacheTime > TimeSpan.FromSeconds(60)) {
+                _cachedStats = await context.Orders
+                    .GroupBy(o => o.Status)
+                    .Select(g => new { Status = g.Key, Count = g.Count() })
+                    .ToDictionaryAsync(x => x.Status, x => x.Count);
+                    
+                foreach (var status in Enum.GetValues<OrderStatus>()) {
+                    if (!_cachedStats.ContainsKey(status)) {
+                        _cachedStats[status] = 0;
+                    }
+                }
+                _cacheTime = DateTime.Now;
+            }
+            return _cachedStats;
+        }
+        
+        public async Task<Order?> GetOrderByNumber(string orderNumber) {
+            return await context.Orders
+                .Include(o => o.Recipient)
+                .FirstOrDefaultAsync(o => o.OrderNumber == orderNumber);
         }
     }
 }

@@ -27,14 +27,28 @@ namespace ShoeShop.Data {
             switch (filter) {
                 case OrderStatusFilter.All:
                     return orders;
+                case OrderStatusFilter.Active:
+                    return orders.Where(o => o.Status != OrderStatus.Completed);
                 case OrderStatusFilter.Created:
                     return orders.Where(o => o.Status == OrderStatus.Created);
+                case OrderStatusFilter.Paid:
+                    return orders.Where(o => o.Status == OrderStatus.Paid);
                 case OrderStatusFilter.Processing:
                     return orders.Where(o => o.Status == OrderStatus.Processing);
-                case OrderStatusFilter.Canceled:
-                    return orders.Where(o => o.Status == OrderStatus.Canceled);
+                case OrderStatusFilter.AwaitingShipment:
+                    return orders.Where(o => o.Status == OrderStatus.AwaitingShipment);
+                case OrderStatusFilter.Shipped:
+                    return orders.Where(o => o.Status == OrderStatus.Shipped);
+                case OrderStatusFilter.InTransit:
+                    return orders.Where(o => o.Status == OrderStatus.InTransit);
+                case OrderStatusFilter.Arrived:
+                    return orders.Where(o => o.Status == OrderStatus.Arrived);
+                case OrderStatusFilter.ReadyForPickup:
+                    return orders.Where(o => o.Status == OrderStatus.ReadyForPickup);
                 case OrderStatusFilter.Completed:
                     return orders.Where(o => o.Status == OrderStatus.Completed);
+                case OrderStatusFilter.Canceled:
+                    return orders.Where(o => o.Status == OrderStatus.Canceled);
                 default:
                     throw new ArgumentOutOfRangeException(nameof(filter));
             }

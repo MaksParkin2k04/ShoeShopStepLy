@@ -40,7 +40,7 @@ namespace ShoeShop.Pages
             StockQuantity = await stockRepository.GetQuantityAsync(productId, size);
 
             // Генерируем QR-код для товара с размером
-            var productUrl = $"https://jxpc5n7p-7002.euw.devtunnels.ms/ProductSize?productId={productId}&size={size}";
+            var productUrl = $"https://jxpc5n7p-7002.euw.devtunnels.ms/Product/{productId}";
             QRCodeBase64 = GenerateQRCode(productUrl);
             Count = Math.Max(1, Math.Min(50, count)); // Ограничиваем от 1 до 50
 

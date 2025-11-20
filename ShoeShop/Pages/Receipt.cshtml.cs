@@ -19,7 +19,7 @@ namespace ShoeShop.Pages
         public decimal DiscountAmount { get; set; }
         public decimal FinalAmount { get; set; }
 
-        public async Task<IActionResult> OnGetAsync(Guid orderId)
+        public async Task<IActionResult> OnGetAsync(string orderId)
         {
             Order = await _repository.GetOrder(orderId);
             

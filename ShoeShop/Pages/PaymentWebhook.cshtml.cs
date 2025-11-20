@@ -24,7 +24,8 @@ namespace ShoeShop.Pages
 
                 if (webhook?.Event == "payment.succeeded" && webhook.Object?.Status == "succeeded")
                 {
-                    if (Guid.TryParse(webhook.Object.Metadata?.OrderId, out var orderId))
+                    var orderId = webhook.Object.Metadata?.OrderId;
+                    if (!string.IsNullOrEmpty(orderId))
                     {
                         var order = await _repository.GetOrder(orderId);
                         if (order != null && order.Status == OrderStatus.Created)

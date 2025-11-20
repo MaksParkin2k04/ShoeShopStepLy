@@ -15,7 +15,7 @@ namespace ShoeShop.Pages.OrderTracking
 
         public ShoeShop.Models.Order? Order { get; set; }
 
-        public async Task<IActionResult> OnGetAsync(Guid orderId)
+        public async Task<IActionResult> OnGetAsync(string orderId)
         {
             Order = await repository.GetOrder(orderId);
             
@@ -25,6 +25,23 @@ namespace ShoeShop.Pages.OrderTracking
             }
 
             return Page();
+        }
+
+        public async Task<IActionResult> OnPostUpdateStatusAsync(string orderId, OrderStatus status)
+        {
+            if (!User.IsInRole("Admin"))
+            {
+                return Forbid();
+            }
+
+            Order = await repository.GetOrder(orderId);
+            if (Order != null)
+            {
+                Order.SetStatus(status);
+                await repository.UpdateOrder(Order);
+            }
+
+            return RedirectToPage(new { orderId });
         }
     }
 }

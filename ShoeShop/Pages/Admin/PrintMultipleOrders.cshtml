@@ -1,0 +1,176 @@
+@page
+@model ShoeShop.Pages.Admin.PrintMultipleOrdersModel
+@{
+    ViewData["Title"] = "Печать этикеток";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Печать этикеток заказов</title>
+    <link rel="stylesheet" href="~/styles/label-print.css" />
+    <style>
+        .labels-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            padding: 20px;
+        }
+        
+        .label {
+            width: 300px;
+            margin-bottom: 20px;
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+        
+        @@media print {
+            .labels-container {
+                display: block;
+            }
+            
+            .label {
+                width: 100%;
+                max-width: 300px;
+                margin: 0 auto 20px;
+            }
+            
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="no-print" style="text-align: center; margin: 20px;">
+        <p>Найдено заказов: @Model.Orders.Count</p>
+        <button onclick="window.print()" class="btn btn-primary">Печать всех этикеток</button>
+        <button onclick="window.close()" class="btn btn-secondary">Закрыть</button>
+    </div>
+
+    <div class="labels-container">
+        @foreach (var order in Model.Orders)
+        {
+            <div class="label">
+                <div class="header">
+                    <div class="company-name">StepLy</div>
+                    <div class="order-number">Заказ №@order.Id</div>
+                    <div class="payment-status">
+                        @if (order.PaymentDate.HasValue || order.Status == ShoeShop.Models.OrderStatus.Paid)
+                        {
+                            <span class="paid">✓ ОПЛАЧЕНО</span>
+                        }
+                        else
+                        {
+                            <span class="unpaid">✗ НЕ ОПЛАЧЕНО</span>
+                        }
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-title">Получатель:</div>
+                    <div class="recipient-info">
+                        <div><strong>@order.Recipient?.Name</strong></div>
+                        <div>@order.Recipient?.Phone</div>
+                        <div>@order.Recipient?.City</div>
+                        <div>@order.Recipient?.Street, @order.Recipient?.House</div>
+                        @if (!string.IsNullOrEmpty(order.Recipient?.Apartment))
+                        {
+                            <div>кв. @order.Recipient?.Apartment</div>
+                        }
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-title">Товары:</div>
+                    <div class="items-list">
+                        @foreach (var item in order.OrderDetails ?? Enumerable.Empty<ShoeShop.Models.OrderDetail>())
+                        {
+                            <div class="item">
+                                @item.Name (размер @item.Size) - @item.Price₽
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="total">
+                    Итого: @(order.OrderDetails?.Sum(x => x.Price) ?? 0)₽
+                </div>
+
+                <div class="section">
+                    <div class="section-title">Доставка:</div>
+                    <div style="font-size: 12px;">
+                        @switch (order.DeliveryType)
+                        {
+                            case ShoeShop.Models.DeliveryType.Courier:
+                                <div>🚚 Курьерская доставка</div>
+                                break;
+                            case ShoeShop.Models.DeliveryType.Pickup:
+                                <div>🏢 Самовывоз из магазина</div>
+                                break;
+                            case ShoeShop.Models.DeliveryType.RussianPost:
+                                <div>📮 Почта России</div>
+                                break;
+                            case ShoeShop.Models.DeliveryType.CDEK:
+                                <div>📦 СДЭК</div>
+                                break;
+                            case ShoeShop.Models.DeliveryType.Boxberry:
+                                <div>📦 Boxberry</div>
+                                break;
+                        }
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <div class="section-title">Оплата:</div>
+                    <div style="font-size: 12px;">
+                        @if (order.PaymentType == ShoeShop.Models.PaymentType.Online)
+                        {
+                            <div>Онлайн оплата</div>
+                            @if (order.PaymentDate.HasValue)
+                            {
+                                <div>Оплачено: @order.PaymentDate.Value.ToString("dd.MM.yyyy HH:mm")</div>
+                            }
+                            else
+                            {
+                                <div>Ожидает оплаты</div>
+                            }
+                        }
+                        else
+                        {
+                            <div>Оплата при получении</div>
+                        }
+                    </div>
+                </div>
+
+                <div class="section" style="margin-top: 15px; font-size: 10px;">
+                    <div>Дата: @order.CreatedDate.ToString("dd.MM.yyyy HH:mm")</div>
+                    @if (!string.IsNullOrEmpty(order.Coment))
+                    {
+                        <div>Комментарий: @order.Coment</div>
+                    }
+                </div>
+
+                @if (!string.IsNullOrEmpty(Model.GetQRCodeForOrder(order.Id)))
+                {
+                    <div class="qr-section">
+                        <div class="section-title">Отслеживание заказа:</div>
+                        <img src="data:image/png;base64,@Model.GetQRCodeForOrder(order.Id)" alt="QR код заказа" class="qr-code" />
+                        <div style="font-size: 8px; text-align: center; margin-top: 5px;">Сканируйте для отслеживания</div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+    <script>
+        window.onload = function() {
+            setTimeout(function() {
+                window.print();
+            }, 500);
+        };
+    </script>
+</body>
+</html>

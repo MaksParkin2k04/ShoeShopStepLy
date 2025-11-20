@@ -2,7 +2,7 @@
 @using ShoeShop.Models
 @model ShoeShop.Pages.Admin.OrderDetailModel
 @{
-    ViewData["Title"] = $"Заказ #{Model.Order?.Id.ToString().Substring(0, 8)}";
+    ViewData["Title"] = $"Заказ #{Model.Order?.Id}";
 }
 
 <div class="order-detail-page">
@@ -21,7 +21,7 @@
             <div>
                 <h1 class="order-detail-title">
                     <i class="fas fa-receipt me-3"></i>
-                    Заказ #@Model.Order.Id.ToString().Substring(0, 8)
+                    Заказ #@Model.Order.Id
                 </h1>
                 <div class="order-meta">
                     <span class="order-date">
@@ -151,6 +151,30 @@
                         <div class="info-label">Адрес</div>
                         <div class="info-value">@Model.Order.Recipient?.Street, д. @Model.Order.Recipient?.House, кв. @Model.Order.Recipient?.Apartment</div>
                     </div>
+                    
+                    <div class="info-group">
+                        <div class="info-label">Тип доставки</div>
+                        <div class="info-value">
+                            @switch (Model.Order.DeliveryType)
+                            {
+                                case ShoeShop.Models.DeliveryType.Courier:
+                                    <span class="badge bg-primary">🚚 Курьерская доставка</span>
+                                    break;
+                                case ShoeShop.Models.DeliveryType.Pickup:
+                                    <span class="badge bg-success">🏢 Самовывоз</span>
+                                    break;
+                                case ShoeShop.Models.DeliveryType.RussianPost:
+                                    <span class="badge bg-info">📮 Почта России</span>
+                                    break;
+                                case ShoeShop.Models.DeliveryType.CDEK:
+                                    <span class="badge bg-warning">📦 СДЭК</span>
+                                    break;
+                                case ShoeShop.Models.DeliveryType.Boxberry:
+                                    <span class="badge bg-secondary">📦 Boxberry</span>
+                                    break;
+                            }
+                        </div>
+                    </div>
                 </div>
 
                 @if (!string.IsNullOrEmpty(Model.Order.Coment)) {
@@ -220,6 +244,14 @@
                 <i class="fas fa-print me-2"></i>
                 Печать этикетки
             </a>
+            
+            @if (Model.Order.PaymentDate.HasValue || Model.Order.Status == OrderStatus.Paid)
+            {
+                <a href="/Receipt/@Model.Order.Id" target="_blank" class="btn btn-success">
+                    <i class="fas fa-receipt me-2"></i>
+                    Скачать чек
+                </a>
+            }
             
             @if (!Model.Order.PaymentDate.HasValue && Model.Order.Status != OrderStatus.Paid)
             {

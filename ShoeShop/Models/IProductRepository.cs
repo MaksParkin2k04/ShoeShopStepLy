@@ -8,7 +8,7 @@
         Task<int> ProductCount();
 
         Task<IEnumerable<Order>> GetOrders(Guid customerId, OrderStatusFilter filter, OrderSorting sorting, int start, int count);
-        Task<Order?> GetOrder(Guid orderId);
+        Task<Order?> GetOrder(string orderId);
         Task CreateOrder(Order order);
         Task UpdateOrder(Order order);
         Task<int> OrderCount(Guid customerId, OrderStatusFilter filter);

@@ -1,4 +1,4 @@
-﻿@page
+﻿@page "/Order/{orderId}"
 @using ShoeShop.Models
 @model ShoeShop.Pages.OrderModel
 @{
@@ -21,7 +21,7 @@
             <div class="order-title-section">
                 <h1 class="order-detail-title">
                     <i class="fas fa-receipt me-3"></i>
-                    Заказ #@Model.Order.Id.ToString().Substring(0, 8)
+                    Заказ #@Model.Order.Id
                 </h1>
                 <div class="order-meta">
                     <span class="order-date">
@@ -191,6 +191,30 @@
                     <div class="info-group">
                         <label class="info-label">Квартира</label>
                         <div class="info-value">@Model.Order.Recipient?.Apartment</div>
+                    </div>
+                    
+                    <div class="info-group">
+                        <label class="info-label">Тип доставки</label>
+                        <div class="info-value">
+                            @switch (Model.Order.DeliveryType)
+                            {
+                                case ShoeShop.Models.DeliveryType.Courier:
+                                    <span>🚚 Курьерская доставка</span>
+                                    break;
+                                case ShoeShop.Models.DeliveryType.Pickup:
+                                    <span>🏢 Самовывоз из магазина</span>
+                                    break;
+                                case ShoeShop.Models.DeliveryType.RussianPost:
+                                    <span>📮 Почта России</span>
+                                    break;
+                                case ShoeShop.Models.DeliveryType.CDEK:
+                                    <span>📦 СДЭК</span>
+                                    break;
+                                case ShoeShop.Models.DeliveryType.Boxberry:
+                                    <span>📦 Boxberry</span>
+                                    break;
+                            }
+                        </div>
                     </div>
                 </div>
                 

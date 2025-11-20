@@ -1,4 +1,4 @@
-﻿@page "/Product/{id:guid}"
+﻿@page "/Product/{id}"
 @using ShoeShop.Models
 @using ShoeShop.Services
 @model ShoeShop.Pages.ProductModel
@@ -152,7 +152,7 @@
                             <div class="product-sizes mb-4">
                                 <h5>Выберите размер:</h5>
                                 <div class="sizes-list">
-                                    @for (int size = 36; size <= 45; size++) {
+                                    @for (int size = 26; size <= 45; size++) {
                                         var sizeFlag = (ProductSize)(1UL << (size - 1));
                                         if (Model.Product.Sizes.HasFlag(sizeFlag)) {
                                             var quantity = Model.SizeQuantities.GetValueOrDefault(size, 0);
@@ -424,12 +424,13 @@
                             <div class="mb-3">
                                 <strong>Печать этикеток по размерам:</strong>
                                 <div class="mt-2">
-                                    @for (int size = 36; size <= 45; size++) {
+                                    @for (int size = 26; size <= 45; size++) {
                                         var sizeFlag = (ProductSize)(1UL << (size - 1));
                                         if (Model.Product.Sizes.HasFlag(sizeFlag)) {
+                                            var quantity = Model.SizeQuantities.GetValueOrDefault(size, 0);
                                             <a asp-page="/ProductSizeLabel" asp-route-productId="@Model.Product.Id" asp-route-size="@size" 
-                                               class="btn btn-sm btn-outline-success me-1 mb-1" target="_blank" title="Печать этикетки размер @size">
-                                                @size
+                                               class="btn btn-sm btn-outline-success me-1 mb-1" target="_blank" title="Печать этикетки размер @size (остаток: @quantity)">
+                                                @size (@quantity)
                                             </a>
                                         }
                                     }

@@ -1,4 +1,4 @@
-@page "/OrderLabel/{orderId:guid}"
+@page "/OrderLabel/{orderId}"
 @model ShoeShop.Pages.OrderLabelModel
 @{
     ViewData["Title"] = "Этикетка заказа";
@@ -18,7 +18,7 @@
         <div class="label">
             <div class="header">
                 <div class="company-name">StepLy</div>
-                <div class="order-number">Заказ №@Model.Order.Id.ToString().Substring(0, 8)</div>
+                <div class="order-number">Заказ №@Model.Order.Id</div>
                 <div class="payment-status">
                     @if (Model.Order.PaymentDate.HasValue || Model.Order.Status == ShoeShop.Models.OrderStatus.Paid)
                     {
@@ -61,6 +61,30 @@
                 Итого: @Model.Order.OrderDetails.Sum(x => x.Price)₽
             </div>
 
+            <div class="section">
+                <div class="section-title">Доставка:</div>
+                <div style="font-size: 12px;">
+                    @switch (Model.Order.DeliveryType)
+                    {
+                        case ShoeShop.Models.DeliveryType.Courier:
+                            <div>🚚 Курьерская доставка</div>
+                            break;
+                        case ShoeShop.Models.DeliveryType.Pickup:
+                            <div>🏢 Самовывоз из магазина</div>
+                            break;
+                        case ShoeShop.Models.DeliveryType.RussianPost:
+                            <div>📮 Почта России</div>
+                            break;
+                        case ShoeShop.Models.DeliveryType.CDEK:
+                            <div>📦 СДЭК</div>
+                            break;
+                        case ShoeShop.Models.DeliveryType.Boxberry:
+                            <div>📦 Boxberry</div>
+                            break;
+                    }
+                </div>
+            </div>
+            
             <div class="section">
                 <div class="section-title">Оплата:</div>
                 <div style="font-size: 12px;">

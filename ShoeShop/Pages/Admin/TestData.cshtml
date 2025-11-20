@@ -18,7 +18,7 @@
             }
             
             <div class="row">
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <h5>Категории</h5>
                     <p>Найдено категорий: <strong>@Model.CategoriesCount</strong></p>
                     @if (Model.Categories.Any())
@@ -35,11 +35,19 @@
                     </form>
                 </div>
                 
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <h5>Товары</h5>
                     <p>Найдено товаров: <strong>@Model.ProductsCount</strong></p>
                     <form method="post" asp-page-handler="CreateProducts">
                         <button type="submit" class="btn btn-success">Добавить 100 кроссовок</button>
+                    </form>
+                </div>
+                
+                <div class="col-md-4">
+                    <h5>Заказы</h5>
+                    <p>Найдено заказов: <strong>@Model.OrdersCount</strong></p>
+                    <form method="post" asp-page-handler="CreateOrders">
+                        <button type="submit" class="btn btn-info">Создать 50 заказов</button>
                     </form>
                 </div>
             </div>
@@ -47,10 +55,16 @@
             <hr>
             
             <div class="row">
-                <div class="col-12">
+                <div class="col-md-6">
                     <h5>Очистка данных</h5>
                     <form method="post" asp-page-handler="ClearData" onsubmit="return confirm('Удалить все товары?')">
                         <button type="submit" class="btn btn-danger">Очистить все товары</button>
+                    </form>
+                </div>
+                <div class="col-md-6">
+                    <h5>Очистка заказов</h5>
+                    <form method="post" asp-page-handler="ClearOrders" onsubmit="return confirm('Удалить все заказы?')">
+                        <button type="submit" class="btn btn-warning">Очистить все заказы</button>
                     </form>
                 </div>
             </div>

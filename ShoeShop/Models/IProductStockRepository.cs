@@ -38,5 +38,15 @@ namespace ShoeShop.Models {
         /// <param name="size">Размер</param>
         /// <returns>Количество в наличии</returns>
         Task<int> GetQuantityAsync(Guid productId, int size);
+        
+        /// <summary>
+        /// Получить остатки простым запросом
+        /// </summary>
+        Task<IEnumerable<ProductStock>> GetSimpleStocksAsync(int skip, int take);
+        
+        /// <summary>
+        /// Получить общее количество остатков
+        /// </summary>
+        Task<int> GetTotalStocksCountAsync();
     }
 }

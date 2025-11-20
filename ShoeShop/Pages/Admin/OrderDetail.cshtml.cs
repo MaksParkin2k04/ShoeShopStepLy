@@ -14,11 +14,11 @@ namespace ShoeShop.Pages.Admin {
 
         public Order? Order { get; private set; }
 
-        public async Task OnGetAsync(Guid orderId) {
+        public async Task OnGetAsync(string orderId) {
             Order = await repository.GetOrder(orderId);
         }
 
-        public async Task<IActionResult> OnPostUpdateStatusAsync(Guid orderId, int status) {
+        public async Task<IActionResult> OnPostUpdateStatusAsync(string orderId, int status) {
             Order? order = await repository.GetOrder(orderId);
             if (order != null) {
                 order.SetStatus((OrderStatus)status);
@@ -27,7 +27,7 @@ namespace ShoeShop.Pages.Admin {
             return RedirectToPage("/Admin/OrderDetail", new { orderId = orderId });
         }
         
-        public async Task<IActionResult> OnPostMarkAsPaidAsync(Guid orderId) {
+        public async Task<IActionResult> OnPostMarkAsPaidAsync(string orderId) {
             Order? order = await repository.GetOrder(orderId);
             if (order != null) {
                 order.SetStatus(OrderStatus.Paid);
@@ -36,7 +36,7 @@ namespace ShoeShop.Pages.Admin {
             return RedirectToPage("/Admin/OrderDetail", new { orderId = orderId });
         }
         
-        public async Task<IActionResult> OnPostAddCommentAsync(Guid orderId, string comment) {
+        public async Task<IActionResult> OnPostAddCommentAsync(string orderId, string comment) {
             if (!string.IsNullOrEmpty(comment)) {
                 Order? order = await repository.GetOrder(orderId);
                 if (order != null) {

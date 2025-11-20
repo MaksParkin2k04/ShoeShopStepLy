@@ -762,7 +762,7 @@ namespace ShoeShop.Services {
                 
                 var order = await context.Orders
                     .Include(o => o.OrderDetails)
-                    .FirstOrDefaultAsync(o => o.Id == orderId && o.TelegramUserId == chatId);
+                    .FirstOrDefaultAsync(o => o.Id == orderId.ToString() && o.TelegramUserId == chatId);
                 
                 if (order == null) {
                     await SendMessage(chatId, "❌ Заказ не найден", httpClient);

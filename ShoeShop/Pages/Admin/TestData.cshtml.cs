@@ -19,6 +19,7 @@ namespace ShoeShop.Pages.Admin {
         public bool IsSuccess { get; set; }
         public int CategoriesCount { get; set; }
         public int ProductsCount { get; set; }
+        public int OrdersCount { get; set; }
         public List<string> Categories { get; set; } = new();
         
         public async Task OnGetAsync() {
@@ -163,9 +164,112 @@ namespace ShoeShop.Pages.Admin {
             return Page();
         }
         
+        public async Task<IActionResult> OnPostCreateOrdersAsync() {
+            try {
+                var products = await _context.Products.Include(p => p.Images).ToListAsync();
+                if (!products.Any()) {
+                    Message = "Сначала создайте товары!";
+                    IsSuccess = false;
+                    await LoadData();
+                    return Page();
+                }
+                
+                var names = new[] { "Иван Петров", "Мария Сидорова", "Алексей Козлов", "Елена Морозова", "Дмитрий Волков", "Анна Лебедева", "Сергей Новиков", "Ольга Соколова" };
+                var phones = new[] { "+7 (999) 123-45-67", "+7 (999) 234-56-78", "+7 (999) 345-67-89", "+7 (999) 456-78-90", "+7 (999) 567-89-01", "+7 (999) 678-90-12", "+7 (999) 789-01-23", "+7 (999) 890-12-34" };
+                var cities = new[] { "Москва", "СПб", "Екатеринбург", "Новосибирск", "Казань", "Нижний Новгород" };
+                var streets = new[] { "ул. Ленина", "Невский пр.", "ул. Мира", "пр. Ленина", "ул. Баумана", "ул. Горького" };
+                var sources = new[] { "Telegram", "Website", "Website", "Telegram" };
+                
+                var orders = new List<Order>();
+                var orderDetails = new List<OrderDetail>();
+                
+                for (int i = 0; i < 50; i++) {
+                    var recipient = OrderRecipient.Create(
+                        names[Random.Shared.Next(names.Length)],
+                        cities[Random.Shared.Next(cities.Length)],
+                        streets[Random.Shared.Next(streets.Length)],
+                        Random.Shared.Next(1, 200).ToString(),
+                        Random.Shared.Next(1, 100).ToString(),
+                        phones[Random.Shared.Next(phones.Length)]
+                    );
+                    
+                    var paymentType = Random.Shared.Next(2) == 0 ? PaymentType.Online : PaymentType.Cash;
+                    var source = sources[Random.Shared.Next(sources.Length)];
+                    var deliveryType = (DeliveryType)Random.Shared.Next(0, 5); // 0-4 для всех типов доставки
+                    
+                    // Создаем детали заказа
+                    var currentOrderDetails = new List<OrderDetail>();
+                    
+                    // Устанавливаем случайную дату создания (последние 30 дней)
+                    var createdDate = DateTime.Now.AddDays(-Random.Shared.Next(0, 30)).AddHours(-Random.Shared.Next(0, 24));
+                    
+                    // Добавляем товары в заказ
+                    var orderItemsCount = Random.Shared.Next(1, 4);
+                    var selectedProducts = products.OrderBy(x => Random.Shared.Next()).Take(orderItemsCount);
+                    
+                    foreach (var product in selectedProducts) {
+                        var availableSizes = GetAvailableSizes(product.Sizes);
+                        var size = availableSizes[Random.Shared.Next(availableSizes.Count)];
+                        var imagePath = product.Images?.FirstOrDefault()?.Path ?? "/images/no-image.jpg";
+                        
+                        var orderDetail = OrderDetail.Create(product.Id, imagePath, product.Name, product.Price, size);
+                        currentOrderDetails.Add(orderDetail);
+                    }
+                    
+                    // Создаем заказ с правильной датой
+                    var order = Order.Create(Guid.NewGuid(), createdDate, null, recipient, currentOrderDetails, paymentType, deliveryType);
+                    order.SetSource(source);
+                    
+                    // Устанавливаем случайный статус
+                    var statuses = new[] { OrderStatus.Created, OrderStatus.Paid, OrderStatus.Processing, OrderStatus.Completed, OrderStatus.Canceled };
+                    var status = statuses[Random.Shared.Next(statuses.Length)];
+                    order.SetStatus(status);
+                    
+                    // Если заказ оплачен, устанавливаем дату оплаты
+                    if (status == OrderStatus.Paid || status == OrderStatus.Processing || status == OrderStatus.Completed) {
+                        var paymentDate = createdDate.AddMinutes(Random.Shared.Next(5, 120));
+                        order.GetType().GetProperty("PaymentDate")?.SetValue(order, paymentDate);
+                    }
+                    
+                    orders.Add(order);
+                }
+                
+                _context.Orders.AddRange(orders);
+                await _context.SaveChangesAsync();
+                
+                Message = $"Создано {orders.Count} тестовых заказов!";
+                IsSuccess = true;
+            }
+            catch (Exception ex) {
+                Message = $"Ошибка: {ex.Message}";
+                IsSuccess = false;
+            }
+            
+            await LoadData();
+            return Page();
+        }
+        
+        public async Task<IActionResult> OnPostClearOrdersAsync() {
+            try {
+                await _context.Database.ExecuteSqlRawAsync("DELETE FROM OrderDetails");
+                await _context.Database.ExecuteSqlRawAsync("DELETE FROM Orders");
+                
+                Message = "Все заказы удалены!";
+                IsSuccess = true;
+            }
+            catch (Exception ex) {
+                Message = $"Ошибка: {ex.Message}";
+                IsSuccess = false;
+            }
+            
+            await LoadData();
+            return Page();
+        }
+        
         private async Task LoadData() {
             CategoriesCount = await _context.Categories.CountAsync();
             ProductsCount = await _context.Products.CountAsync();
+            OrdersCount = await _context.Orders.CountAsync();
             Categories = await _context.Categories.Select(c => c.Name).ToListAsync();
         }
         

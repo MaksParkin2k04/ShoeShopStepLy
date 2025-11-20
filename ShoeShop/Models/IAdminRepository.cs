@@ -13,10 +13,17 @@ namespace ShoeShop.Models {
 
         Task<IReadOnlyList<Order>> GetOrders(OrderStatusFilter filter, OrderSorting sorting, int start, int count);
         Task<int> OrderCount(OrderStatusFilter filter);
-        Task<Order?> GetOrder(Guid orderId);
+        Task<Dictionary<OrderStatus, int>> GetOrderStatsByStatus(OrderStatusFilter filter);
+        Task<Order?> GetOrder(string orderId);
         Task UpdateOrder(Order order);
-        Task DeleteOrder(Guid orderId);
+        Task DeleteOrder(string orderId);
         Task DeleteAllOrders();
+        
+        // Быстрые методы с кешированием
+        Task<IEnumerable<Order>> GetOrdersFast(OrderStatusFilter filter, OrderSorting sorting, int skip, int take);
+        Task<int> OrderCountFast(OrderStatusFilter filter);
+        Task<Dictionary<OrderStatus, int>> GetOrderStatsCache();
+        Task<Order?> GetOrderByNumber(string orderNumber);
 
         Task<IEnumerable<Category>> GetCategories();
         Task AddCategory(Category category);

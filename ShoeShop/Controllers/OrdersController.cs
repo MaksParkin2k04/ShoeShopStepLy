@@ -18,7 +18,7 @@ namespace ShoeShop.Controllers {
         /// Получить заказ по ID
         /// </summary>
         [HttpGet("{id}")]
-        public async Task<ActionResult<Order>> GetOrder(Guid id) {
+        public async Task<ActionResult<Order>> GetOrder(string id) {
             var order = await _repository.GetOrder(id);
             if (order == null) {
                 return NotFound();

@@ -12,18 +12,18 @@ namespace ShoeShop.Pages {
 
         public Order? Order { get; private set; }
 
-        public async Task OnGetAsync(Guid orderId) {
+        public async Task OnGetAsync(string orderId) {
             Order = await productRepository.GetOrder(orderId);
         }
 
-        public async Task<IActionResult> OnPostCanselAsync(Guid orderId) {
+        public async Task<IActionResult> OnPostCanselAsync(string orderId) {
             Order? order = await productRepository.GetOrder(orderId);
             order.SetStatus(OrderStatus.Canceled);
             await productRepository.UpdateOrder(order);
             return RedirectToPage("/Order", new { orderId = orderId });
         }
         
-        public async Task<IActionResult> OnPostAddCustomerCommentAsync(Guid orderId, string comment) {
+        public async Task<IActionResult> OnPostAddCustomerCommentAsync(string orderId, string comment) {
             if (!string.IsNullOrEmpty(comment)) {
                 Order? order = await productRepository.GetOrder(orderId);
                 if (order != null) {

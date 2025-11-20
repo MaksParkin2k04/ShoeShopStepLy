@@ -33,6 +33,12 @@
         </a>
     </li>
     <li class="nav-item" role="presentation">
+        <a class="nav-link @(Model.ActiveTab == "order-search" ? "active" : "")" 
+           href="?tab=order-search" role="tab">
+            <i class="fas fa-search me-2"></i>Поиск заказа
+        </a>
+    </li>
+    <li class="nav-item" role="presentation">
         <a class="nav-link" href="/Admin/QRScanner" role="tab">
             <i class="fas fa-qrcode me-2"></i>QR Сканер
         </a>
@@ -151,8 +157,28 @@
     <!-- Вкладка всех товаров -->
     <div class="tab-pane fade @(Model.ActiveTab == "products" ? "show active" : "")" id="products" role="tabpanel">
         <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">Все товары (последние 50)</h5>
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Все товары (страница @Model.CurrentPage из @Model.TotalPages)</h5>
+                @if (Model.TotalPages > 1)
+                {
+                    <div class="pagination-controls">
+                        @if (Model.CurrentPage > 1)
+                        {
+                            <a href="?tab=products&page=@(Model.CurrentPage - 1)" class="btn btn-sm btn-outline-primary me-1">
+                                <i class="fas fa-chevron-left"></i> Предыдущая
+                            </a>
+                        }
+                        <span class="btn btn-sm btn-light disabled">
+                            @Model.CurrentPage / @Model.TotalPages
+                        </span>
+                        @if (Model.CurrentPage < Model.TotalPages)
+                        {
+                            <a href="?tab=products&page=@(Model.CurrentPage + 1)" class="btn btn-sm btn-outline-primary ms-1">
+                                Следующая <i class="fas fa-chevron-right"></i>
+                            </a>
+                        }
+                    </div>
+                }
             </div>
             <div class="card-body">
                 @if (Model.AllProducts.Any())
@@ -225,6 +251,19 @@
                         <p>Товары не найдены</p>
                     </div>
                 }
+                
+                @if (Model.TotalPages > 1)
+                {
+                    @await Component.InvokeAsync(typeof(ShoeShop.Paginations.Components.PaginationViewComponent), new {
+                        currentPage = Model.CurrentPage,
+                        elementsPerPage = Model.PageSize,
+                        totalElementsCount = Model.TotalProductsCount,
+                        page = "/Admin/LabelPrinting",
+                        routeData = new Dictionary<string, string>([
+                            new KeyValuePair<string, string>("tab", "products")
+                        ])
+                    })
+                }
             </div>
         </div>
     </div>
@@ -232,8 +271,28 @@
     <!-- Вкладка заказов -->
     <div class="tab-pane fade @(Model.ActiveTab == "orders" ? "show active" : "")" id="orders" role="tabpanel">
         <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">Последние заказы (20 шт.)</h5>
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Заказы (страница @Model.CurrentPage из @Model.TotalPages)</h5>
+                @if (Model.TotalPages > 1)
+                {
+                    <div class="pagination-controls">
+                        @if (Model.CurrentPage > 1)
+                        {
+                            <a href="?tab=orders&page=@(Model.CurrentPage - 1)" class="btn btn-sm btn-outline-primary me-1">
+                                <i class="fas fa-chevron-left"></i> Предыдущая
+                            </a>
+                        }
+                        <span class="btn btn-sm btn-light disabled">
+                            @Model.CurrentPage / @Model.TotalPages
+                        </span>
+                        @if (Model.CurrentPage < Model.TotalPages)
+                        {
+                            <a href="?tab=orders&page=@(Model.CurrentPage + 1)" class="btn btn-sm btn-outline-primary ms-1">
+                                Следующая <i class="fas fa-chevron-right"></i>
+                            </a>
+                        }
+                    </div>
+                }
             </div>
             <div class="card-body">
                 @if (Model.RecentOrders.Any())
@@ -255,7 +314,7 @@
                                 {
                                     <tr>
                                         <td>
-                                            <strong>#@order.Id.ToString().Substring(0, 8)</strong>
+                                            <strong>#@(!string.IsNullOrEmpty(order.OrderNumber) ? order.OrderNumber : order.Id.ToString().Substring(0, 8))</strong>
                                         </td>
                                         <td>
                                             @order.CreatedDate.ToString("dd.MM.yyyy HH:mm")
@@ -324,6 +383,135 @@
                         <p>Заказы не найдены</p>
                     </div>
                 }
+                
+                @if (Model.TotalPages > 1)
+                {
+                    @await Component.InvokeAsync(typeof(ShoeShop.Paginations.Components.PaginationViewComponent), new {
+                        currentPage = Model.CurrentPage,
+                        elementsPerPage = Model.PageSize,
+                        totalElementsCount = Model.TotalOrdersCount,
+                        page = "/Admin/LabelPrinting",
+                        routeData = new Dictionary<string, string>([
+                            new KeyValuePair<string, string>("tab", "orders")
+                        ])
+                    })
+                }
+            </div>
+        </div>
+    </div>
+    
+    <!-- Вкладка поиска заказа -->
+    <div class="tab-pane fade @(Model.ActiveTab == "order-search" ? "show active" : "")" id="order-search" role="tabpanel">
+        <div class="row">
+            <div class="col-md-8 mx-auto">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Поиск заказа по номеру</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="get" class="mb-4">
+                            <input type="hidden" name="tab" value="order-search" />
+                            <div class="input-group">
+                                <input type="text" name="orderSearch" value="@Model.OrderSearch" 
+                                       class="form-control" placeholder="Введите номер заказа (например: AB1234)..." 
+                                       autocomplete="off">
+                                <button class="btn btn-primary" type="submit">
+                                    <i class="fas fa-search"></i> Найти
+                                </button>
+                            </div>
+                        </form>
+
+                        @if (!string.IsNullOrEmpty(Model.OrderSearch))
+                        {
+                            @if (Model.FoundOrder != null)
+                            {
+                                <div class="alert alert-success">
+                                    <i class="fas fa-check-circle me-2"></i>
+                                    Заказ найден!
+                                </div>
+                                
+                                <div class="order-details border rounded p-4">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <h6>Информация о заказе</h6>
+                                            <p><strong>Номер:</strong> #@(!string.IsNullOrEmpty(Model.FoundOrder.OrderNumber) ? Model.FoundOrder.OrderNumber : Model.FoundOrder.Id.ToString().Substring(0, 8))</p>
+                                            <p><strong>Дата:</strong> @Model.FoundOrder.CreatedDate.ToString("dd.MM.yyyy HH:mm")</p>
+                                            <p><strong>Статус:</strong> 
+                                                <span class="badge bg-@(Model.FoundOrder.Status == OrderStatus.Completed ? "success" : Model.FoundOrder.Status == OrderStatus.Canceled ? "danger" : Model.FoundOrder.Status == OrderStatus.Paid ? "info" : "warning")">
+                                                    @switch (Model.FoundOrder.Status) {
+                                                        case OrderStatus.Created:
+                                                            <span>Создан</span>
+                                                            break;
+                                                        case OrderStatus.Paid:
+                                                            <span>Оплачен</span>
+                                                            break;
+                                                        case OrderStatus.Processing:
+                                                            <span>В обработке</span>
+                                                            break;
+                                                        case OrderStatus.Completed:
+                                                            <span>Выполнен</span>
+                                                            break;
+                                                        case OrderStatus.Canceled:
+                                                            <span>Отменен</span>
+                                                            break;
+                                                    }
+                                                </span>
+                                            </p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6>Клиент</h6>
+                                            <p><strong>Имя:</strong> @Model.FoundOrder.Recipient?.Name</p>
+                                            <p><strong>Телефон:</strong> @Model.FoundOrder.Recipient?.Phone</p>
+                                            @if (!string.IsNullOrEmpty(Model.FoundOrder.Source))
+                                            {
+                                                <p><strong>Источник:</strong> 
+                                                    <span class="badge bg-light text-dark">
+                                                        @if (Model.FoundOrder.Source == "Telegram")
+                                                        {
+                                                            <i class="fab fa-telegram me-1"></i>
+                                                        }
+                                                        else
+                                                        {
+                                                            <i class="fas fa-globe me-1"></i>
+                                                        }
+                                                        @Model.FoundOrder.Source
+                                                    </span>
+                                                </p>
+                                            }
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mt-4">
+                                        <h6>Действия</h6>
+                                        <div class="btn-group" role="group">
+                                            <a href="/OrderLabel/@Model.FoundOrder.Id" target="_blank" class="btn btn-primary">
+                                                <i class="fas fa-print me-2"></i>Печать этикетки
+                                            </a>
+                                            <a asp-page="/Admin/OrderDetail" asp-route-orderId="@Model.FoundOrder.Id" class="btn btn-outline-info">
+                                                <i class="fas fa-eye me-2"></i>Подробности
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    Заказ с номером "<strong>@Model.OrderSearch</strong>" не найден
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="text-center text-muted py-5">
+                                <i class="fas fa-search fa-3x mb-3"></i>
+                                <p>Введите номер заказа для поиска</p>
+                                <small class="text-muted">Пример: AB1234, CD5678</small>
+                            </div>
+                        }
+                    </div>
+                </div>
             </div>
         </div>
     </div>

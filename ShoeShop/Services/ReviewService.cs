@@ -127,6 +127,8 @@ namespace ShoeShop.Services {
             return null;
         }
 
+
+
         public async Task<bool> CanUserReviewProductAsync(string userId, Guid productId) {
             if (!Guid.TryParse(userId, out var customerGuid)) {
                 return false;

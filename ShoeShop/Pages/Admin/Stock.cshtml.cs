@@ -32,42 +32,14 @@ namespace ShoeShop.Pages.Admin {
             SearchQuery = search;
             StatusFilter = status;
             CurrentPage = pageIndex;
-            ElementsPerPage = 50;
+            ElementsPerPage = 5;
             
-            Products = await _productRepository.GetProducts(ProductSorting.Default, 0, int.MaxValue);
+            // Только для выпадающих списков - минимум данных
+            Products = await _productRepository.GetProducts(ProductSorting.Default, 0, 50);
             
-            var allStocks = new List<ProductStock>();
-            foreach (var product in Products) {
-                var stocks = await _stockRepository.GetByProductIdAsync(product.Id);
-                allStocks.AddRange(stocks);
-            }
-            
-            // Применяем фильтры
-            var filteredStocks = allStocks.AsEnumerable();
-            
-            if (!string.IsNullOrEmpty(search)) {
-                filteredStocks = filteredStocks.Where(s => {
-                    var product = Products.FirstOrDefault(p => p.Id == s.ProductId);
-                    return product?.Name?.Contains(search, StringComparison.OrdinalIgnoreCase) == true;
-                });
-            }
-            
-            if (!string.IsNullOrEmpty(status)) {
-                filteredStocks = status switch {
-                    "outofstock" => filteredStocks.Where(s => s.Quantity == 0),
-                    "lowstock" => filteredStocks.Where(s => s.Quantity > 0 && s.Quantity < 5),
-                    "instock" => filteredStocks.Where(s => s.Quantity >= 5),
-                    _ => filteredStocks
-                };
-            }
-            
-            var sortedStocks = filteredStocks.OrderBy(s => {
-                var product = Products.FirstOrDefault(p => p.Id == s.ProductId);
-                return product?.Name ?? "";
-            }).ThenBy(s => s.Size);
-            
-            TotalElementsCount = sortedStocks.Count();
-            ProductStocks = sortedStocks.Skip((pageIndex - 1) * ElementsPerPage).Take(ElementsPerPage);
+            // Простой запрос остатков без JOIN
+            ProductStocks = await _stockRepository.GetSimpleStocksAsync((pageIndex - 1) * ElementsPerPage, ElementsPerPage);
+            TotalElementsCount = await _stockRepository.GetTotalStocksCountAsync();
         }
 
         public async Task<IActionResult> OnPostAddStockAsync(Guid productId, int size, int quantity, double purchasePrice = 0) {

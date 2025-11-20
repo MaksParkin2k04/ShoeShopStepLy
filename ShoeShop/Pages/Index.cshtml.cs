@@ -38,7 +38,9 @@ namespace ShoeShop.Pages {
             MaxPrice = maxPrice;
             Sizes = sizes;
             
-            var allProducts = await repository.GetProducts(sort, 0, int.MaxValue);
+            // Ограничиваем количество загружаемых товаров
+            var maxProducts = 200; // Максимум 200 товаров
+            var allProducts = await repository.GetProducts(sort, 0, maxProducts);
             
             // Применяем фильтры
             var filteredProducts = allProducts.AsEnumerable();
@@ -64,28 +66,20 @@ namespace ShoeShop.Pages {
                 });
             }
             
-            // Загружаем информацию о наличии для всех отфильтрованных товаров
-            var productsWithAvailability = new List<(Product product, ProductAvailabilityStatus availability)>();
-            foreach (var product in filteredProducts) {
-                var availability = await stockService.GetAvailabilityStatusAsync(product.Id);
-                productsWithAvailability.Add((product, availability));
-            }
+            TotalElementsCount = filteredProducts.Count();
+            Products = filteredProducts.Skip((pageIndex - 1) * ElementsPerPage).Take(ElementsPerPage);
             
-            // Сортируем: сначала в наличии, потом нет в наличии
-            var sortedProducts = productsWithAvailability
-                .OrderByDescending(x => x.availability == ProductAvailabilityStatus.InStock)
-                .ThenBy(x => x.product.Name)
-                .Select(x => x.product);
-            
-            TotalElementsCount = sortedProducts.Count();
-            Products = sortedProducts.Skip((pageIndex - 1) * 20).Take(20);
-            
-            // Загружаем дополнительную информацию для отображаемых товаров
-            foreach (var product in Products) {
-                ProductAvailability[product.Id] = await stockService.GetAvailabilityStatusAsync(product.Id);
-                ProductSizeQuantities[product.Id] = await stockService.GetSizeQuantitiesAsync(product.Id);
-                ProductRatings[product.Id] = await reviewService.GetAverageRatingAsync(product.Id);
-                ProductReviewCounts[product.Id] = await reviewService.GetReviewCountAsync(product.Id);
+            if (Products?.Any() == true) {
+                var productIds = Products.Select(p => p.Id).ToList();
+                
+                    // Загружаем только размеры и статус наличия
+                foreach (var product in Products) {
+                    ProductAvailability[product.Id] = await stockService.GetAvailabilityStatusAsync(product.Id);
+                    ProductSizeQuantities[product.Id] = await stockService.GetSizeQuantitiesAsync(product.Id);
+                    ProductRatings[product.Id] = 0; // Нет рейтинга
+                    ProductReviewCounts[product.Id] = 0; // Нет отзывов
+                }
+
             }
         }
     }

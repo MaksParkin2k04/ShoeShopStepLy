@@ -12,7 +12,7 @@ namespace ShoeShop.Pages.Admin {
         /// <summary>
         /// ������������ ���������� ��������� �� ��������
         /// </summary>
-        private const int MAX_COUNT_ITEMS_ON_PAGE = 20;
+        private const int MAX_COUNT_ITEMS_ON_PAGE = 10;
 
         public CatalogModel(IAdminRepository repository) {
             this.repository = repository;

@@ -5,11 +5,15 @@
     ViewData["Title"] = "Управление заказами";
     
     Dictionary<string, string> statusFilterDictionary = new Dictionary<string, string>(new KeyValuePair<string, string>[] {
-        new KeyValuePair<string, string>("Аll", "Все"),
+        new KeyValuePair<string, string>("Active", "Активные"),
         new KeyValuePair<string, string>("Created", "Созданные"),
         new KeyValuePair<string, string>("Paid", "Оплаченные"),
         new KeyValuePair<string, string>("Processing", "В обработке"),
-        new KeyValuePair<string, string>("Completed", "Выполненные"),
+        new KeyValuePair<string, string>("AwaitingShipment", "Ожидает отправления"),
+        new KeyValuePair<string, string>("Shipped", "Отправлен"),
+        new KeyValuePair<string, string>("InTransit", "В пути"),
+        new KeyValuePair<string, string>("Arrived", "Прибыл"),
+        new KeyValuePair<string, string>("ReadyForPickup", "Готов к выдаче"),
         new KeyValuePair<string, string>("Canceled", "Отмененные")
     });
 
@@ -56,12 +60,21 @@
                 </div>
             </div>
             <div class="stat-card">
+                <div class="stat-icon bg-info">
+                    <i class="fas fa-plus-circle"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-number">@(Model.OrderStats.GetValueOrDefault(OrderStatus.Created, 0))</div>
+                    <div class="stat-label">Новые</div>
+                </div>
+            </div>
+            <div class="stat-card">
                 <div class="stat-icon bg-warning">
                     <i class="fas fa-clock"></i>
                 </div>
                 <div class="stat-info">
-                    <div class="stat-number">@(Model.Orders?.Count(o => o.Status == OrderStatus.Processing) ?? 0)</div>
-                    <div class="stat-label">На странице</div>
+                    <div class="stat-number">@(Model.OrderStats.GetValueOrDefault(OrderStatus.Processing, 0))</div>
+                    <div class="stat-label">В обработке</div>
                 </div>
             </div>
             <div class="stat-card">
@@ -69,43 +82,67 @@
                     <i class="fas fa-check-circle"></i>
                 </div>
                 <div class="stat-info">
-                    <div class="stat-number">@(Model.Orders?.Count(o => o.Status == OrderStatus.Completed) ?? 0)</div>
-                    <div class="stat-label">На странице</div>
+                    <div class="stat-number">@(Model.OrderStats.GetValueOrDefault(OrderStatus.Completed, 0))</div>
+                    <div class="stat-label">Выполнено</div>
                 </div>
             </div>
         </div>
     </div>
 
-    @* Filters *@
-    <div class="admin-filters">
-        <form id="sortingForm" asp-page="/Admin/Orders" method="get" class="filters-form">
-            <div class="filter-group">
-                <label class="filter-label">Статус заказа:</label>
-                <select id="filterStatus" name="filter" class="form-select" onchange="document.getElementById('sortingForm').submit()">
-                    @foreach (string key in statusFilterDictionary.Keys) {
-                        if (key == Model.Filter.ToString()) {
-                            <option value="@key" selected>@statusFilterDictionary[key]</option>
-                        } else {
-                            <option value="@key">@statusFilterDictionary[key]</option>
-                        }
-                    }
-                </select>
-            </div>
-            
-            <div class="filter-group">
-                <label class="filter-label">Сортировка:</label>
-                <select id="sorting" name="sorting" class="form-select" onchange="document.getElementById('sortingForm').submit()">
-                    @foreach (string key in orderSortingDictionary.Keys) {
-                        if (key == Model.Sorting.ToString()) {
-                            <option value="@key" selected>@orderSortingDictionary[key]</option>
-                        } else {
-                            <option value="@key">@orderSortingDictionary[key]</option>
-                        }
-                    }
-                </select>
-            </div>
-        </form>
+    @* Tabs *@
+    <div class="admin-tabs">
+        <ul class="nav nav-tabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <a class="nav-link @(Model.Filter.ToString() != "Completed" ? "active" : "")" href="?filter=Active&sorting=@Model.Sorting">
+                    <i class="fas fa-list me-2"></i>Активные заказы
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link @(Model.Filter.ToString() == "Completed" ? "active" : "")" href="?filter=Completed&sorting=@Model.Sorting">
+                    <i class="fas fa-check-circle me-2"></i>Выполненные
+                </a>
+            </li>
+        </ul>
     </div>
+
+    @* Filters *@
+    @if (Model.Filter.ToString() != "Completed") {
+        <div class="admin-filters">
+            <form id="sortingForm" asp-page="/Admin/Orders" method="get" class="filters-form">
+                <div class="filter-group">
+                    <label class="filter-label">Статус заказа:</label>
+                    <select id="filterStatus" name="filter" class="form-select" onchange="document.getElementById('sortingForm').submit()">
+                        @foreach (string key in statusFilterDictionary.Keys.Where(k => k != "Completed" && k != "All")) {
+                            if (key == Model.Filter.ToString()) {
+                                <option value="@key" selected>@statusFilterDictionary[key]</option>
+                            } else {
+                                <option value="@key">@statusFilterDictionary[key]</option>
+                            }
+                        }
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Сортировка:</label>
+                    <select id="sorting" name="sorting" class="form-select" onchange="document.getElementById('sortingForm').submit()">
+                        @foreach (string key in orderSortingDictionary.Keys) {
+                            if (key == Model.Sorting.ToString()) {
+                                <option value="@key" selected>@orderSortingDictionary[key]</option>
+                            } else {
+                                <option value="@key">@orderSortingDictionary[key]</option>
+                            }
+                        }
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <button type="button" class="btn btn-success" onclick="printOrdersByStatus()">
+                        <i class="fas fa-print me-2"></i>Печать выбранных
+                    </button>
+                </div>
+            </form>
+        </div>
+    }
 
     @* Orders Table *@
     <div class="admin-content">
@@ -134,7 +171,7 @@
                             <tr class="order-row">
                                 <td class="order-id">
                                     <a asp-page="/Admin/OrderDetail" asp-route-orderId="@order.Id" class="order-link">
-                                        #@order.Id.ToString().Substring(0, 8)
+                                        #@order.Id
                                     </a>
                                 </td>
                                 <td class="order-date">
@@ -204,6 +241,12 @@
                                         <a asp-page="/Admin/OrderDetail" asp-route-orderId="@order.Id" class="btn btn-sm btn-outline-primary" title="Просмотреть детали">
                                             <i class="fas fa-eye"></i>
                                         </a>
+                                        @if (order.PaymentDate.HasValue || order.Status == OrderStatus.Paid)
+                                        {
+                                            <a href="/Receipt/@order.Id" target="_blank" class="btn btn-sm btn-outline-success" title="Скачать чек">
+                                                <i class="fas fa-receipt"></i>
+                                            </a>
+                                        }
                                         <a href="/OrderLabel/@order.Id" target="_blank" class="btn btn-sm btn-outline-info" title="Печать этикетки">
                                             <i class="fas fa-print"></i>
                                         </a>
@@ -275,3 +318,44 @@
             })
     </div>
 </div>
+
+<script>
+function printOrdersByStatus() {
+    // Получаем текущий фильтр
+    const filterElement = document.getElementById('filterStatus');
+    const filter = filterElement ? filterElement.value : 'Active';
+    
+    // Открываем страницу с этикетками всех заказов по статусу
+    const url = '/Admin/PrintMultipleOrders?filter=' + filter;
+    window.open(url, '_blank');
+}
+</script>
+
+<style>
+.admin-tabs {
+    margin-bottom: 20px;
+}
+
+.admin-tabs .nav-tabs {
+    border-bottom: 2px solid #dee2e6;
+}
+
+.admin-tabs .nav-link {
+    color: #6c757d;
+    border: none;
+    border-bottom: 3px solid transparent;
+    padding: 12px 20px;
+    font-weight: 500;
+}
+
+.admin-tabs .nav-link:hover {
+    color: #007bff;
+    border-bottom-color: #007bff;
+}
+
+.admin-tabs .nav-link.active {
+    color: #007bff;
+    border-bottom-color: #007bff;
+    background: none;
+}
+</style>

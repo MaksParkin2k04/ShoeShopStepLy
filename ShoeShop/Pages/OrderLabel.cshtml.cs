@@ -21,7 +21,7 @@ namespace ShoeShop.Pages
         public ShoeShop.Models.Order? Order { get; set; }
         public string? QRCodeBase64 { get; set; }
 
-        public async Task<IActionResult> OnGetAsync(Guid orderId)
+        public async Task<IActionResult> OnGetAsync(string orderId)
         {
             Order = await adminRepository.GetOrder(orderId);
             

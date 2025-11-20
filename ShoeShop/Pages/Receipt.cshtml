@@ -1,4 +1,4 @@
-@page "/Receipt/{orderId:guid}"
+@page "/Receipt/{orderId}"
 @model ShoeShop.Pages.ReceiptModel
 @{
     ViewData["Title"] = "Чек";
@@ -118,7 +118,7 @@
             </div>
 
             <div class="receipt-info">
-                <div>ЧЕК № @Model.Order.Id.ToString().Substring(0, 8).ToUpper()</div>
+                <div>ЧЕК № @Model.Order.Id.ToUpper()</div>
                 <div>Дата: @Model.Order.CreatedDate.ToString("dd.MM.yyyy HH:mm")</div>
                 <div>Кассир: Система</div>
                 <div>Покупатель: @Model.Order.Recipient.Name</div>

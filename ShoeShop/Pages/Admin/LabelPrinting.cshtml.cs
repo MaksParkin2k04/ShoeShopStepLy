@@ -25,36 +25,63 @@ namespace ShoeShop.Pages.Admin
         public List<Order> RecentOrders { get; set; } = new();
         public Dictionary<Guid, Dictionary<int, int>> ProductStocks { get; set; } = new();
         public string SearchTerm { get; set; } = "";
+        public string OrderSearch { get; set; } = "";
+        public Order? FoundOrder { get; set; }
         public string ActiveTab { get; set; } = "search";
+        public int CurrentPage { get; set; } = 1;
+        public int TotalPages { get; set; } = 1;
+        public int PageSize { get; set; } = 5;
+        public int TotalOrdersCount { get; set; } = 0;
+        public int TotalProductsCount { get; set; } = 0;
 
-        public async Task OnGetAsync(string? search, string? tab)
+        public async Task OnGetAsync(string? search, string? orderSearch, string? tab, int page = 1)
         {
             SearchTerm = search ?? "";
+            OrderSearch = orderSearch ?? "";
             ActiveTab = tab ?? "search";
+            CurrentPage = page;
+            
+            // Поиск заказа по номеру
+            if (!string.IsNullOrEmpty(OrderSearch) && ActiveTab == "order-search")
+            {
+                // Сначала поиск по короткому номеру
+                FoundOrder = await adminRepository.GetOrderByNumber(OrderSearch);
+                
+                // Если не найден по короткому номеру, попробуем найти по самому значению как Id
+                if (FoundOrder == null)
+                {
+                    FoundOrder = await adminRepository.GetOrder(OrderSearch);
+                }
+            }
             
             if (!string.IsNullOrEmpty(SearchTerm))
             {
                 Products = (await repository.GetAllAsync())
                     .Where(p => p.Name.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase))
-                    .Take(20)
+                    .Take(10)
                     .ToList();
                 
                 // Загружаем остатки для найденных товаров
                 await LoadProductStocks(Products);
             }
 
-            // Загружаем все товары для вкладки "Все товары"
+            // Загружаем все товары для вкладки "Все товары" с пагинацией
             if (ActiveTab == "products")
             {
-                AllProducts = (await repository.GetAllAsync()).Take(50).ToList();
-                // Загружаем остатки для всех товаров
+                var allProducts = await repository.GetAllAsync();
+                TotalProductsCount = allProducts.Count();
+                TotalPages = (int)Math.Ceiling((double)TotalProductsCount / PageSize);
+                AllProducts = allProducts.Skip((CurrentPage - 1) * PageSize).Take(PageSize).ToList();
+                // Загружаем остатки для товаров на текущей странице
                 await LoadProductStocks(AllProducts);
             }
 
-            // Загружаем последние заказы для вкладки "Заказы"
+            // Загружаем заказы для вкладки "Заказы" с пагинацией
             if (ActiveTab == "orders")
             {
-                RecentOrders = (await adminRepository.GetOrders(OrderStatusFilter.All, OrderSorting.ByDateDesc, 0, 20)).ToList();
+                TotalOrdersCount = await adminRepository.OrderCount(OrderStatusFilter.All);
+                TotalPages = (int)Math.Ceiling((double)TotalOrdersCount / PageSize);
+                RecentOrders = (await adminRepository.GetOrders(OrderStatusFilter.All, OrderSorting.ByDateDesc, CurrentPage - 1, PageSize)).ToList();
             }
         }
 

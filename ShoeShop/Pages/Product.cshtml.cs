@@ -30,11 +30,14 @@ namespace ShoeShop.Pages {
         public int ReviewCount { get; private set; }
         public bool CanReview { get; private set; }
 
-        public async Task OnGetAsync(Guid id) {
-            Product = await repository.GetProduct(id);
+        public async Task OnGetAsync(string id) {
+            if (!Guid.TryParse(id, out Guid productId)) {
+                return;
+            }
+            Product = await repository.GetProduct(productId);
             if (Product != null) {
                 // Получаем остатки напрямую из репозитория
-                var stocks = await stockRepository.GetByProductIdAsync(Product.Id);
+                var stocks = await stockRepository.GetByProductIdAsync(productId);
                 SizeQuantities = stocks.ToDictionary(s => s.Size, s => s.Quantity);
                 
                 // Определяем статус наличия
@@ -46,9 +49,9 @@ namespace ShoeShop.Pages {
                 } else {
                     AvailabilityStatus = ProductAvailabilityStatus.InStock;
                 }
-                Reviews = await reviewService.GetProductReviewsAsync(Product.Id);
-                AverageRating = await reviewService.GetAverageRatingAsync(Product.Id);
-                ReviewCount = await reviewService.GetReviewCountAsync(Product.Id);
+                Reviews = await reviewService.GetProductReviewsAsync(productId);
+                AverageRating = await reviewService.GetAverageRatingAsync(productId);
+                ReviewCount = await reviewService.GetReviewCountAsync(productId);
                 
                 // Загружаем ответы админа
                 foreach (var review in Reviews) {
@@ -59,7 +62,7 @@ namespace ShoeShop.Pages {
                 if (User.Identity.IsAuthenticated) {
                     var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                     if (!string.IsNullOrEmpty(userId)) {
-                        CanReview = await reviewService.CanUserReviewProductAsync(userId, Product.Id);
+                        CanReview = await reviewService.CanUserReviewProductAsync(userId, productId);
                     }
                 }
             }

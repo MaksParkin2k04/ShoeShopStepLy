@@ -43,7 +43,7 @@ namespace ShoeShop.Data {
             return await query.ToArrayAsync();
         }
 
-        public async Task<Order?> GetOrder(Guid orderId) {
+        public async Task<Order?> GetOrder(string orderId) {
             return await context.Orders.Include(o => o.OrderDetails).FirstOrDefaultAsync(o => o.Id == orderId);
         }
 
@@ -60,6 +60,38 @@ namespace ShoeShop.Data {
 
         public async Task<int> OrderCount(Guid customerId, OrderStatusFilter filter) {
             return await context.Orders.CustomerFilter(customerId).StatusFilter(filter).CountAsync();
+        }
+        
+        public async Task<(IEnumerable<Product> products, int totalCount)> GetProductsPagedAsync(ProductSorting sorting, int pageIndex, int pageSize, Guid? categoryId = null, decimal? minPrice = null, decimal? maxPrice = null, int[]? sizes = null) {
+            var query = context.Products.IsSaleFilters(IsSaleFilter.IsSale).Include(p => p.Images).Include(p => p.Category).AsQueryable();
+            
+            if (categoryId.HasValue) {
+                query = query.Where(p => p.CategoryId == categoryId.Value);
+            }
+            
+            if (minPrice.HasValue) {
+                query = query.Where(p => p.Price >= (double)minPrice.Value);
+            }
+            
+            if (maxPrice.HasValue) {
+                query = query.Where(p => p.Price <= (double)maxPrice.Value);
+            }
+            
+            if (sizes != null && sizes.Length > 0) {
+                foreach (var size in sizes) {
+                    var sizeFlag = (ProductSize)Enum.Parse(typeof(ProductSize), $"S{size}");
+                    query = query.Where(p => p.Sizes.HasFlag(sizeFlag));
+                }
+            }
+            
+            var totalCount = await query.CountAsync();
+            var products = await query.OrderProductsBy(sorting).Skip((pageIndex - 1) * pageSize).Take(pageSize).ToListAsync();
+            
+            return (products, totalCount);
+        }
+        
+        public async Task<List<Product>> GetProductsBatchAsync(List<Guid> productIds) {
+            return await context.Products.Where(p => productIds.Contains(p.Id)).Include(p => p.Images).Include(p => p.Category).ToListAsync();
         }
     }
 }

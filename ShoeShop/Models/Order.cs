@@ -13,7 +13,7 @@
         /// <param name="coment">Коментарий к заказу</param>
         /// <param name="status">Статус заказа</param>
         /// <param name="paymentType">Тип оплаты</param>
-        private Order(Guid id, Guid customerId, DateTime createdDate, string? coment, OrderStatus status, PaymentType paymentType) {
+        private Order(string id, Guid customerId, DateTime createdDate, string? coment, OrderStatus status, PaymentType paymentType) {
             Id = id;
             CustomerId = customerId;
             CreatedDate = createdDate;
@@ -28,7 +28,7 @@
         /// <summary>
         /// Идентификатор
         /// </summary>
-        public Guid Id { get; private set; }
+        public string Id { get; private set; }
         /// <summary>
         /// Идентификатор клиента
         /// </summary>
@@ -85,6 +85,11 @@
         /// Номер заказа для отслеживания
         /// </summary>
         public string OrderNumber { get; private set; } = string.Empty;
+        
+        /// <summary>
+        /// Тип доставки
+        /// </summary>
+        public DeliveryType DeliveryType { get; private set; } = DeliveryType.Courier;
 
         public void SetStatus(OrderStatus status) {
             Status = status;
@@ -115,8 +120,21 @@
             OrderNumber = orderNumber;
         }
         
+        public void GenerateOrderNumber() {
+            var random = new Random();
+            var letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            var letter1 = letters[random.Next(letters.Length)];
+            var letter2 = letters[random.Next(letters.Length)];
+            var numbers = random.Next(1000, 9999);
+            OrderNumber = $"{letter1}{letter2}{numbers}";
+        }
+        
         public void SetWebUser(Guid webUserId) {
             WebUserId = webUserId;
+        }
+        
+        public void SetDeliveryType(DeliveryType deliveryType) {
+            DeliveryType = deliveryType;
         }
 
         /// <summary>
@@ -128,11 +146,21 @@
         /// <param name="recipient">Получатель заказа</param>
         /// <param name="orderDetails">Состав заказа</param>
         /// <param name="paymentType">Тип оплаты</param>
+        /// <param name="deliveryType">Тип доставки</param>
         /// <returns>Объект содержащий информацию о заказе</returns>
-        public static Order Create(Guid customerId, DateTime createdDate, string? coment, OrderRecipient recipient, IEnumerable<OrderDetail> orderDetails, PaymentType paymentType = PaymentType.Cash) {
-            Order order = new Order(Guid.Empty, customerId, createdDate, coment, OrderStatus.Created, paymentType);
+        public static Order Create(Guid customerId, DateTime createdDate, string? coment, OrderRecipient recipient, IEnumerable<OrderDetail> orderDetails, PaymentType paymentType = PaymentType.Cash, DeliveryType deliveryType = DeliveryType.Courier) {
+            var random = new Random();
+            var letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            var letter1 = letters[random.Next(letters.Length)];
+            var letter2 = letters[random.Next(letters.Length)];
+            var numbers = random.Next(1000, 9999);
+            var orderId = $"{letter1}{letter2}{numbers}";
+            
+            Order order = new Order(orderId, customerId, createdDate, coment, OrderStatus.Created, paymentType);
             order.Recipient = recipient;
             order.orderDetails = orderDetails != null ? new List<OrderDetail>(orderDetails) : new List<OrderDetail>();
+            order.OrderNumber = orderId;
+            order.DeliveryType = deliveryType;
             return order;
         }
     }

@@ -46,5 +46,27 @@ namespace ShoeShop.Data {
             var stock = await GetByProductAndSizeAsync(productId, size);
             return stock?.Quantity ?? 0;
         }
+        
+        public async Task<List<ProductStock>> GetByProductIdsBatchAsync(List<Guid> productIds) {
+            return await _context.ProductStocks
+                .Where(s => productIds.Contains(s.ProductId))
+                .ToListAsync();
+        }
+        
+        public async Task<IEnumerable<ProductStock>> GetSimpleStocksAsync(int skip, int take) {
+            return await _context.ProductStocks
+                .OrderBy(s => s.ProductId)
+                .ThenBy(s => s.Size)
+                .Skip(skip)
+                .Take(take)
+                .AsNoTracking()
+                .ToListAsync();
+        }
+        
+        public async Task<int> GetTotalStocksCountAsync() {
+            return await _context.ProductStocks
+                .AsNoTracking()
+                .CountAsync();
+        }
     }
 }

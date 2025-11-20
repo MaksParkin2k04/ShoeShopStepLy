@@ -152,6 +152,8 @@ namespace ShoeShop.Services {
             return availableQuantity >= requiredQuantity;
         }
 
+
+
         /// <summary>
         /// Проверить, что размер указан в карточке товара
         /// </summary>

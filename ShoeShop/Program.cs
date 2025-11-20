@@ -44,10 +44,11 @@ namespace ShoeShop {
             builder.Services.AddScoped<ReviewService>();
             builder.Services.AddHttpClient<YooKassaService>();
             builder.Services.AddHttpClient<YandexMetrikaService>();
-            builder.Services.AddHttpClient<TelegramBotService>();
-            builder.Services.AddScoped<TelegramBotHandler>();
             builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
-            builder.Services.AddHostedService<TelegramShopService>();
+            // Telegram сервисы отключены
+            // builder.Services.AddHttpClient<TelegramBotService>();
+            // builder.Services.AddScoped<TelegramBotHandler>();
+            // builder.Services.AddHostedService<TelegramShopService>();
 
             builder.Services.Configure<IdentityOptions>(options => {
                 // Параметры для требований к паролю..
@@ -168,6 +169,15 @@ namespace ShoeShop {
                     context.Database.ExecuteSqlRaw(
                         "IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'Orders' AND COLUMN_NAME = 'AdminComments') " +
                         "ALTER TABLE Orders ADD AdminComments nvarchar(max) NULL");
+                } catch {
+                    // Колонка уже существует
+                }
+                
+                // Добавляем колонку DeliveryType в таблицу Orders
+                try {
+                    context.Database.ExecuteSqlRaw(
+                        "IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'Orders' AND COLUMN_NAME = 'DeliveryType') " +
+                        "ALTER TABLE Orders ADD DeliveryType int NOT NULL DEFAULT 0");
                 } catch {
                     // Колонка уже существует
                 }

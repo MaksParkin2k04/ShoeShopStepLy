@@ -23,18 +23,22 @@ namespace ShoeShop.Pages.Admin {
         public OrderSorting Sorting { get; private set; }
         public OrderStatusFilter Filter { get; private set; }
         public IEnumerable<Order>? Orders { get; private set; }
+        public Dictionary<OrderStatus, int> OrderStats { get; private set; } = new();
 
-        public async Task OnGetAsync(OrderSorting sorting, OrderStatusFilter filter, int pageIndex = 1) {
+        public async Task OnGetAsync(OrderSorting sorting, OrderStatusFilter filter = OrderStatusFilter.Active, int pageIndex = 1) {
 
             Sorting = sorting;
             Filter = filter;
             CurrentPage = pageIndex;
-            ElementsPerPage = 20;
-            Orders = await repository.GetOrders(filter, sorting, pageIndex - 1, 20);
-            TotalElementsCount = await repository.OrderCount(filter);
+            ElementsPerPage = 3;
+            
+            // Оптимизированная загрузка с кешированием
+            Orders = await repository.GetOrdersFast(filter, sorting, pageIndex - 1, 3);
+            TotalElementsCount = await repository.OrderCountFast(filter);
+            OrderStats = await repository.GetOrderStatsCache();
         }
 
-        public async Task<IActionResult> OnPostUpdateStatusAsync(Guid orderId, int status) {
+        public async Task<IActionResult> OnPostUpdateStatusAsync(string orderId, int status) {
             Order? order = await repository.GetOrder(orderId);
             if (order != null) {
                 order.SetStatus((OrderStatus)status);
@@ -43,7 +47,7 @@ namespace ShoeShop.Pages.Admin {
             return RedirectToPage();
         }
 
-        public async Task<IActionResult> OnPostDeleteAsync(Guid orderId) {
+        public async Task<IActionResult> OnPostDeleteAsync(string orderId) {
             await repository.DeleteOrder(orderId);
             return RedirectToPage();
         }
