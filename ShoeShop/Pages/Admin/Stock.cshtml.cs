@@ -32,14 +32,19 @@ namespace ShoeShop.Pages.Admin {
             SearchQuery = search;
             StatusFilter = status;
             CurrentPage = pageIndex;
-            ElementsPerPage = 5;
+            ElementsPerPage = 20;
             
-            // Только для выпадающих списков - минимум данных
-            Products = await _productRepository.GetProducts(ProductSorting.Default, 0, 50);
+            // Получаем все товары для выпадающих списков
+            Products = await _productRepository.GetProducts(ProductSorting.Default, 0, 1000);
             
-            // Простой запрос остатков без JOIN
-            ProductStocks = await _stockRepository.GetSimpleStocksAsync((pageIndex - 1) * ElementsPerPage, ElementsPerPage);
-            TotalElementsCount = await _stockRepository.GetTotalStocksCountAsync();
+            // Получаем остатки с поиском и фильтрацией
+            if (!string.IsNullOrEmpty(search) || !string.IsNullOrEmpty(status)) {
+                ProductStocks = await _stockRepository.GetStocksWithSearchAsync(search, status, (pageIndex - 1) * ElementsPerPage, ElementsPerPage);
+                TotalElementsCount = await _stockRepository.GetStocksCountWithSearchAsync(search, status);
+            } else {
+                ProductStocks = await _stockRepository.GetSimpleStocksAsync((pageIndex - 1) * ElementsPerPage, ElementsPerPage);
+                TotalElementsCount = await _stockRepository.GetTotalStocksCountAsync();
+            }
         }
 
         public async Task<IActionResult> OnPostAddStockAsync(Guid productId, int size, int quantity, double purchasePrice = 0) {

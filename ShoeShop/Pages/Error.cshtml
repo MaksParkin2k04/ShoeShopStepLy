@@ -3,113 +3,29 @@
 @{
     ViewData["Title"] = "Ошибка";
 }
-
-<div class="error-page">
-    <div class="error-container">
-        <div class="error-icon">
-            <i class="fas fa-exclamation-triangle"></i>
-        </div>
-        <div class="error-content">
-            <h1 class="error-title">Произошла ошибка</h1>
-            <p class="error-message">При обработке вашего запроса произошла ошибка.</p>
-            
-            <div class="error-actions">
-                <a asp-page="/Index" class="btn btn-primary">
-                    <i class="fas fa-home me-2"></i>На главную
-                </a>
-                <button onclick="history.back()" class="btn btn-outline-secondary">
-                    <i class="fas fa-arrow-left me-2"></i>Назад
-                </button>
-            </div>
-            
-            @if (Model.ShowRequestId) {
-                <div class="error-details">
-                    <small class="text-muted">ID запроса: @Model.RequestId</small>
-                </div>
-            }
-        </div>
-    </div>
+@* Заголовок *@
+<div class="d-flex flex-row-reverse p-1 mt-3">
+    <h1>Ошибка</h1>
 </div>
 
-<style>
-.error-page {
-    min-height: 60vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 40px 20px;
-}
+<div class="row">
+    <h2 class="text-danger">При обработке вашего запроса произошла ошибка.</h2>
 
-.error-container {
-    text-align: center;
-    max-width: 600px;
-    width: 100%;
-}
-
-.error-icon {
-    font-size: 6rem;
-    color: #dc3545;
-    margin-bottom: 30px;
-}
-
-.error-title {
-    font-size: 2.5rem;
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 20px;
-}
-
-.error-message {
-    font-size: 1.2rem;
-    color: #666;
-    margin-bottom: 20px;
-    line-height: 1.6;
-}
-
-.error-code {
-    font-size: 1rem;
-    color: #999;
-    margin-bottom: 30px;
-    font-family: monospace;
-    background: #f8f9fa;
-    padding: 8px 16px;
-    border-radius: 4px;
-    display: inline-block;
-}
-
-.error-actions {
-    display: flex;
-    gap: 15px;
-    justify-content: center;
-    flex-wrap: wrap;
-    margin-bottom: 30px;
-}
-
-.error-details {
-    padding-top: 20px;
-    border-top: 1px solid #eee;
-}
-
-@@media (max-width: 768px) {
-    .error-icon {
-        font-size: 4rem;
+    @if (Model.ShowRequestId) {
+        <p>
+            <strong>Запрос ID:</strong> <code>@Model.RequestId</code>
+        </p>
     }
-    
-    .error-title {
-        font-size: 2rem;
-    }
-    
-    .error-message {
-        font-size: 1rem;
-    }
-    
-    .error-actions {
-        flex-direction: column;
-        align-items: center;
-    }
-    
-    .error-actions .btn {
-        width: 200px;
-    }
-}
-</style>
+
+    <h3>Режим разработки</h3>
+    <p>
+        В режиме <strong>разработки</strong> отображается подробная информация о произошедшей ошибке.
+    </p>
+    <p>
+        <strong>Режим разработки не должен быть включен для развернутых приложений.</strong>
+        Это может привести к отображению конфиденциальной информации из исключений для конечных пользователей.
+        Для локальной отладки включите среду разработки, установив переменную среды <strong>ASPNETCORE_ENVIRONMENT</strong> в значение <strong>Development</strong> и перезапустив приложение.
+    </p>
+</div>
+
+

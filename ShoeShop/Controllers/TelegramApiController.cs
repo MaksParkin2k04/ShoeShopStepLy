@@ -92,7 +92,8 @@ namespace ShoeShop.Controllers {
                 if (request.User?.Id != null) {
                     order.SetTelegramUser(request.User.Id);
                 }
-                order.SetOrderNumber($"TMA{DateTime.Now:yyyyMMdd}{order.Id.ToString().Substring(0, 6).ToUpper()}");
+                var orderIdPart = order.Id.ToString().Length >= 6 ? order.Id.ToString().Substring(0, 6) : order.Id.ToString();
+                order.SetOrderNumber($"TMA{DateTime.Now:yyyyMMdd}{orderIdPart.ToUpper()}");
                 
                 _context.Orders.Add(order);
                 await _context.SaveChangesAsync();

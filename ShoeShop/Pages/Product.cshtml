@@ -150,16 +150,22 @@
                         
                         @if (Model.Product.Sizes != ProductSize.Not) {
                             <div class="product-sizes mb-4">
-                                <h5>Выберите размер:</h5>
-                                <div class="sizes-list">
-                                    @for (int size = 26; size <= 45; size++) {
+                                @{
+                                    var availableSizes = new List<int>();
+                                    for (int size = 26; size <= 45; size++) {
                                         var sizeFlag = (ProductSize)(1UL << (size - 1));
                                         if (Model.Product.Sizes.HasFlag(sizeFlag)) {
-                                            var quantity = Model.SizeQuantities.GetValueOrDefault(size, 0);
-                                            var isAvailable = quantity > 0;
-                                            <input type="radio" name="selectedSize" value="@size" id="size@(size)" class="size-radio" @(!isAvailable ? "disabled" : "") data-quantity="@quantity" onchange="updateSizeInfo(@size, @quantity)" required>
-                                            <label for="size@(size)" class="size-badge @(!isAvailable ? "disabled" : "")">@size</label>
+                                            availableSizes.Add(size);
                                         }
+                                    }
+                                }
+                                <h5>Выберите размер: <small class="text-muted">(@availableSizes.Count размер@(availableSizes.Count == 1 ? "" : availableSizes.Count >= 2 && availableSizes.Count <= 4 ? "а" : "ов") доступно)</small></h5>
+                                <div class="sizes-list">
+                                    @foreach (int size in availableSizes) {
+                                        var quantity = Model.SizeQuantities.GetValueOrDefault(size, 0);
+                                        var isAvailable = quantity > 0;
+                                        <input type="radio" name="selectedSize" value="@size" id="size@(size)" class="size-radio" @(!isAvailable ? "disabled" : "") data-quantity="@quantity" onchange="updateSizeInfo(@size, @quantity)" required>
+                                        <label for="size@(size)" class="size-badge @(!isAvailable ? "disabled" : "")">@size</label>
                                     }
                                 </div>
                                 <div id="size-info" class="size-info mt-3" style="display: none;">
@@ -415,6 +421,109 @@
                     .gallery-thumb.active {
                         border-color: #007bff;
                         transform: scale(1.05);
+                    }
+                    
+                    .sizes-list {
+                        display: flex;
+                        flex-wrap: wrap;
+                        gap: 8px;
+                        margin-top: 10px;
+                    }
+                    
+                    .size-radio {
+                        display: none;
+                    }
+                    
+                    .size-badge {
+                        display: inline-flex;
+                        align-items: center;
+                        justify-content: center;
+                        min-width: 45px;
+                        height: 45px;
+                        padding: 8px 12px;
+                        border: 2px solid #dee2e6;
+                        border-radius: 8px;
+                        background: white;
+                        color: #495057;
+                        font-weight: 600;
+                        font-size: 0.95rem;
+                        cursor: pointer;
+                        transition: all 0.2s ease;
+                        text-decoration: none;
+                        user-select: none;
+                    }
+                    
+                    .size-badge:hover {
+                        border-color: #007bff;
+                        background: #f8f9ff;
+                        color: #007bff;
+                        transform: translateY(-1px);
+                    }
+                    
+                    .size-radio:checked + .size-badge {
+                        border-color: #007bff;
+                        background: #007bff;
+                        color: white;
+                        box-shadow: 0 2px 8px rgba(0,123,255,0.3);
+                    }
+                    
+                    .size-badge.disabled {
+                        border-color: #e9ecef;
+                        background: #f8f9fa;
+                        color: #6c757d;
+                        cursor: not-allowed;
+                        opacity: 0.6;
+                    }
+                    
+                    .size-badge.disabled:hover {
+                        transform: none;
+                        border-color: #e9ecef;
+                        background: #f8f9fa;
+                        color: #6c757d;
+                    }
+                    
+                    @@media (max-width: 576px) {
+                        .sizes-list {
+                            gap: 6px;
+                        }
+                        
+                        .size-badge {
+                            min-width: 40px;
+                            height: 40px;
+                            font-size: 0.9rem;
+                            padding: 6px 10px;
+                        }
+                        
+                        .product-info-detail {
+                            padding: 20px 15px;
+                        }
+                        
+                        .product-title-detail {
+                            font-size: 1.5rem;
+                        }
+                        
+                        .product-price-detail {
+                            font-size: 1.5rem;
+                        }
+                        
+                        .add-to-cart-btn {
+                            width: 100%;
+                            padding: 15px;
+                            font-size: 1.1rem;
+                        }
+                    }
+                    
+                    @@media (max-width: 480px) {
+                        .sizes-list {
+                            gap: 5px;
+                        }
+                        
+                        .size-badge {
+                            min-width: 38px;
+                            height: 38px;
+                            font-size: 0.85rem;
+                            padding: 5px 8px;
+                        }
                     }
                     </style>
 

@@ -110,7 +110,7 @@ else
                             </tr>
                             <tr>
                                 <td><strong>Артикул:</strong></td>
-                                <td>@Model.Product.Id.ToString().Substring(0, 8).ToUpper()</td>
+                                <td>@((Model.Product.Id.ToString().Length >= 8 ? Model.Product.Id.ToString().Substring(0, 8) : Model.Product.Id.ToString()).ToUpper())</td>
                             </tr>
                             <tr>
                                 <td><strong>Дата добавления:</strong></td>

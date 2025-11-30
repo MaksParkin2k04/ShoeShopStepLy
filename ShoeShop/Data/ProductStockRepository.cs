@@ -28,9 +28,11 @@ namespace ShoeShop.Data {
                 .FirstOrDefaultAsync(s => s.ProductId == productStock.ProductId && s.Size == productStock.Size);
             
             if (existing == null) {
+                productStock.Id = Guid.NewGuid();
                 _context.ProductStocks.Add(productStock);
             } else {
-                _context.Entry(existing).CurrentValues.SetValues(productStock);
+                existing.SetQuantity(productStock.Quantity);
+                existing.SetPurchasePrice(productStock.PurchasePrice);
             }
             
             await _context.SaveChangesAsync();
@@ -67,6 +69,64 @@ namespace ShoeShop.Data {
             return await _context.ProductStocks
                 .AsNoTracking()
                 .CountAsync();
+        }
+        
+        public async Task<IEnumerable<ProductStock>> GetStocksWithSearchAsync(string? search, string? status, int skip, int take) {
+            var query = _context.ProductStocks
+                .Include(s => s.Product)
+                .AsQueryable();
+            
+            if (!string.IsNullOrEmpty(search)) {
+                query = query.Where(s => s.Product != null && s.Product.Name.Contains(search));
+            }
+            
+            if (!string.IsNullOrEmpty(status)) {
+                switch (status) {
+                    case "instock":
+                        query = query.Where(s => s.Quantity >= 5);
+                        break;
+                    case "lowstock":
+                        query = query.Where(s => s.Quantity > 0 && s.Quantity < 5);
+                        break;
+                    case "outofstock":
+                        query = query.Where(s => s.Quantity == 0);
+                        break;
+                }
+            }
+            
+            return await query
+                .OrderBy(s => s.ProductId)
+                .ThenBy(s => s.Size)
+                .Skip(skip)
+                .Take(take)
+                .AsNoTracking()
+                .ToListAsync();
+        }
+        
+        public async Task<int> GetStocksCountWithSearchAsync(string? search, string? status) {
+            var query = _context.ProductStocks
+                .Include(s => s.Product)
+                .AsQueryable();
+            
+            if (!string.IsNullOrEmpty(search)) {
+                query = query.Where(s => s.Product != null && s.Product.Name.Contains(search));
+            }
+            
+            if (!string.IsNullOrEmpty(status)) {
+                switch (status) {
+                    case "instock":
+                        query = query.Where(s => s.Quantity >= 5);
+                        break;
+                    case "lowstock":
+                        query = query.Where(s => s.Quantity > 0 && s.Quantity < 5);
+                        break;
+                    case "outofstock":
+                        query = query.Where(s => s.Quantity == 0);
+                        break;
+                }
+            }
+            
+            return await query.AsNoTracking().CountAsync();
         }
     }
 }

@@ -55,7 +55,10 @@ namespace ShoeShop.Pages.Admin {
             var endIndex = comment.IndexOf(" ", startIndex);
             if (endIndex == -1) endIndex = comment.Length;
             
-            return comment.Substring(startIndex, endIndex - startIndex);
+            if (startIndex >= 0 && endIndex > startIndex && endIndex <= comment.Length) {
+                return comment.Substring(startIndex, endIndex - startIndex);
+            }
+            return "";
         }
     }
 }

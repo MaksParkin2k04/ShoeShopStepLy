@@ -72,7 +72,8 @@ namespace ShoeShop.Data {
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<PromoCode>().Property(p => p.Code).IsRequired().HasMaxLength(20);
-            modelBuilder.Entity<PromoCode>().Property(p => p.DiscountPercent).IsRequired();
+            modelBuilder.Entity<PromoCode>().Property(p => p.DiscountPercent).IsRequired().HasPrecision(5, 2);
+            modelBuilder.Entity<PromoCode>().Property(p => p.MaxDiscountAmount).HasPrecision(18, 2);
             modelBuilder.Entity<PromoCode>().HasIndex(p => p.Code).IsUnique();
 
             modelBuilder.Entity<TelegramUser>().HasKey(t => t.TelegramId);

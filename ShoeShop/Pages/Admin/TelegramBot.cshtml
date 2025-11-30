@@ -118,7 +118,7 @@
                                         @foreach (var order in Model.RecentOrders)
                                         {
                                             <tr>
-                                                <td>@order.Id.ToString().Substring(0, 8)...</td>
+                                                <td>@(order.Id.ToString().Length >= 8 ? order.Id.ToString().Substring(0, 8) : order.Id.ToString())...</td>
                                                 <td>@order.CreatedDate.ToString("dd.MM.yyyy HH:mm")</td>
                                                 <td>@order.Recipient?.Name</td>
                                                 <td>@((order.OrderDetails?.Sum(od => od.Price) ?? 0).ToString("N0")) ₽</td>

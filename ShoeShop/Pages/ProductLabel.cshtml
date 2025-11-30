@@ -57,7 +57,7 @@
                 <div class="product-label @(i > 0 ? "page-break" : "")">
                     <div class="header">
                         <div class="company-name">StepLy</div>
-                        <div class="product-id">ID: @Model.Product.Id.ToString().Substring(0, 8)</div>
+                        <div class="product-id">ID: @(Model.Product.Id.ToString().Length >= 8 ? Model.Product.Id.ToString().Substring(0, 8) : Model.Product.Id.ToString())</div>
                     </div>
 
                     <div class="product-info">

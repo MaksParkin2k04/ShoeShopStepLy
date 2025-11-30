@@ -87,7 +87,18 @@ namespace ShoeShop.Pages {
             }
         }
 
-        public async Task<IActionResult> OnPostAsync(string name, string city, string street, string house, string apartment, string phone, string coment, Guid[] products) {
+        public async Task<IActionResult> OnPostAsync(string name, string phone, string coment, int deliveryType, 
+            // Курьерская доставка
+            string city, string street, string house, string apartment,
+            // Самовывоз
+            string pickupPoint,
+            // Почта России
+            string postCity, string postIndex, string postAddress,
+            // СДЭК
+            string cdekCity, string cdekPoint,
+            // Boxberry
+            string boxberryCity, string boxberryPoint,
+            Guid[] products) {
 
             BasketShopping bs = basketShopping.GetBasketShopping();
             if (bs.Products == null || bs.Products.Count == 0) {
@@ -130,11 +141,48 @@ namespace ShoeShop.Pages {
                 // Промокод был применен
             }
 
-            OrderRecipient recipient = OrderRecipient.Create(name ?? "", city ?? "", street ?? "", house ?? "", apartment ?? "", phone ?? "");
+            // Формируем адрес в зависимости от способа доставки
+            string finalCity = "", finalStreet = "", finalHouse = "", finalApartment = "";
+            
+            switch ((DeliveryType)deliveryType) {
+                case DeliveryType.Courier:
+                    finalCity = city ?? "";
+                    finalStreet = street ?? "";
+                    finalHouse = house ?? "";
+                    finalApartment = apartment ?? "";
+                    break;
+                case DeliveryType.Pickup:
+                    finalCity = "Пункт выдачи";
+                    finalStreet = pickupPoint ?? "";
+                    finalHouse = "";
+                    finalApartment = "";
+                    break;
+                case DeliveryType.RussianPost:
+                    finalCity = postCity ?? "";
+                    finalStreet = postAddress ?? "";
+                    finalHouse = postIndex ?? "";
+                    finalApartment = "";
+                    break;
+                case DeliveryType.CDEK:
+                    finalCity = cdekCity ?? "";
+                    finalStreet = cdekPoint ?? "";
+                    finalHouse = "";
+                    finalApartment = "";
+                    break;
+                case DeliveryType.Boxberry:
+                    finalCity = boxberryCity ?? "";
+                    finalStreet = boxberryPoint ?? "";
+                    finalHouse = "";
+                    finalApartment = "";
+                    break;
+            }
+            
+            OrderRecipient recipient = OrderRecipient.Create(name ?? "", finalCity, finalStreet, finalHouse, finalApartment, phone ?? "");
             Order order = Order.Create(user!.Id, DateTime.Now, coment ?? "", recipient, orderDetails, PaymentType.Cash);
             order.SetSource("Сайт");
             order.SetWebUser(user.Id);
             order.GenerateOrderNumber();
+            order.SetDeliveryType((DeliveryType)deliveryType);
 
             await repository.CreateOrder(order);
             

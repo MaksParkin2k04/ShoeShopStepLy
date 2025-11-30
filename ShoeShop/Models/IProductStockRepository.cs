@@ -48,5 +48,15 @@ namespace ShoeShop.Models {
         /// Получить общее количество остатков
         /// </summary>
         Task<int> GetTotalStocksCountAsync();
+        
+        /// <summary>
+        /// Получить остатки с поиском и фильтрацией
+        /// </summary>
+        Task<IEnumerable<ProductStock>> GetStocksWithSearchAsync(string? search, string? status, int skip, int take);
+        
+        /// <summary>
+        /// Получить количество остатков с поиском и фильтрацией
+        /// </summary>
+        Task<int> GetStocksCountWithSearchAsync(string? search, string? status);
     }
 }

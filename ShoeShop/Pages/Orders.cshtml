@@ -97,7 +97,7 @@
                             <div class="order-info">
                                 <h4 class="order-number">
                                     <a asp-page="Order" asp-route-orderId="@order.Id" class="order-link">
-                                        Заказ #@order.Id.ToString().Substring(0, 8)
+                                        Заказ #@(order.Id.ToString().Length >= 8 ? order.Id.ToString().Substring(0, 8) : order.Id.ToString())
                                     </a>
                                 </h4>
                                 <div class="order-date">

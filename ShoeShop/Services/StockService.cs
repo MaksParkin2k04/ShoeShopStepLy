@@ -41,6 +41,9 @@ namespace ShoeShop.Services {
                 await _stockRepository.SaveAsync(newStock);
             } else {
                 existing.AddQuantity(quantity);
+                if (purchasePrice > 0) {
+                    existing.SetPurchasePrice(purchasePrice);
+                }
                 await _stockRepository.SaveAsync(existing);
             }
         }

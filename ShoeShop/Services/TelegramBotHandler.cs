@@ -246,7 +246,7 @@ namespace ShoeShop.Services {
             
             // Отправляем уведомление
             await _botService.SendMessageAsync(chatId, 
-                $"✅ Заказ #{orderId.ToString().Substring(0, 8)} успешно оформлен!\n\n" +
+                $"✅ Заказ #{(orderId.ToString().Length >= 8 ? orderId.ToString().Substring(0, 8) : orderId.ToString())} успешно оформлен!\n\n" +
                 "📞 Мы свяжемся с вами в ближайшее время для подтверждения.");
             
             // Очищаем сессию

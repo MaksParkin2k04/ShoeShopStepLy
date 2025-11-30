@@ -314,7 +314,7 @@
                                 {
                                     <tr>
                                         <td>
-                                            <strong>#@(!string.IsNullOrEmpty(order.OrderNumber) ? order.OrderNumber : order.Id.ToString().Substring(0, 8))</strong>
+                                            <strong>#@(!string.IsNullOrEmpty(order.OrderNumber) ? order.OrderNumber : (order.Id.ToString().Length >= 8 ? order.Id.ToString().Substring(0, 8) : order.Id.ToString()))</strong>
                                         </td>
                                         <td>
                                             @order.CreatedDate.ToString("dd.MM.yyyy HH:mm")
@@ -434,7 +434,7 @@
                                     <div class="row">
                                         <div class="col-md-6">
                                             <h6>Информация о заказе</h6>
-                                            <p><strong>Номер:</strong> #@(!string.IsNullOrEmpty(Model.FoundOrder.OrderNumber) ? Model.FoundOrder.OrderNumber : Model.FoundOrder.Id.ToString().Substring(0, 8))</p>
+                                            <p><strong>Номер:</strong> #@(!string.IsNullOrEmpty(Model.FoundOrder.OrderNumber) ? Model.FoundOrder.OrderNumber : (Model.FoundOrder.Id.ToString().Length >= 8 ? Model.FoundOrder.Id.ToString().Substring(0, 8) : Model.FoundOrder.Id.ToString()))</p>
                                             <p><strong>Дата:</strong> @Model.FoundOrder.CreatedDate.ToString("dd.MM.yyyy HH:mm")</p>
                                             <p><strong>Статус:</strong> 
                                                 <span class="badge bg-@(Model.FoundOrder.Status == OrderStatus.Completed ? "success" : Model.FoundOrder.Status == OrderStatus.Canceled ? "danger" : Model.FoundOrder.Status == OrderStatus.Paid ? "info" : "warning")">

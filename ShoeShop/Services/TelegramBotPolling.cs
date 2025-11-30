@@ -290,7 +290,7 @@ namespace ShoeShop.Services {
                 
                 await context.Database.ExecuteSqlRawAsync(orderSql);
                 
-                var text = $"✅ Заказ #{orderId.ToString().Substring(0, 8)} оформлен!\n\n" +
+                var text = $"✅ Заказ #{(orderId.ToString().Length >= 8 ? orderId.ToString().Substring(0, 8) : orderId.ToString())} оформлен!\n\n" +
                           $"📦 Товаров: {cart.Sum(i => i.Quantity)}\n" +
                           $"💰 Сумма: {total:N0} ₽\n\n" +
                           $"📞 Мы свяжемся с вами в ближайшее время.";

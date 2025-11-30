@@ -459,7 +459,8 @@ namespace ShoeShop.Services {
                 
                 order.SetSource("Telegram");
                 order.SetTelegramUser(chatId);
-                order.SetOrderNumber($"TG{DateTime.Now:yyyyMMdd}{order.Id.ToString().Substring(0, 6).ToUpper()}");
+                var orderIdPart = order.Id.ToString().Length >= 6 ? order.Id.ToString().Substring(0, 6) : order.Id.ToString();
+                order.SetOrderNumber($"TG{DateTime.Now:yyyyMMdd}{orderIdPart.ToUpper()}");
                 
                 context.Orders.Add(order);
                 await context.SaveChangesAsync();

@@ -4,6 +4,11 @@ namespace ShoeShop.Models {
     /// </summary>
     public class ProductStock {
         /// <summary>
+        /// Конструктор для Entity Framework
+        /// </summary>
+        public ProductStock() { }
+        
+        /// <summary>
         /// Конструктор
         /// </summary>
         /// <param name="id">Идентификатор</param>
@@ -22,17 +27,17 @@ namespace ShoeShop.Models {
         /// <summary>
         /// Идентификатор
         /// </summary>
-        public Guid Id { get; private set; }
+        public Guid Id { get; set; }
 
         /// <summary>
         /// Идентификатор товара
         /// </summary>
-        public Guid ProductId { get; private set; }
+        public Guid ProductId { get; set; }
 
         /// <summary>
         /// Размер
         /// </summary>
-        public int Size { get; private set; }
+        public int Size { get; set; }
 
         /// <summary>
         /// Количество
@@ -47,7 +52,7 @@ namespace ShoeShop.Models {
         /// <summary>
         /// Товар
         /// </summary>
-        public Product? Product { get; private set; }
+        public Product? Product { get; set; }
 
         /// <summary>
         /// Добавить количество

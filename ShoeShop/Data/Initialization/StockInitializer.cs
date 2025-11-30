@@ -2,15 +2,7 @@ using ShoeShop.Models;
 using ShoeShop.Services;
 
 namespace ShoeShop.Data.Initialization {
-    /// <summary>
-    /// Инициализатор тестовых данных для остатков
-    /// </summary>
     public static class StockInitializer {
-        /// <summary>
-        /// Инициализировать тестовые остатки
-        /// </summary>
-        /// <param name="context">Контекст базы данных</param>
-        /// <param name="stockService">Сервис остатков</param>
         public static async Task InitializeAsync(ApplicationContext context, StockService stockService) {
             // Проверяем, есть ли уже остатки
             if (context.ProductStocks.Any()) {
@@ -19,27 +11,33 @@ namespace ShoeShop.Data.Initialization {
 
             // Получаем все товары
             var products = context.Products.ToList();
-
-            var random = new Random();
-
+            
             foreach (var product in products) {
-                // Для каждого товара создаем остатки по размерам
-                for (int size = 36; size <= 45; size++) {
-                    if (size < 1 || size > 64) continue;
+                // Получаем доступные размеры для товара
+                var availableSizes = GetAvailableSizes(product.Sizes);
+                
+                foreach (var size in availableSizes) {
+                    // Создаем случайные остатки от 0 до 20
+                    var random = new Random();
+                    var quantity = random.Next(0, 21);
+                    var purchasePrice = product.Price * 0.6; // 60% от розничной цены
                     
-                    var sizeFlag = (ProductSize)(1UL << (size - 1));
-                    
-                    // Проверяем, есть ли этот размер у товара
-                    if (product.Sizes.HasFlag(sizeFlag)) {
-                        // Генерируем случайное количество от 0 до 15
-                        int quantity = random.Next(0, 16);
-                        
-                        if (quantity > 0) {
-                            await stockService.AddStockAsync(product.Id, size, quantity);
-                        }
-                    }
+                    await stockService.SetStockAsync(product.Id, size, quantity, purchasePrice);
                 }
             }
+        }
+        
+        private static List<int> GetAvailableSizes(ProductSize sizes) {
+            var availableSizes = new List<int>();
+            
+            for (int size = 35; size <= 46; size++) {
+                var sizeFlag = (ProductSize)(1UL << (size - 1));
+                if (sizes.HasFlag(sizeFlag)) {
+                    availableSizes.Add(size);
+                }
+            }
+            
+            return availableSizes.Any() ? availableSizes : new List<int> { 40, 41, 42, 43 };
         }
     }
 }

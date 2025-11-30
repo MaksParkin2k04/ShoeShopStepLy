@@ -377,7 +377,7 @@ namespace ShoeShop.Services {
             var total = cart.Sum(i => i.Quantity * i.Price);
             var orderId = Guid.NewGuid();
             
-            var message = $"✅ Ваш заказ #{orderId.ToString().Substring(0, 8)} успешно оформлен!\n\n" +
+            var message = $"✅ Ваш заказ #{(orderId.ToString().Length >= 8 ? orderId.ToString().Substring(0, 8) : orderId.ToString())} успешно оформлен!\n\n" +
                          $"📦 Товаров: {cart.Sum(i => i.Quantity)}\n" +
                          $"💰 Сумма: {total:N0} ₽\n\n" +
                          $"📞 Мы свяжемся с вами в ближайшее время.";
