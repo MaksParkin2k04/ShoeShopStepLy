@@ -145,7 +145,7 @@
                         <div class="content-text">@Model.Product.Content</div>
                     </div>
 
-                    <form asp-page="/Product" method="post" class="add-to-cart-form" onsubmit="return validateSize()">
+                    <form asp-page="/Product" method="post" class="add-to-cart-form">
                         <input type="hidden" name="productId" value="@Model.Product.Id" />
                         
                         @if (Model.Product.Sizes != ProductSize.Not) {
@@ -175,7 +175,7 @@
                         }
                         
                         @if (Model.AvailabilityStatus != ProductAvailabilityStatus.OutOfStock) {
-                            <button type="submit" class="btn btn-primary btn-lg add-to-cart-btn">
+                            <button type="submit" class="btn btn-primary btn-lg add-to-cart-btn" id="addToCartBtn">
                                 <i class="fas fa-shopping-cart me-2"></i>
                                 Добавить в корзину
                             </button>
@@ -231,6 +231,64 @@
                             if (carousel) {
                                 carousel.addEventListener('slide.bs.carousel', function(event) {
                                     setActiveThumb(event.to);
+                                });
+                            }
+                            
+                            // Обработчик кнопки добавления в корзину
+                            const form = document.querySelector('.add-to-cart-form');
+                            const btn = document.getElementById('addToCartBtn');
+                            if (form && btn) {
+                                // Получаем размеры из корзины с сервера
+                                const cartSizes = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.CartSizes));
+                                
+                                // Подсвечиваем размеры в корзине
+                                cartSizes.forEach(size => {
+                                    const sizeLabel = document.querySelector('label[for="size' + size + '"]');
+                                    if (sizeLabel) {
+                                        sizeLabel.style.backgroundColor = '#d4edda';
+                                        sizeLabel.style.borderColor = '#28a745';
+                                    }
+                                });
+                                
+                                // Если есть размеры в корзине - меняем кнопку
+                                if (cartSizes.length > 0) {
+                                    btn.innerHTML = '<i class="fas fa-check me-2"></i>В корзине';
+                                    btn.classList.remove('btn-primary');
+                                    btn.classList.add('btn-success');
+                                }
+                                
+                                // Обработчик выбора размера
+                                document.querySelectorAll('input[name="selectedSize"]').forEach(radio => {
+                                    radio.addEventListener('change', function() {
+                                        const selectedSize = parseInt(this.value);
+                                        if (cartSizes.includes(selectedSize)) {
+                                            btn.innerHTML = '<i class="fas fa-check me-2"></i>В корзине';
+                                            btn.classList.remove('btn-primary');
+                                            btn.classList.add('btn-success');
+                                        } else {
+                                            btn.innerHTML = '<i class="fas fa-shopping-cart me-2"></i>Добавить в корзину';
+                                            btn.classList.remove('btn-success');
+                                            btn.classList.add('btn-primary');
+                                        }
+                                    });
+                                });
+                                
+                                form.addEventListener('submit', function(e) {
+                                    if (!validateSize()) {
+                                        return false;
+                                    }
+                                    
+                                    // Анимация
+                                    btn.style.transform = 'scale(0.95)';
+                                    setTimeout(() => {
+                                        btn.style.transform = 'scale(1)';
+                                        btn.innerHTML = '<i class="fas fa-check me-2"></i>В корзине';
+                                        btn.classList.remove('btn-primary');
+                                        btn.classList.add('btn-success');
+                                        
+                                        // Отправляем форму
+                                        form.submit();
+                                    }, 150);
                                 });
                             }
                         });
@@ -482,6 +540,15 @@
                         color: #6c757d;
                     }
                     
+                    .add-to-cart-btn {
+                        transition: all 0.3s ease;
+                    }
+                    
+                    .btn-success {
+                        background-color: #28a745 !important;
+                        border-color: #28a745 !important;
+                    }
+                    
                     @@media (max-width: 576px) {
                         .sizes-list {
                             gap: 6px;
@@ -510,6 +577,12 @@
                             width: 100%;
                             padding: 15px;
                             font-size: 1.1rem;
+                            transition: all 0.3s ease;
+                        }
+                        
+                        .btn-success {
+                            background-color: #28a745 !important;
+                            border-color: #28a745 !important;
                         }
                     }
                     

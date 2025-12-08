@@ -29,6 +29,7 @@ namespace ShoeShop.Pages {
         public double AverageRating { get; private set; }
         public int ReviewCount { get; private set; }
         public bool CanReview { get; private set; }
+        public List<int> CartSizes { get; private set; } = new();
 
         public async Task OnGetAsync(string id) {
             if (!Guid.TryParse(id, out Guid productId)) {
@@ -65,6 +66,14 @@ namespace ShoeShop.Pages {
                         CanReview = await reviewService.CanUserReviewProductAsync(userId, productId);
                     }
                 }
+                
+                // Проверяем какие размеры в корзине
+                var basket = basketShopping.GetBasketShopping();
+                CartSizes = basket.Products
+                    .Where(p => p.ProductId == productId)
+                    .Select(p => p.Size)
+                    .Distinct()
+                    .ToList();
             }
         }
 
