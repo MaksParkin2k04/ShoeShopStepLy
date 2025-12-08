@@ -250,7 +250,7 @@
                                     }
                                 });
                                 
-                                // Если есть размеры в корзине - меняем кнопку
+                                // Проверяем есть ли хотя бы один размер в корзине
                                 if (cartSizes.length > 0) {
                                     btn.innerHTML = '<i class="fas fa-check me-2"></i>В корзине';
                                     btn.classList.remove('btn-primary');
@@ -275,8 +275,11 @@
                                 
                                 form.addEventListener('submit', function(e) {
                                     if (!validateSize()) {
+                                        e.preventDefault();
                                         return false;
                                     }
+                                    
+                                    e.preventDefault();
                                     
                                     // Анимация
                                     btn.style.transform = 'scale(0.95)';
@@ -287,7 +290,7 @@
                                         btn.classList.add('btn-success');
                                         
                                         // Отправляем форму
-                                        form.submit();
+                                        e.target.submit();
                                     }, 150);
                                 });
                             }
