@@ -29,7 +29,7 @@ namespace ShoeShop {
                 .EnableServiceProviderCaching());
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-            builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = false).AddRoles<ApplicationRole>().AddEntityFrameworkStores<ApplicationContext>();
+            builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true).AddRoles<ApplicationRole>().AddEntityFrameworkStores<ApplicationContext>();
             builder.Services.AddTransient<IEmailSender, EmailSender>();
 
 
