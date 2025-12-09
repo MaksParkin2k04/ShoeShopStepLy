@@ -16,6 +16,15 @@
             <a asp-page="/Admin/Orders" class="btn btn-primary mt-3">Вернуться к заказам</a>
         </div>
     } else {
+        @* Success Message *@
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show">
+                @TempData["Success"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+
         @* Header *@
         <div class="order-detail-header">
             <div>
