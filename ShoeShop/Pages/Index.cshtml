@@ -29,47 +29,38 @@
     <div class="hero-decoration"></div>
 </div>
 
-@* Search Bar *@
-<div class="search-section mb-4">
-    <form asp-page="/Index" method="get" class="search-form">
-        @if (Model.CategoryId.HasValue) {
-            <input type="hidden" name="categoryId" value="@Model.CategoryId" />
-        }
-        @if (Model.MinPrice.HasValue) {
-            <input type="hidden" name="minPrice" value="@Model.MinPrice" />
-        }
-        @if (Model.MaxPrice.HasValue) {
-            <input type="hidden" name="maxPrice" value="@Model.MaxPrice" />
-        }
-        @if (Model.Sizes != null) {
-            @for (int i = 0; i < Model.Sizes.Length; i++) {
-                <input type="hidden" name="sizes[@i]" value="@Model.Sizes[i]" />
-            }
-        }
-        <input type="hidden" name="sort" value="@Model.Sorting" />
-        <div class="search-input-group">
-            <input type="text" name="search" class="search-input" placeholder="Поиск товаров по названию..." value="@Model.SearchQuery">
-            <button type="submit" class="search-btn">
-                <i class="fas fa-search"></i>
+@* Catalog Header with Search *@
+<div class="catalog-header-new">
+    <div class="catalog-top-row">
+        <h2 class="catalog-title">Коллекция</h2>
+        <div class="catalog-actions">
+            <form asp-page="/Index" method="get" class="search-form-inline">
+                @if (Model.CategoryId.HasValue) {
+                    <input type="hidden" name="categoryId" value="@Model.CategoryId" />
+                }
+                @if (Model.MinPrice.HasValue) {
+                    <input type="hidden" name="minPrice" value="@Model.MinPrice" />
+                }
+                @if (Model.MaxPrice.HasValue) {
+                    <input type="hidden" name="maxPrice" value="@Model.MaxPrice" />
+                }
+                @if (Model.Sizes != null) {
+                    @for (int i = 0; i < Model.Sizes.Length; i++) {
+                        <input type="hidden" name="sizes[@i]" value="@Model.Sizes[i]" />
+                    }
+                }
+                <input type="hidden" name="sort" value="@Model.Sorting" />
+                <div class="search-compact">
+                    <input type="text" name="search" class="search-input-compact" placeholder="Поиск..." value="@Model.SearchQuery">
+                    <button type="submit" class="search-btn-compact">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </form>
+            <button class="btn btn-outline-dark btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#filtersCollapse">
+                <i class="fas fa-sliders-h me-1"></i>Фильтры
             </button>
         </div>
-    </form>
-</div>
-
-@* Catalog Header *@
-<div class="catalog-header">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 class="catalog-title mb-0">Коллекция</h2>
-        <button class="btn btn-outline-secondary d-md-none" type="button" data-bs-toggle="collapse" data-bs-target="#filtersCollapse">
-            <i class="fas fa-filter"></i>
-        </button>
-    </div>
-    
-    <!-- Десктоп контролы -->
-    <div class="catalog-controls d-none d-md-flex gap-2 justify-content-end">
-        <button class="btn btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#filtersCollapse">
-            <i class="fas fa-filter me-2"></i>Фильтры
-        </button>
     </div>
 </div>
 
@@ -664,45 +655,91 @@
     margin-top: 0.5rem;
 }
 
-/* Строка поиска */
-.search-section {
-    max-width: 500px;
-    margin: 0 auto;
+/* Новый заголовок каталога */
+.catalog-header-new {
+    margin-bottom: 2rem;
 }
 
-.search-input-group {
+.catalog-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.catalog-title {
+    font-size: 2rem;
+    font-weight: 600;
+    color: #212529;
+    margin: 0;
+}
+
+.catalog-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.search-form-inline {
+    margin: 0;
+}
+
+.search-compact {
     display: flex;
     border: 1px solid #dee2e6;
-    border-radius: 8px;
+    border-radius: 6px;
     overflow: hidden;
     background: white;
+    min-width: 250px;
 }
 
-.search-input {
+.search-input-compact {
     border: none;
-    padding: 10px 16px;
+    padding: 8px 12px;
     font-size: 14px;
     flex: 1;
     outline: none;
     background: transparent;
 }
 
-.search-input:focus {
+.search-input-compact:focus {
     box-shadow: none;
-    border: none;
 }
 
-.search-btn {
+.search-btn-compact {
     border: none;
-    padding: 10px 16px;
-    background: #212529;
-    color: white;
+    padding: 8px 12px;
+    background: #f8f9fa;
+    color: #495057;
     border-radius: 0;
-    transition: background-color 0.2s;
+    transition: all 0.2s;
 }
 
-.search-btn:hover {
-    background: #000;
+.search-btn-compact:hover {
+    background: #e9ecef;
+    color: #212529;
+}
+
+@@media (max-width: 768px) {
+    .catalog-top-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .catalog-actions {
+        justify-content: space-between;
+    }
+    
+    .search-compact {
+        min-width: auto;
+        flex: 1;
+    }
+    
+    .catalog-title {
+        font-size: 1.5rem;
+        text-align: center;
+    }
 }
 </style>
 
