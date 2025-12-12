@@ -42,7 +42,7 @@ namespace ShoeShop.Services {
             
             // Ключевые метрики
             var totalOrders = await _context.Orders.CountAsync();
-            var totalRevenue = await _context.Orders.SumAsync(o => o.TotalAmount);
+            var totalRevenue = await _context.OrderDetails.SumAsync(od => od.Price);
             var totalProducts = await _context.Products.CountAsync();
             var avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
             
@@ -89,12 +89,12 @@ namespace ShoeShop.Services {
             
             // Данные за последние 30 дней
             var salesData = await _context.Orders
-                .Where(o => o.OrderDate >= DateTime.Now.AddDays(-30))
-                .GroupBy(o => o.OrderDate.Date)
+                .Where(o => o.CreatedDate >= DateTime.Now.AddDays(-30))
+                .GroupBy(o => o.CreatedDate.Date)
                 .Select(g => new {
                     Date = g.Key,
                     OrderCount = g.Count(),
-                    Revenue = g.Sum(o => o.TotalAmount)
+                    Revenue = g.SelectMany(o => o.OrderDetails).Sum(od => od.Price)
                 })
                 .OrderBy(x => x.Date)
                 .ToListAsync();
@@ -113,13 +113,7 @@ namespace ShoeShop.Services {
                 sheet.Cell(row, 4).Style.NumberFormat.Format = "#,##0.00₽";
             }
             
-            // Создание диаграммы
-            if (salesData.Any()) {
-                var dataRange = sheet.Range($"A3:C{3 + salesData.Count}");
-                var chart = sheet.Charts.Add(XLChartType.Line, 6, 6, 20, 15);
-                chart.SetChartData(dataRange);
-                chart.Title = "Динамика продаж за 30 дней";
-            }
+            // Диаграммы не поддерживаются в данной версии ClosedXML
             
             sheet.Columns().AdjustToContents();
         }
@@ -142,13 +136,12 @@ namespace ShoeShop.Services {
             sheet.Range("A3:E3").Style.Fill.BackgroundColor = XLColor.LightGray;
             
             // Данные
-            var topProducts = await _context.OrderItems
-                .Include(oi => oi.Product)
-                .GroupBy(oi => new { oi.Product.Id, oi.Product.Name, oi.Product.Price })
+            var topProducts = await _context.OrderDetails
+                .GroupBy(od => new { od.ProductId, od.Name, od.Price })
                 .Select(g => new {
                     ProductName = g.Key.Name,
-                    Quantity = g.Sum(oi => oi.Quantity),
-                    Revenue = g.Sum(oi => oi.Quantity * g.Key.Price)
+                    Quantity = g.Count(),
+                    Revenue = g.Sum(od => od.Price)
                 })
                 .OrderByDescending(x => x.Quantity)
                 .Take(20)
@@ -213,7 +206,7 @@ namespace ShoeShop.Services {
                 var status = statusData[i];
                 var percentage = totalOrders > 0 ? (double)status.Count / totalOrders * 100 : 0;
                 
-                sheet.Cell(row, 1).Value = status.Status;
+                sheet.Cell(row, 1).Value = status.Status.ToString();
                 sheet.Cell(row, 2).Value = status.Count;
                 sheet.Cell(row, 3).Value = $"{percentage:F1}%";
             }
@@ -240,8 +233,8 @@ namespace ShoeShop.Services {
             
             // Последние 100 заказов
             var orders = await _context.Orders
-                .Include(o => o.OrderItems)
-                .OrderByDescending(o => o.OrderDate)
+                .Include(o => o.OrderDetails)
+                .OrderByDescending(o => o.CreatedDate)
                 .Take(100)
                 .ToListAsync();
             
@@ -250,20 +243,20 @@ namespace ShoeShop.Services {
                 var order = orders[i];
                 
                 sheet.Cell(row, 1).Value = order.Id;
-                sheet.Cell(row, 2).Value = order.OrderDate.ToString("dd.MM.yyyy HH:mm");
-                sheet.Cell(row, 3).Value = order.CustomerName;
-                sheet.Cell(row, 4).Value = order.Status;
-                sheet.Cell(row, 5).Value = order.OrderItems.Sum(oi => oi.Quantity);
-                sheet.Cell(row, 6).Value = order.TotalAmount;
-                sheet.Cell(row, 7).Value = order.CustomerEmail;
+                sheet.Cell(row, 2).Value = order.CreatedDate.ToString("dd.MM.yyyy HH:mm");
+                sheet.Cell(row, 3).Value = order.Recipient?.Name ?? "N/A";
+                sheet.Cell(row, 4).Value = order.Status.ToString();
+                sheet.Cell(row, 5).Value = order.OrderDetails?.Count ?? 0;
+                sheet.Cell(row, 6).Value = order.OrderDetails?.Sum(od => od.Price) ?? 0;
+                sheet.Cell(row, 7).Value = "N/A";
                 
                 sheet.Cell(row, 6).Style.NumberFormat.Format = "#,##0.00₽";
                 
                 // Цветовое кодирование статусов
                 var statusColor = order.Status switch {
-                    "Completed" => XLColor.LightGreen,
-                    "Pending" => XLColor.LightYellow,
-                    "Cancelled" => XLColor.LightPink,
+                    OrderStatus.Completed => XLColor.LightGreen,
+                    OrderStatus.Processing => XLColor.LightYellow,
+                    OrderStatus.Canceled => XLColor.LightPink,
                     _ => XLColor.White
                 };
                 sheet.Range($"A{row}:G{row}").Style.Fill.BackgroundColor = statusColor;

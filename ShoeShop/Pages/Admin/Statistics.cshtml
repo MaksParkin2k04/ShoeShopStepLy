@@ -8,7 +8,7 @@
 <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
     <h2 class="mb-0">Статистика продаж</h2>
     <div class="d-flex gap-2">
-        <a asp-page-handler="Export" asp-route-fromDate="@Model.FromDate?.ToString("yyyy-MM-dd")" asp-route-toDate="@Model.ToDate?.ToString("yyyy-MM-dd")" class="btn btn-success btn-sm">
+        <a asp-page-handler="Export" asp-route-fromDate="@Model.FromDate?.ToString("yyyy-MM-dd")" asp-route-toDate="@Model.ToDate?.ToString("yyyy-MM-dd")" class="btn btn-success btn-sm" style="display: none;">
             <i class="fas fa-file-excel me-1"></i>Экспорт Excel
         </a>
         <a asp-page="/Admin/Index" class="btn btn-outline-secondary btn-sm">

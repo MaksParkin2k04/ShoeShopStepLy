@@ -23,13 +23,14 @@ namespace ShoeShop.Pages {
         public decimal? MinPrice { get; private set; }
         public decimal? MaxPrice { get; private set; }
         public int[]? Sizes { get; private set; }
+        public string? SearchQuery { get; private set; }
         public IEnumerable<Product>? Products { get; private set; }
         public Dictionary<Guid, ProductAvailabilityStatus> ProductAvailability { get; private set; } = new();
         public Dictionary<Guid, Dictionary<int, int>> ProductSizeQuantities { get; private set; } = new();
         public Dictionary<Guid, double> ProductRatings { get; private set; } = new();
         public Dictionary<Guid, int> ProductReviewCounts { get; private set; } = new();
 
-        public async Task OnGetAsync(ProductSorting sort = ProductSorting.Default, int pageIndex = 1, Guid? categoryId = null, decimal? minPrice = null, decimal? maxPrice = null, int[]? sizes = null) {
+        public async Task OnGetAsync(ProductSorting sort = ProductSorting.Default, int pageIndex = 1, Guid? categoryId = null, decimal? minPrice = null, decimal? maxPrice = null, int[]? sizes = null, string? search = null) {
             Sorting = sort;
             CurrentPage = pageIndex;
             ElementsPerPage = 20;
@@ -37,6 +38,7 @@ namespace ShoeShop.Pages {
             MinPrice = minPrice;
             MaxPrice = maxPrice;
             Sizes = sizes;
+            SearchQuery = search;
             
             // Ограничиваем количество загружаемых товаров
             var maxProducts = 200; // Максимум 200 товаров
@@ -64,6 +66,13 @@ namespace ShoeShop.Pages {
                         return p.Sizes.HasFlag(sizeFlag);
                     });
                 });
+            }
+            
+            if (!string.IsNullOrEmpty(search)) {
+                filteredProducts = filteredProducts.Where(p => 
+                    p.Name.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                    p.Description.Contains(search, StringComparison.OrdinalIgnoreCase)
+                );
             }
             
             TotalElementsCount = filteredProducts.Count();

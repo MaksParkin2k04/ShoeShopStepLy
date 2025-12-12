@@ -29,6 +29,33 @@
     <div class="hero-decoration"></div>
 </div>
 
+@* Search Bar *@
+<div class="search-section mb-4">
+    <form asp-page="/Index" method="get" class="search-form">
+        @if (Model.CategoryId.HasValue) {
+            <input type="hidden" name="categoryId" value="@Model.CategoryId" />
+        }
+        @if (Model.MinPrice.HasValue) {
+            <input type="hidden" name="minPrice" value="@Model.MinPrice" />
+        }
+        @if (Model.MaxPrice.HasValue) {
+            <input type="hidden" name="maxPrice" value="@Model.MaxPrice" />
+        }
+        @if (Model.Sizes != null) {
+            @for (int i = 0; i < Model.Sizes.Length; i++) {
+                <input type="hidden" name="sizes[@i]" value="@Model.Sizes[i]" />
+            }
+        }
+        <input type="hidden" name="sort" value="@Model.Sorting" />
+        <div class="search-input-group">
+            <input type="text" name="search" class="search-input" placeholder="Поиск товаров по названию..." value="@Model.SearchQuery">
+            <button type="submit" class="search-btn">
+                <i class="fas fa-search"></i>
+            </button>
+        </div>
+    </form>
+</div>
+
 @* Catalog Header *@
 <div class="catalog-header">
     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -43,31 +70,6 @@
         <button class="btn btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#filtersCollapse">
             <i class="fas fa-filter me-2"></i>Фильтры
         </button>
-        <form id="sortingForm" asp-page="/Index" method="get">
-            @if (Model.CategoryId.HasValue) {
-                <input type="hidden" name="categoryId" value="@Model.CategoryId" />
-            }
-            @if (Model.MinPrice.HasValue) {
-                <input type="hidden" name="minPrice" value="@Model.MinPrice" />
-            }
-            @if (Model.MaxPrice.HasValue) {
-                <input type="hidden" name="maxPrice" value="@Model.MaxPrice" />
-            }
-            @if (Model.Sizes != null) {
-                @for (int i = 0; i < Model.Sizes.Length; i++) {
-                    <input type="hidden" name="sizes[@i]" value="@Model.Sizes[i]" />
-                }
-            }
-            <select name="sort" class="sort-select" onchange="document.getElementById('sortingForm').submit()">
-                @foreach (string item in Enum.GetNames(typeof(ProductSorting))) {
-                    if (Model.Sorting.ToString() == item) {
-                        <option value="@item" selected>@sortDictionary[item]</option>
-                    } else {
-                        <option value="@item">@sortDictionary[item]</option>
-                    }
-                }
-            </select>
-        </form>
     </div>
 </div>
 
@@ -83,11 +85,23 @@
                         <input type="number" name="maxPrice" class="form-control" placeholder="До" min="0" value="@Model.MaxPrice">
                     </div>
                 </div>
-                <div class="col-12 col-md-3">
+                <div class="col-12 col-md-2">
                     <label class="form-label">Категория</label>
                     <select name="categoryId" class="form-select">
                         <option value="">Все категории</option>
                         @await Component.InvokeAsync("CategoriesOptions", new { selectedCategoryId = Model.CategoryId })
+                    </select>
+                </div>
+                <div class="col-12 col-md-2">
+                    <label class="form-label">Сортировка</label>
+                    <select name="sort" class="form-select">
+                        @foreach (string item in Enum.GetNames(typeof(ProductSorting))) {
+                            if (Model.Sorting.ToString() == item) {
+                                <option value="@item" selected>@sortDictionary[item]</option>
+                            } else {
+                                <option value="@item">@sortDictionary[item]</option>
+                            }
+                        }
                     </select>
                 </div>
                 <div class="col-12 col-md-4">
@@ -101,31 +115,7 @@
                         }
                     </div>
                 </div>
-                <div class="col-12 col-md-2 d-md-none">
-                    <label class="form-label">Сортировка</label>
-                    <select name="sort" class="form-select">
-                        @if (Model.Sorting == ProductSorting.Default) {
-                            <option value="Default" selected>По умолчанию</option>
-                        } else {
-                            <option value="Default">По умолчанию</option>
-                        }
-                        @if (Model.Sorting == ProductSorting.Cheaper) {
-                            <option value="Cheaper" selected>Сначала дешевле</option>
-                        } else {
-                            <option value="Cheaper">Сначала дешевле</option>
-                        }
-                        @if (Model.Sorting == ProductSorting.Expensive) {
-                            <option value="Expensive" selected>Сначала дороже</option>
-                        } else {
-                            <option value="Expensive">Сначала дороже</option>
-                        }
-                        @if (Model.Sorting == ProductSorting.ByDate) {
-                            <option value="ByDate" selected>По дате</option>
-                        } else {
-                            <option value="ByDate">По дате</option>
-                        }
-                    </select>
-                </div>
+
                 <div class="col-12">
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-primary flex-fill">Применить</button>
@@ -273,6 +263,7 @@
                 routeData[$"sizes[{i}]"] = Model.Sizes[i].ToString();
             }
         }
+        if (!string.IsNullOrEmpty(Model.SearchQuery)) routeData["search"] = Model.SearchQuery;
     }
     @await Component.InvokeAsync(typeof(ShoeShop.Paginations.Components.PaginationViewComponent), new {
             currentPage = Model.CurrentPage,
@@ -298,7 +289,8 @@
                         categoryId = Model.CategoryId,
                         minPrice = Model.MinPrice,
                         maxPrice = Model.MaxPrice,
-                        sizes = Model.Sizes
+                        sizes = Model.Sizes,
+                        search = Model.SearchQuery
                     })">
                         <i class="fas fa-chevron-left"></i>
                     </a>
@@ -321,7 +313,8 @@
                         categoryId = Model.CategoryId,
                         minPrice = Model.MinPrice,
                         maxPrice = Model.MaxPrice,
-                        sizes = Model.Sizes
+                        sizes = Model.Sizes,
+                        search = Model.SearchQuery
                     })">
                         <i class="fas fa-chevron-right"></i>
                     </a>
@@ -669,6 +662,47 @@
     font-size: 0.875rem;
     color: #6c757d;
     margin-top: 0.5rem;
+}
+
+/* Строка поиска */
+.search-section {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.search-input-group {
+    display: flex;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+    background: white;
+}
+
+.search-input {
+    border: none;
+    padding: 10px 16px;
+    font-size: 14px;
+    flex: 1;
+    outline: none;
+    background: transparent;
+}
+
+.search-input:focus {
+    box-shadow: none;
+    border: none;
+}
+
+.search-btn {
+    border: none;
+    padding: 10px 16px;
+    background: #212529;
+    color: white;
+    border-radius: 0;
+    transition: background-color 0.2s;
+}
+
+.search-btn:hover {
+    background: #000;
 }
 </style>
 
