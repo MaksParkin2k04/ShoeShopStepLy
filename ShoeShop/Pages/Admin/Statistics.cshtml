@@ -5,11 +5,16 @@
     ViewData["Title"] = "Статистика продаж";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Статистика продаж</h2>
-    <a asp-page="/Admin/Index" class="btn btn-outline-secondary">
-        <i class="fas fa-arrow-left me-2"></i>Админ панель
-    </a>
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
+    <h2 class="mb-0">Статистика продаж</h2>
+    <div class="d-flex gap-2">
+        <a asp-page-handler="Export" asp-route-fromDate="@Model.FromDate?.ToString("yyyy-MM-dd")" asp-route-toDate="@Model.ToDate?.ToString("yyyy-MM-dd")" class="btn btn-success btn-sm">
+            <i class="fas fa-file-excel me-1"></i>Экспорт Excel
+        </a>
+        <a asp-page="/Admin/Index" class="btn btn-outline-secondary btn-sm">
+            <i class="fas fa-arrow-left me-1"></i>Назад
+        </a>
+    </div>
 </div>
 
 @* Фильтры по датам *@
@@ -27,9 +32,9 @@
                 <label class="form-label">По дату</label>
                 <input type="date" name="toDate" class="form-control" value="@Model.ToDate?.ToString("yyyy-MM-dd")">
             </div>
-            <div class="col-md-4 d-flex align-items-end">
-                <button type="submit" class="btn btn-primary me-2">Применить</button>
-                <a href="?" class="btn btn-outline-secondary">Сбросить</a>
+            <div class="col-md-4 d-flex align-items-end gap-2">
+                <button type="submit" class="btn btn-primary btn-sm flex-fill">Применить</button>
+                <a href="?" class="btn btn-outline-secondary btn-sm flex-fill">Сбросить</a>
             </div>
         </form>
     </div>
@@ -37,7 +42,7 @@
 
 @* Общая статистика *@
 <div class="row mb-4">
-    <div class="col-md-3">
+    <div class="col-md-2">
         <div class="card text-center">
             <div class="card-body">
                 <h5 class="card-title text-primary">@Model.Statistics.TotalQuantitySold</h5>
@@ -45,7 +50,7 @@
             </div>
         </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-2">
         <div class="card text-center">
             <div class="card-body">
                 <h5 class="card-title text-success">@Model.Statistics.TotalRevenue.ToString("F2") ₽</h5>
@@ -53,7 +58,7 @@
             </div>
         </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-2">
         <div class="card text-center">
             <div class="card-body">
                 <h5 class="card-title text-danger">@Model.Statistics.TotalCosts.ToString("F2") ₽</h5>
@@ -61,7 +66,7 @@
             </div>
         </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-2">
         <div class="card text-center">
             <div class="card-body">
                 <h5 class="card-title text-info">@Model.Statistics.NetProfit.ToString("F2") ₽</h5>
@@ -69,10 +74,56 @@
             </div>
         </div>
     </div>
+    <div class="col-md-2">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title text-warning">@Model.ConversionRate.ToString("F1")%</h5>
+                <p class="card-text">Конверсия</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title text-secondary">@Model.AverageOrderValue.ToString("F0") ₽</h5>
+                <p class="card-text">Средний чек</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* Топ товары *@
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h6>🏆 Топ-5 товаров по продажам</h6>
+            </div>
+            <div class="card-body">
+                @if (Model.TopProducts.Any()) {
+                    <div class="row">
+                        @foreach (var product in Model.TopProducts) {
+                            <div class="col-md-2 mb-2">
+                                <div class="card border-0 bg-light">
+                                    <div class="card-body text-center p-2">
+                                        <small class="fw-bold">@product.Name</small><br>
+                                        <span class="badge bg-primary">@product.Quantity шт</span>
+                                        <small class="text-muted d-block">@product.Revenue.ToString("F0") ₽</small>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                } else {
+                    <p class="text-muted mb-0">Нет данных</p>
+                }
+            </div>
+        </div>
+    </div>
 </div>
 
 @* Графики *@
-<div class="row">
+<div class="row mb-4">
     <div class="col-md-6">
         <div class="card">
             <div class="card-header">
@@ -90,6 +141,54 @@
             </div>
             <div class="card-body">
                 <canvas id="productsChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* Новые графики *@
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6>Популярные размеры</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="sizesChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6>Продажи по категориям</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="categoriesChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6>Статусы заказов</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="statusChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* График продаж по дням *@
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h6>Динамика продаж по дням</h6>
+            </div>
+            <div class="card-body">
+                <canvas id="dailySalesChart" width="400" height="100"></canvas>
             </div>
         </div>
     </div>
@@ -180,7 +279,190 @@ new Chart(productsCtx, {
         }
     }
 });
+
+// График по размерам
+const sizesCtx = document.getElementById('sizesChart').getContext('2d');
+const sizeData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.SizeStatistics));
+new Chart(sizesCtx, {
+    type: 'doughnut',
+    data: {
+        labels: Object.keys(sizeData),
+        datasets: [{
+            data: Object.values(sizeData),
+            backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#FF6384', '#C9CBCF']
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: { boxWidth: 12, font: { size: 11 } }
+            }
+        }
+    }
+});
+
+// График по категориям
+const categoriesCtx = document.getElementById('categoriesChart').getContext('2d');
+const categoryData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.CategoryStatistics));
+new Chart(categoriesCtx, {
+    type: 'pie',
+    data: {
+        labels: Object.keys(categoryData),
+        datasets: [{
+            data: Object.values(categoryData),
+            backgroundColor: ['#28a745', '#dc3545', '#ffc107', '#17a2b8', '#6f42c1']
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: { boxWidth: 12, font: { size: 11 } }
+            }
+        }
+    }
+});
+
+// График статусов заказов
+const statusCtx = document.getElementById('statusChart').getContext('2d');
+const statusData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.OrderStatusStats));
+new Chart(statusCtx, {
+    type: 'bar',
+    data: {
+        labels: Object.keys(statusData),
+        datasets: [{
+            label: 'Количество',
+            data: Object.values(statusData),
+            backgroundColor: '#6c757d'
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+
+// График продаж по дням
+const dailySalesCtx = document.getElementById('dailySalesChart').getContext('2d');
+const dailyData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.DailySalesData));
+new Chart(dailySalesCtx, {
+    type: 'line',
+    data: {
+        labels: dailyData.map(d => new Date(d.date).toLocaleDateString('ru-RU')),
+        datasets: [{
+            label: 'Выручка (₽)',
+            data: dailyData.map(d => d.revenue),
+            borderColor: '#007bff',
+            backgroundColor: 'rgba(0, 123, 255, 0.1)',
+            tension: 0.4,
+            fill: true
+        }, {
+            label: 'Количество заказов',
+            data: dailyData.map(d => d.orderCount),
+            borderColor: '#28a745',
+            backgroundColor: 'rgba(40, 167, 69, 0.1)',
+            tension: 0.4,
+            yAxisID: 'y1'
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                type: 'linear',
+                display: true,
+                position: 'left',
+                beginAtZero: true
+            },
+            y1: {
+                type: 'linear',
+                display: true,
+                position: 'right',
+                beginAtZero: true,
+                grid: {
+                    drawOnChartArea: false
+                }
+            }
+        }
+    }
+});
 </script>
+
+@* Уведомления и алерты *@
+@if (Model.Alerts.Any()) {
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <h6 class="mb-0">
+                        <i class="fas fa-bell me-2"></i>Уведомления и алерты
+                    </h6>
+                </div>
+                <div class="card-body">
+                    @foreach (var alert in Model.Alerts) {
+                        <div class="alert alert-@(alert.Type == "warning" ? "warning" : "info") mb-2">
+                            @alert.Message
+                            <small class="text-muted d-block">@alert.Date.ToString("dd.MM.yyyy HH:mm")</small>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@* Прогнозирование *@
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card border-primary">
+            <div class="card-header bg-primary text-white">
+                <h6 class="mb-0">
+                    <i class="fas fa-crystal-ball me-2"></i>Прогноз продаж на основе ИИ
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 text-center">
+                        <h5 class="text-primary">@Model.Forecast.NextWeekRevenue.ToString("F0") ₽</h5>
+                        <small class="text-muted">Прогноз на неделю</small>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <h5 class="text-success">@Model.Forecast.NextMonthRevenue.ToString("F0") ₽</h5>
+                        <small class="text-muted">Прогноз на месяц</small>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <h5 class="text-info">@Model.Forecast.NextWeekOrders</h5>
+                        <small class="text-muted">Заказов в неделю</small>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <h5 class="@(Model.Forecast.TrendPercentage >= 0 ? "text-success" : "text-danger")">
+                            @(Model.Forecast.TrendPercentage >= 0 ? "+" : "")@Model.Forecast.TrendPercentage.ToString("F1")%
+                        </h5>
+                        <small class="text-muted">Тренд</small>
+                    </div>
+                </div>
+                @if (Model.Forecast.Recommendations.Any()) {
+                    <hr>
+                    <h6>🤖 Рекомендации ИИ:</h6>
+                    <ul class="mb-0">
+                        @foreach (var rec in Model.Forecast.Recommendations) {
+                            <li>@rec</li>
+                        }
+                    </ul>
+                }
+            </div>
+        </div>
+    </div>
+</div>
 
 @* AI-ассистент с советами *@
 <div class="card mt-4">

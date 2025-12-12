@@ -60,6 +60,9 @@ namespace ShoeShop {
             builder.Services.AddScoped<IProductStockRepository, ProductStockRepository>();
             builder.Services.AddScoped<StockService>();
             builder.Services.AddScoped<SalesStatisticsService>();
+            builder.Services.AddScoped<ExportService>();
+            builder.Services.AddScoped<ForecastService>();
+            builder.Services.AddHostedService<WeeklyReportService>();
             builder.Services.AddScoped<IBasketShoppingService, BasketShoppingCookies>();
             builder.Services.AddScoped<PromoCodeService>();
             builder.Services.AddScoped<ReviewService>();
