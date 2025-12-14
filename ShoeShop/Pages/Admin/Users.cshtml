@@ -4,112 +4,150 @@
     ViewData["Title"] = "Управление пользователями";
 }
 
-<div class="container-fluid">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="fas fa-users me-2"></i>Управление пользователями</h2>
-        <a asp-page="/Admin/Index" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left me-2"></i>Назад
-        </a>
-    </div>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Управление пользователями</h2>
+    <a asp-page="/Admin/Index" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-1"></i>Назад
+    </a>
+</div>
 
-    @if (TempData["Success"] != null)
-    {
-        <div class="alert alert-success alert-dismissible fade show">
-            @TempData["Success"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    }
-
-    @if (TempData["Error"] != null)
-    {
-        <div class="alert alert-danger alert-dismissible fade show">
-            @TempData["Error"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    }
-
-    <div class="card">
-        <div class="card-header">
-            <h5 class="mb-0">Список пользователей (@Model.Users.Count)</h5>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead>
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Пользователь</th>
+                        <th>Email</th>
+                        <th>Роль</th>
+                        <th>Статус</th>
+                        <th>Дата регистрации</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var user in Model.Users)
+                    {
                         <tr>
-                            <th>Email</th>
-                            <th>Имя</th>
-                            <th>Дата регистрации</th>
-                            <th>Email подтвержден</th>
-                            <th>Статус</th>
-                            <th>Действия</th>
+                            <td>@user.UserName</td>
+                            <td>@user.Email</td>
+                            <td>
+                                <span class="badge bg-@(user.Role == "Admin" ? "danger" : user.Role == "Consultant" ? "warning" : "secondary")">
+                                    @user.Role
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge bg-@(user.EmailConfirmed ? "success" : "danger")">
+                                    @(user.EmailConfirmed ? "Подтверждена" : "Не подтверждена")
+                                </span>
+                            </td>
+                            <td>@user.CreatedAt.ToString("dd.MM.yyyy")</td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary me-1" onclick="changeRole('@user.Id', '@user.Role')">
+                                    <i class="fas fa-user-cog"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger" onclick="deleteUser('@user.Id', '@user.UserName')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var user in Model.Users)
-                        {
-                            <tr>
-                                <td>@user.Email</td>
-                                <td>@(user.FirstName ?? "-") @(user.LastName ?? "")</td>
-                                <td>@user.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
-                                <td>
-                                    @if (user.EmailConfirmed)
-                                    {
-                                        <span class="badge bg-success">Да</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-warning">Нет</span>
-                                    }
-                                </td>
-                                <td>
-                                    @if (user.IsAdmin)
-                                    {
-                                        <span class="badge bg-primary">Администратор</span>
-                                    }
-                                    else if (user.LockoutEnd != null && user.LockoutEnd > DateTimeOffset.Now)
-                                    {
-                                        <span class="badge bg-danger">Заблокирован</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-success">Активен</span>
-                                    }
-                                </td>
-                                <td>
-                                    @if (!user.IsAdmin)
-                                    {
-                                        @if (user.LockoutEnd == null || user.LockoutEnd <= DateTimeOffset.Now)
-                                        {
-                                            <form method="post" asp-page-handler="Block" class="d-inline">
-                                                <input type="hidden" name="userId" value="@user.Id" />
-                                                <button type="submit" class="btn btn-sm btn-warning" onclick="return confirm('Заблокировать пользователя?')">
-                                                    <i class="fas fa-ban"></i> Блокировать
-                                                </button>
-                                            </form>
-                                        }
-                                        else
-                                        {
-                                            <form method="post" asp-page-handler="Unblock" class="d-inline">
-                                                <input type="hidden" name="userId" value="@user.Id" />
-                                                <button type="submit" class="btn btn-sm btn-success">
-                                                    <i class="fas fa-check"></i> Разблокировать
-                                                </button>
-                                            </form>
-                                        }
-                                        <form method="post" asp-page-handler="Delete" class="d-inline">
-                                            <input type="hidden" name="userId" value="@user.Id" />
-                                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Удалить пользователя? Это действие нельзя отменить!')">
-                                                <i class="fas fa-trash"></i> Удалить
-                                            </button>
-                                        </form>
-                                    }
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно изменения роли -->
+<div class="modal fade" id="roleModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Изменить роль пользователя</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="roleForm">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" id="userId" />
+                    <div class="mb-3">
+                        <label class="form-label">Выберите роль:</label>
+                        <select class="form-select" id="newRole" required>
+                            <option value="User">Пользователь</option>
+                            <option value="Consultant">Консультант</option>
+                            <option value="Admin">Администратор</option>
+                        </select>
+                    </div>
+                    <div class="alert alert-info">
+                        <small>
+                            <strong>Пользователь</strong> - может делать заказы<br>
+                            <strong>Консультант</strong> - может отвечать в чате<br>
+                            <strong>Администратор</strong> - полный доступ
+                        </small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <button type="button" class="btn btn-primary" onclick="saveRole()">Сохранить</button>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+function changeRole(userId, currentRole) {
+    document.getElementById('userId').value = userId;
+    document.getElementById('newRole').value = currentRole;
+    new bootstrap.Modal(document.getElementById('roleModal')).show();
+}
+
+function saveRole() {
+    const userId = document.getElementById('userId').value;
+    const newRole = document.getElementById('newRole').value;
+    
+    fetch('/Admin/Users?handler=ChangeRole', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+        },
+        body: JSON.stringify({
+            userId: userId,
+            newRole: newRole
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Роль изменена. Пользователь должен перелогиниться.');
+            location.reload();
+        } else {
+            alert('Ошибка при изменении роли');
+        }
+    });
+}
+
+function deleteUser(userId, userName) {
+    if (confirm(`Удалить пользователя ${userName}?`)) {
+        fetch('/Admin/Users?handler=DeleteUser', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+            },
+            body: JSON.stringify({
+                userId: userId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Ошибка при удалении пользователя');
+            }
+        });
+    }
+}
+</script>

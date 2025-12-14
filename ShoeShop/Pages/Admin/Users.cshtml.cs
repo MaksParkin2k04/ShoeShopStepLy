@@ -1,102 +1,121 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using ShoeShop.Data;
+using ShoeShop.Models;
+using System.Text.Json;
 
-namespace ShoeShop.Pages.Admin;
-
-public class UsersModel : PageModel
+namespace ShoeShop.Pages.Admin
 {
-    private readonly UserManager<ApplicationUser> _userManager;
-
-    public UsersModel(UserManager<ApplicationUser> userManager)
+    [Authorize(Roles = "Admin")]
+    public class UsersModel : PageModel
     {
-        _userManager = userManager;
-    }
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly RoleManager<ApplicationRole> _roleManager;
 
-    public List<UserViewModel> Users { get; set; } = new();
-
-    public async Task OnGetAsync()
-    {
-        var users = await _userManager.Users.ToListAsync();
-        
-        foreach (var user in users)
+        public UsersModel(UserManager<ApplicationUser> userManager, RoleManager<ApplicationRole> roleManager)
         {
-            var isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
-            Users.Add(new UserViewModel
+            _userManager = userManager;
+            _roleManager = roleManager;
+        }
+
+        public List<UserInfo> Users { get; set; } = new();
+
+        public async Task OnGetAsync()
+        {
+            var users = await _userManager.Users.ToListAsync();
+            Users = new List<UserInfo>();
+
+            foreach (var user in users)
             {
-                Id = user.Id,
-                Email = user.Email,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                EmailConfirmed = user.EmailConfirmed,
-                LockoutEnd = user.LockoutEnd,
-                IsAdmin = isAdmin,
-                CreatedAt = DateTime.Now
-            });
-        }
-    }
-
-    public async Task<IActionResult> OnPostBlockAsync(Guid userId)
-    {
-        var user = await _userManager.FindByIdAsync(userId.ToString());
-        if (user == null)
-        {
-            TempData["Error"] = "Пользователь не найден";
-            return RedirectToPage();
+                var roles = await _userManager.GetRolesAsync(user);
+                Users.Add(new UserInfo
+                {
+                    Id = user.Id.ToString(),
+                    UserName = user.UserName ?? "",
+                    Email = user.Email ?? "",
+                    Role = roles.FirstOrDefault() ?? "User",
+                    CreatedAt = DateTime.Now,
+                    EmailConfirmed = user.EmailConfirmed
+                });
+            }
         }
 
-        await _userManager.SetLockoutEndDateAsync(user, DateTimeOffset.Now.AddYears(100));
-        TempData["Success"] = "Пользователь заблокирован";
-        return RedirectToPage();
-    }
-
-    public async Task<IActionResult> OnPostUnblockAsync(Guid userId)
-    {
-        var user = await _userManager.FindByIdAsync(userId.ToString());
-        if (user == null)
+        public async Task<IActionResult> OnPostChangeRoleAsync()
         {
-            TempData["Error"] = "Пользователь не найден";
-            return RedirectToPage();
-        }
-
-        await _userManager.SetLockoutEndDateAsync(user, null);
-        TempData["Success"] = "Пользователь разблокирован";
-        return RedirectToPage();
-    }
-
-    public async Task<IActionResult> OnPostDeleteAsync(Guid userId)
-    {
-        var user = await _userManager.FindByIdAsync(userId.ToString());
-        if (user == null)
-        {
-            TempData["Error"] = "Пользователь не найден";
-            return RedirectToPage();
-        }
-
-        var result = await _userManager.DeleteAsync(user);
-        if (result.Succeeded)
-        {
-            TempData["Success"] = "Пользователь удален";
-        }
-        else
-        {
-            TempData["Error"] = "Ошибка удаления пользователя";
+            var json = await new StreamReader(Request.Body).ReadToEndAsync();
+            var data = JsonSerializer.Deserialize<JsonElement>(json);
+            
+            var userId = data.GetProperty("userId").GetString();
+            var newRole = data.GetProperty("newRole").GetString();
+            
+            // Создаем роли если их нет
+            await EnsureRolesExist();
+            
+            if (Guid.TryParse(userId, out var userGuid))
+            {
+                var user = await _userManager.FindByIdAsync(userGuid.ToString());
+                if (user != null && !string.IsNullOrEmpty(newRole))
+                {
+                    var currentRoles = await _userManager.GetRolesAsync(user);
+                    if (currentRoles.Any())
+                    {
+                        await _userManager.RemoveFromRolesAsync(user, currentRoles);
+                    }
+                    var result = await _userManager.AddToRoleAsync(user, newRole);
+                    
+                    // Обновляем SecurityStamp чтобы принудить перелогин
+                    await _userManager.UpdateSecurityStampAsync(user);
+                    
+                    return new JsonResult(new { success = result.Succeeded, errors = result.Errors });
+                }
+            }
+            
+            return new JsonResult(new { success = false });
         }
         
-        return RedirectToPage();
+        private async Task EnsureRolesExist()
+        {
+            string[] roles = { "Admin", "Consultant", "User" };
+            
+            foreach (var role in roles)
+            {
+                if (!await _roleManager.RoleExistsAsync(role))
+                {
+                    await _roleManager.CreateAsync(new ApplicationRole { Name = role });
+                }
+            }
+        }
+
+        public async Task<IActionResult> OnPostDeleteUserAsync()
+        {
+            var json = await new StreamReader(Request.Body).ReadToEndAsync();
+            var data = JsonSerializer.Deserialize<JsonElement>(json);
+            
+            var userId = data.GetProperty("userId").GetString();
+            
+            if (Guid.TryParse(userId, out var userGuid))
+            {
+                var user = await _userManager.FindByIdAsync(userGuid.ToString());
+                if (user != null)
+                {
+                    await _userManager.DeleteAsync(user);
+                }
+            }
+            
+            return new JsonResult(new { success = true });
+        }
     }
 
-    public class UserViewModel
+    public class UserInfo
     {
-        public Guid Id { get; set; }
-        public string Email { get; set; }
-        public string? FirstName { get; set; }
-        public string? LastName { get; set; }
-        public bool EmailConfirmed { get; set; }
-        public DateTimeOffset? LockoutEnd { get; set; }
-        public bool IsAdmin { get; set; }
+        public string Id { get; set; } = string.Empty;
+        public string UserName { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Role { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
+        public bool EmailConfirmed { get; set; }
     }
 }

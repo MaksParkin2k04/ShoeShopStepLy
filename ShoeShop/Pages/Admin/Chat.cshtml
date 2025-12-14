@@ -1,0 +1,179 @@
+@page
+@model ShoeShop.Pages.Admin.ChatModel
+@{
+    ViewData["Title"] = "Чат с клиентами";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Чат с клиентами</h2>
+    <a asp-page="/Admin/Index" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-1"></i>Назад
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">Неотвеченные сообщения</h6>
+            </div>
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush" id="message-list">
+                    @foreach (var message in Model.UnreadMessages)
+                    {
+                        <div class="list-group-item list-group-item-action message-item" data-id="@message.Id" data-user-id="@message.UserId">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">@message.UserName</h6>
+                                <small>@message.CreatedAt.ToString("HH:mm")</small>
+                            </div>
+                            <p class="mb-1">@message.Message</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">Ответ клиенту</h6>
+            </div>
+            <div class="card-body" id="chat-area" style="display: none;">
+                <div class="mb-3">
+                    <strong>Клиент:</strong> <span id="client-name"></span><br>
+                    <strong>Вопрос:</strong> <span id="client-message"></span><br>
+                    <small class="text-muted">Время: <span id="message-time"></span></small>
+                </div>
+                
+                <form id="response-form">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" id="message-id" />
+                    <div class="mb-3">
+                        <label class="form-label">Ваш ответ:</label>
+                        <textarea class="form-control" id="response-text" rows="4" required></textarea>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane me-1"></i>Отправить ответ
+                        </button>
+                        <button type="button" class="btn btn-danger" onclick="closeChat()">
+                            <i class="fas fa-times me-1"></i>Закрыть чат
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="card-body text-center" id="no-selection" style="color: #6c757d;">
+                Выберите сообщение для ответа
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const messageItems = document.querySelectorAll('.message-item');
+    const chatArea = document.getElementById('chat-area');
+    const noSelection = document.getElementById('no-selection');
+    
+    messageItems.forEach(item => {
+        item.addEventListener('click', function() {
+            messageItems.forEach(i => i.classList.remove('active'));
+            this.classList.add('active');
+            
+            const messageId = this.dataset.id;
+            const userName = this.querySelector('h6').textContent;
+            const message = this.querySelector('p').textContent;
+            const time = this.querySelector('small').textContent;
+            
+            document.getElementById('message-id').value = messageId;
+            document.getElementById('client-name').textContent = userName;
+            document.getElementById('client-message').textContent = message;
+            document.getElementById('message-time').textContent = time;
+            
+            noSelection.style.display = 'none';
+            chatArea.style.display = 'block';
+        });
+    });
+    
+    document.getElementById('response-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const messageId = document.getElementById('message-id').value;
+        const response = document.getElementById('response-text').value;
+        
+        if (!response.trim()) {
+            alert('Введите ответ!');
+            return;
+        }
+        
+        const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+        
+        fetch('/Admin/Chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': token
+            },
+            body: JSON.stringify({
+                messageId: messageId,
+                response: response
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('response-text').value = '';
+                alert('Ответ отправлен! Чат остается активным до закрытия.');
+            } else {
+                alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+            }
+        })
+        .catch(error => {
+            console.error('Ошибка:', error);
+            alert('Ошибка отправки ответа');
+        });
+    });
+});
+
+function closeChat() {
+    const messageId = document.getElementById('message-id').value;
+    const userId = document.querySelector(`[data-id="${messageId}"]`).dataset.userId;
+    
+    if (!userId) {
+        alert('Ошибка: не найден ID пользователя');
+        return;
+    }
+    
+    if (confirm('Вы уверены, что хотите закрыть этот чат?')) {
+        const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+        
+        fetch('/Admin/Chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': token
+            },
+            body: JSON.stringify({
+                action: 'close',
+                userId: userId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.querySelector(`[data-id="${messageId}"]`).remove();
+                document.getElementById('chat-area').style.display = 'none';
+                document.getElementById('no-selection').style.display = 'block';
+                alert('Чат закрыт!');
+            } else {
+                alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+            }
+        })
+        .catch(error => {
+            console.error('Ошибка:', error);
+            alert('Ошибка закрытия чата');
+        });
+    }
+}
+</script>

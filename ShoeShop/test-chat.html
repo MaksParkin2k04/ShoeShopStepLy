@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Тест чата</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
+        button { padding: 10px 15px; margin: 5px; }
+        .result { margin: 10px 0; padding: 10px; background: #f5f5f5; }
+    </style>
+</head>
+<body>
+    <h1>Тест виртуального консультанта</h1>
+    
+    <div class="test-section">
+        <h3>1. Тест отправки сообщения</h3>
+        <button onclick="testSendMessage()">Отправить тестовое сообщение</button>
+        <div id="sendResult" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>2. Тест получения неотвеченных сообщений</h3>
+        <button onclick="testGetUnread()">Получить неотвеченные сообщения</button>
+        <div id="unreadResult" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>3. Тест истории чата</h3>
+        <button onclick="testGetHistory()">Получить историю чата</button>
+        <div id="historyResult" class="result"></div>
+    </div>
+
+    <script>
+        const testUserId = 'test_user_' + Date.now();
+        
+        async function testSendMessage() {
+            const result = document.getElementById('sendResult');
+            result.innerHTML = 'Отправляем сообщение...';
+            
+            try {
+                const response = await fetch('/api/chat/send', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        userId: testUserId,
+                        userName: 'Тестовый пользователь',
+                        message: 'Привет! Это тестовое сообщение. Расскажите о доставке.'
+                    })
+                });
+                
+                const data = await response.json();
+                result.innerHTML = `
+                    <strong>Статус:</strong> ${response.status}<br>
+                    <strong>Ответ:</strong> ${JSON.stringify(data, null, 2)}
+                `;
+            } catch (error) {
+                result.innerHTML = `<strong>Ошибка:</strong> ${error.message}`;
+            }
+        }
+        
+        async function testGetUnread() {
+            const result = document.getElementById('unreadResult');
+            result.innerHTML = 'Получаем неотвеченные сообщения...';
+            
+            try {
+                const response = await fetch('/api/chat/unread');
+                const data = await response.json();
+                result.innerHTML = `
+                    <strong>Статус:</strong> ${response.status}<br>
+                    <strong>Количество:</strong> ${data.length}<br>
+                    <strong>Данные:</strong> ${JSON.stringify(data, null, 2)}
+                `;
+            } catch (error) {
+                result.innerHTML = `<strong>Ошибка:</strong> ${error.message}`;
+            }
+        }
+        
+        async function testGetHistory() {
+            const result = document.getElementById('historyResult');
+            result.innerHTML = 'Получаем историю чата...';
+            
+            try {
+                const response = await fetch(`/api/chat/history/${testUserId}`);
+                const data = await response.json();
+                result.innerHTML = `
+                    <strong>Статус:</strong> ${response.status}<br>
+                    <strong>Количество:</strong> ${data.length}<br>
+                    <strong>Данные:</strong> ${JSON.stringify(data, null, 2)}
+                `;
+            } catch (error) {
+                result.innerHTML = `<strong>Ошибка:</strong> ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>
