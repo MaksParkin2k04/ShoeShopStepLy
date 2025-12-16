@@ -4,176 +4,193 @@
     ViewData["Title"] = "Чат с клиентами";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Чат с клиентами</h2>
-    <a asp-page="/Admin/Index" class="btn btn-outline-secondary">
-        <i class="fas fa-arrow-left me-1"></i>Назад
-    </a>
-</div>
-
 <div class="row">
     <div class="col-md-4">
         <div class="card">
             <div class="card-header">
-                <h6 class="mb-0">Неотвеченные сообщения</h6>
+                <h5 class="mb-0">
+                    <i class="fas fa-comments me-2"></i>
+                    Активные чаты
+                </h5>
             </div>
             <div class="card-body p-0">
-                <div class="list-group list-group-flush" id="message-list">
-                    @foreach (var message in Model.UnreadMessages)
+                @if (Model.ChatSessions.Any())
+                {
+                    <div class="list-group list-group-flush">
+                        @foreach (var session in Model.ChatSessions)
+                        {
+                            <a href="?userId=@session.UserId" 
+                               class="list-group-item list-group-item-action @(Model.SelectedUserId == session.UserId ? "active" : "")">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">
+                                        @session.UserName
+                                        @if (session.UnreadCount > 0)
+                                        {
+                                            <span class="badge bg-danger">@session.UnreadCount</span>
+                                        }
+                                    </h6>
+                                    <small>@session.LastMessageTime.ToString("dd.MM HH:mm")</small>
+                                </div>
+                                <p class="mb-1 text-truncate">@session.LastMessage</p>
+                                <small>Сообщений: @session.MessageCount</small>
+                            </a>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="p-3 text-center text-muted">
+                        <i class="fas fa-inbox fa-2x mb-2"></i>
+                        <p>Нет активных чатов</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        @if (!string.IsNullOrEmpty(Model.SelectedUserId))
+        {
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user me-2"></i>
+                        Чат с @Model.SelectedUserName
+                    </h5>
+                    <form method="post" asp-page-handler="CloseChat" class="d-inline">
+                        <input type="hidden" name="userId" value="@Model.SelectedUserId" />
+                        <button type="submit" class="btn btn-outline-danger btn-sm" 
+                                onclick="return confirm('Закрыть чат? Все сообщения будут удалены.')">
+                            <i class="fas fa-times"></i> Закрыть чат
+                        </button>
+                    </form>
+                </div>
+                <div class="card-body" style="height: 400px; overflow-y: auto;" id="chat-messages">
+                    @if (Model.Messages.Any())
                     {
-                        <div class="list-group-item list-group-item-action message-item" data-id="@message.Id" data-user-id="@message.UserId">
-                            <div class="d-flex w-100 justify-content-between">
-                                <h6 class="mb-1">@message.UserName</h6>
-                                <small>@message.CreatedAt.ToString("HH:mm")</small>
+                        @foreach (var message in Model.Messages)
+                        {
+                            <div class="mb-3">
+                                @if (!string.IsNullOrEmpty(message.RespondedBy))
+                                {
+                                    <!-- Сообщение от администратора -->
+                                    <div class="d-flex justify-content-start mb-2">
+                                        <div class="bg-success text-white rounded p-2" style="max-width: 70%;">
+                                            <div><strong>@message.RespondedBy:</strong></div>
+                                            <div>@message.Message</div>
+                                            <small class="opacity-75">@message.CreatedAt.ToString("dd.MM.yyyy HH:mm")</small>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <!-- Сообщение пользователя -->
+                                    <div class="d-flex justify-content-end mb-2">
+                                        <div class="bg-primary text-white rounded p-2" style="max-width: 70%;">
+                                            <div>@message.Message</div>
+                                            <small class="opacity-75">@message.CreatedAt.ToString("dd.MM.yyyy HH:mm")</small>
+                                        </div>
+                                    </div>
+
+                                    <!-- Ответ бота (если есть) -->
+                                    @if (!string.IsNullOrEmpty(message.Response))
+                                    {
+                                        <div class="d-flex justify-content-start">
+                                            <div class="bg-light border rounded p-2" style="max-width: 70%;">
+                                                <div><strong>🤖 Бот:</strong></div>
+                                                <div>@message.Response</div>
+                                                <small class="text-muted">@message.RespondedAt?.ToString("dd.MM.yyyy HH:mm")</small>
+                                            </div>
+                                        </div>
+                                    }
+                                }
                             </div>
-                            <p class="mb-1">@message.Message</p>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center text-muted">
+                            <i class="fas fa-comment-slash fa-2x mb-2"></i>
+                            <p>Нет сообщений</p>
                         </div>
                     }
                 </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header">
-                <h6 class="mb-0">Ответ клиенту</h6>
-            </div>
-            <div class="card-body" id="chat-area" style="display: none;">
-                <div class="mb-3">
-                    <strong>Клиент:</strong> <span id="client-name"></span><br>
-                    <strong>Вопрос:</strong> <span id="client-message"></span><br>
-                    <small class="text-muted">Время: <span id="message-time"></span></small>
+                <div class="card-footer">
+                    <form method="post" asp-page-handler="SendResponse">
+                        <input type="hidden" name="userId" value="@Model.SelectedUserId" />
+                        <div class="input-group">
+                            <input type="text" name="response" class="form-control" 
+                                   placeholder="Введите ответ..." required />
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i> Отправить
+                            </button>
+                        </div>
+                    </form>
                 </div>
-                
-                <form id="response-form">
-                    @Html.AntiForgeryToken()
-                    <input type="hidden" id="message-id" />
-                    <div class="mb-3">
-                        <label class="form-label">Ваш ответ:</label>
-                        <textarea class="form-control" id="response-text" rows="4" required></textarea>
-                    </div>
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-paper-plane me-1"></i>Отправить ответ
-                        </button>
-                        <button type="button" class="btn btn-danger" onclick="closeChat()">
-                            <i class="fas fa-times me-1"></i>Закрыть чат
-                        </button>
-                    </div>
-                </form>
             </div>
-            <div class="card-body text-center" id="no-selection" style="color: #6c757d;">
-                Выберите сообщение для ответа
+        }
+        else
+        {
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-comments fa-3x text-muted mb-3"></i>
+                    <h5>Выберите чат для просмотра</h5>
+                    <p class="text-muted">Выберите пользователя из списка слева, чтобы просмотреть историю сообщений</p>
+                </div>
             </div>
-        </div>
+        }
     </div>
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const messageItems = document.querySelectorAll('.message-item');
-    const chatArea = document.getElementById('chat-area');
-    const noSelection = document.getElementById('no-selection');
-    
-    messageItems.forEach(item => {
-        item.addEventListener('click', function() {
-            messageItems.forEach(i => i.classList.remove('active'));
-            this.classList.add('active');
-            
-            const messageId = this.dataset.id;
-            const userName = this.querySelector('h6').textContent;
-            const message = this.querySelector('p').textContent;
-            const time = this.querySelector('small').textContent;
-            
-            document.getElementById('message-id').value = messageId;
-            document.getElementById('client-name').textContent = userName;
-            document.getElementById('client-message').textContent = message;
-            document.getElementById('message-time').textContent = time;
-            
-            noSelection.style.display = 'none';
-            chatArea.style.display = 'block';
-        });
-    });
-    
-    document.getElementById('response-form').addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const messageId = document.getElementById('message-id').value;
-        const response = document.getElementById('response-text').value;
-        
-        if (!response.trim()) {
-            alert('Введите ответ!');
-            return;
-        }
-        
-        const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
-        
-        fetch('/Admin/Chat', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'RequestVerificationToken': token
-            },
-            body: JSON.stringify({
-                messageId: messageId,
-                response: response
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                document.getElementById('response-text').value = '';
-                alert('Ответ отправлен! Чат остается активным до закрытия.');
-            } else {
-                alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+@section Scripts {
+    <script>
+        // Автоматическая прокрутка к последнему сообщению
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatMessages = document.getElementById('chat-messages');
+            if (chatMessages) {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
             }
-        })
-        .catch(error => {
-            console.error('Ошибка:', error);
-            alert('Ошибка отправки ответа');
+            
+            // Обновляем список чатов каждые 15 секунд
+            setInterval(function() {
+                fetch('/Admin/Chat')
+                    .then(response => response.text())
+                    .then(html => {
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(html, 'text/html');
+                        const newChatList = doc.querySelector('.list-group');
+                        const currentChatList = document.querySelector('.list-group');
+                        if (newChatList && currentChatList) {
+                            // Обновляем только если нет выбранного чата
+                            if (!document.querySelector('.list-group-item.active')) {
+                                currentChatList.innerHTML = newChatList.innerHTML;
+                            }
+                        }
+                    })
+                    .catch(error => console.error('Ошибка обновления списка чатов:', error));
+            }, 15000);
         });
-    });
-});
 
-function closeChat() {
-    const messageId = document.getElementById('message-id').value;
-    const userId = document.querySelector(`[data-id="${messageId}"]`).dataset.userId;
-    
-    if (!userId) {
-        alert('Ошибка: не найден ID пользователя');
-        return;
-    }
-    
-    if (confirm('Вы уверены, что хотите закрыть этот чат?')) {
-        const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
-        
-        fetch('/Admin/Chat', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'RequestVerificationToken': token
-            },
-            body: JSON.stringify({
-                action: 'close',
-                userId: userId
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                document.querySelector(`[data-id="${messageId}"]`).remove();
-                document.getElementById('chat-area').style.display = 'none';
-                document.getElementById('no-selection').style.display = 'block';
-                alert('Чат закрыт!');
-            } else {
-                alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
-            }
-        })
-        .catch(error => {
-            console.error('Ошибка:', error);
-            alert('Ошибка закрытия чата');
-        });
-    }
+        // Автообновление только списка чатов и сообщений без перезагрузки страницы
+        @if (!string.IsNullOrEmpty(Model.SelectedUserId))
+        {
+            <text>
+            setInterval(function() {
+                // Обновляем только содержимое чата без перезагрузки страницы
+                fetch(window.location.href)
+                    .then(response => response.text())
+                    .then(html => {
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(html, 'text/html');
+                        const newMessages = doc.getElementById('chat-messages');
+                        if (newMessages) {
+                            document.getElementById('chat-messages').innerHTML = newMessages.innerHTML;
+                            document.getElementById('chat-messages').scrollTop = document.getElementById('chat-messages').scrollHeight;
+                        }
+                    })
+                    .catch(error => console.error('Ошибка обновления чата:', error));
+            }, 5000);
+            </text>
+        }
+    </script>
 }
-</script>

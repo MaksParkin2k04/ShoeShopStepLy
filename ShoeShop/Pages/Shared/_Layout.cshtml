@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="~/styles/stock-styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/styles/returns-steps.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/styles/profile-styles.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/styles/chatbot.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/styles/support-chat.css" asp-append-version="true" />
 
     <link rel="stylesheet" href="~/ShoeShop.styles.css" asp-append-version="true" />
     @await RenderSectionAsync("Styles", required: false)
@@ -91,6 +91,9 @@
                         <li><a asp-page="/Warranty" class="text-muted text-decoration-none">Гарантия</a></li>
                         <li><a asp-page="/Privacy" class="text-muted text-decoration-none">Конфиденциальность</a></li>
                         <li><a asp-page="/Terms" class="text-muted text-decoration-none">Пользовательское соглашение</a></li>
+                        <li><a asp-page="/Support" class="text-muted text-decoration-none">
+                            <i class="fas fa-headset me-1"></i>Поддержка
+                        </a></li>
                     </ul>
                 </div>
                 <div class="col-md-4">
@@ -112,229 +115,10 @@
         </div>
     </footer>
 
-    <!-- Чат-бот -->
-    <div id="chatbot" class="chatbot-container">
-        <div class="chatbot-header" onclick="toggleChat()">
-            <i class="fas fa-comments"></i>
-            <span>Консультант</span>
-            <i class="fas fa-chevron-up" id="chat-toggle-icon"></i>
-        </div>
-        <div class="chatbot-body" id="chatbot-body">
-            <div class="chat-messages" id="chat-messages">
-                <div class="bot-message">
-                    Привет! Я помогу выбрать обувь. Спросите о размерах, доставке или качестве!
-                </div>
-            </div>
-            <div class="chat-input">
-                <input type="text" id="chat-input" placeholder="Напишите вопрос...">
-                <button onclick="sendMessage()">
-                    <i class="fas fa-paper-plane"></i>
-                </button>
-            </div>
-        </div>
-    </div>
-
     <script src="~/lib/jquery/jquery.min.js"></script>
     <script src="~/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="~/scripts/script.js" asp-append-version="true"></script>
-    
-    <script>
-        // Сохраняем ID пользователя в localStorage
-        let currentUserId = localStorage.getItem('chatUserId') || 'user_' + Date.now();
-        localStorage.setItem('chatUserId', currentUserId);
-        
-        function toggleChat() {
-            const body = document.getElementById('chatbot-body');
-            const icon = document.getElementById('chat-toggle-icon');
-            
-            if (body.classList.contains('collapsed')) {
-                body.classList.remove('collapsed');
-                icon.className = 'fas fa-chevron-up';
-                loadChatHistory();
-            } else {
-                body.classList.add('collapsed');
-                icon.className = 'fas fa-chevron-down';
-            }
-        }
-        
-        function loadChatHistory() {
-            fetch(`/api/chat/history/${currentUserId}`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(messages => {
-                    const chatMessages = document.getElementById('chat-messages');
-                    chatMessages.innerHTML = '<div class="bot-message">👋 Привет! Я виртуальный консультант StepLy. Могу помочь с выбором обуви, рассказать о доставке и оплате. Что вас интересует?</div>';
-                    
-                    if (messages && messages.length > 0) {
-                        messages.forEach(msg => {
-                            const userMsg = document.createElement('div');
-                            userMsg.className = 'user-message';
-                            userMsg.textContent = msg.message;
-                            chatMessages.appendChild(userMsg);
-                            
-                            if (msg.response) {
-                                const responseMsg = document.createElement('div');
-                                responseMsg.className = 'bot-message';
-                                responseMsg.innerHTML = `<strong>${msg.respondedBy || 'Консультант'}:</strong> ${msg.response}`;
-                                chatMessages.appendChild(responseMsg);
-                            }
-                        });
-                    }
-                    
-                    chatMessages.scrollTop = chatMessages.scrollHeight;
-                })
-                .catch(error => {
-                    console.error('Ошибка загрузки истории:', error);
-                    const chatMessages = document.getElementById('chat-messages');
-                    chatMessages.innerHTML = '<div class="bot-message">👋 Привет! Я виртуальный консультант StepLy. Могу помочь с выбором обуви!</div>';
-                });
-        }
-        
-        function sendMessage() {
-            const input = document.getElementById('chat-input');
-            const messages = document.getElementById('chat-messages');
-            const message = input.value.trim();
-            
-            if (!message) return;
-            
-            // Добавляем сообщение пользователя
-            const userMsg = document.createElement('div');
-            userMsg.className = 'user-message';
-            userMsg.textContent = message;
-            messages.appendChild(userMsg);
-            
-            input.value = '';
-            messages.scrollTop = messages.scrollHeight;
-            
-            // Отправляем на сервер
-            fetch('/api/chat/send', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    userId: currentUserId,
-                    userName: 'Пользователь сайта',
-                    message: message
-                })
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.success && data.response) {
-                    setTimeout(() => {
-                        const botMsg = document.createElement('div');
-                        botMsg.className = 'bot-message';
-                        botMsg.innerHTML = data.response;
-                        messages.appendChild(botMsg);
-                        messages.scrollTop = messages.scrollHeight;
-                    }, 500);
-                } else {
-                    console.error('Ошибка ответа:', data);
-                }
-            })
-            .catch(error => {
-                console.error('Ошибка отправки:', error);
-                const errorMsg = document.createElement('div');
-                errorMsg.className = 'bot-message';
-                errorMsg.textContent = 'Ошибка отправки сообщения. Попробуйте ещё раз.';
-                messages.appendChild(errorMsg);
-                messages.scrollTop = messages.scrollHeight;
-            });
-            
-            // Проверяем новые ответы консультанта
-            setTimeout(checkForNewResponses, 3000);
-        }
-        
-        function getBotResponse(message) {
-            const msg = message.toLowerCase();
-            
-            if (msg.includes('размер')) {
-                return 'Для выбора размера рекомендуем измерить длину стопы. У нас есть размеры от 36 до 45. Нужна помощь с конкретной моделью?';
-            }
-            if (msg.includes('доставка')) {
-                return 'Доставка по Москве - 300₽, по России - от 500₽. Бесплатная доставка при заказе от 5000₽. Срок доставки 1-3 дня.';
-            }
-            if (msg.includes('оплата')) {
-                return 'Принимаем оплату картой, наличными при получении, переводом на карту. Оплата безопасна и защищена.';
-            }
-            if (msg.includes('скидка')) {
-                return 'Сейчас действует скидка до 30% на зимнюю коллекцию! Также есть промокоды для постоянных клиентов.';
-            }
-            
-            return 'Спасибо за вопрос! Наш консультант свяжется с вами в ближайшее время. Или позвоните нам: +7 (999) 123-45-67';
-        }
-        
-        // Enter для отправки
-        document.getElementById('chat-input').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                sendMessage();
-            }
-        });
-        
-        function checkForNewResponses() {
-            fetch(`/api/chat/history/${currentUserId}`)
-                .then(response => response.json())
-                .then(messages => {
-                    const chatMessages = document.getElementById('chat-messages');
-                    
-                    // Проверяем, закрыт ли чат
-                    if (messages.length === 0) {
-                        const closeMsg = document.createElement('div');
-                        closeMsg.className = 'bot-message';
-                        closeMsg.innerHTML = '🔒 <strong>Чат закрыт консультантом.</strong> Спасибо за обращение!';
-                        chatMessages.appendChild(closeMsg);
-                        chatMessages.scrollTop = chatMessages.scrollHeight;
-                        
-                        // Очищаем localStorage и создаем новый ID
-                        localStorage.removeItem('chatUserId');
-                        currentUserId = 'user_' + Date.now();
-                        localStorage.setItem('chatUserId', currentUserId);
-                        return;
-                    }
-                    
-                    const lastMessage = messages[messages.length - 1];
-                    
-                    if (lastMessage && lastMessage.response && lastMessage.respondedAt) {
-                        const lastBotMessage = chatMessages.querySelector('.bot-message:last-child');
-                        const responseTime = new Date(lastMessage.respondedAt).getTime();
-                        const now = Date.now();
-                        
-                        if (now - responseTime < 10000 && (!lastBotMessage || !lastBotMessage.innerHTML.includes(lastMessage.response))) {
-                            const responseMsg = document.createElement('div');
-                            responseMsg.className = 'bot-message';
-                            responseMsg.innerHTML = `<strong>${lastMessage.respondedBy || 'Консультант'}:</strong> ${lastMessage.response}`;
-                            chatMessages.appendChild(responseMsg);
-                            chatMessages.scrollTop = chatMessages.scrollHeight;
-                        }
-                    }
-                })
-                .catch(error => console.error('Ошибка проверки ответов:', error));
-        }
-        
-        // Инициализация при загрузке страницы
-        document.addEventListener('DOMContentLoaded', function() {
-            // Сворачиваем по умолчанию
-            const chatBody = document.getElementById('chatbot-body');
-            const chatIcon = document.getElementById('chat-toggle-icon');
-            
-            if (chatBody && chatIcon) {
-                chatBody.classList.add('collapsed');
-                chatIcon.className = 'fas fa-chevron-down';
-            }
-            
-            // Периодически проверяем новые ответы
-            setInterval(checkForNewResponses, 10000);
-        });
-    </script>
+    <!-- <script src="~/scripts/support-chat.js" asp-append-version="true"></script> -->
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>

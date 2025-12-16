@@ -50,6 +50,7 @@ namespace ShoeShop {
             });
             builder.Services.AddRazorPages();
             builder.Services.AddControllers();
+
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
             builder.Services.AddScoped<IImageManager, ImageManager>();
@@ -357,6 +358,9 @@ namespace ShoeShop {
             app.UseStatusCodePagesWithReExecute("/404");
 
             app.UseResponseCompression();
+            
+
+            
             app.UseHttpsRedirection();
             app.UseStaticFiles(new StaticFileOptions
             {
@@ -367,6 +371,7 @@ namespace ShoeShop {
             });
             app.UseResponseCaching();
             app.UseRouting();
+
             app.UseSession();
             app.UseAuthentication();
             app.UseAuthorization();

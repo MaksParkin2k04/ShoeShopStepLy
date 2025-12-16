@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using ShoeShop.Models;
-using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
 using ShoeShop.Data;
+using ShoeShop.Models;
 
 namespace ShoeShop.Pages.Admin
 {
@@ -11,99 +11,135 @@ namespace ShoeShop.Pages.Admin
     public class ChatModel : PageModel
     {
         private readonly ApplicationContext _context;
-        
-        public ChatModel(ApplicationContext context)
+        private readonly ILogger<ChatModel> _logger;
+
+        public ChatModel(ApplicationContext context, ILogger<ChatModel> logger)
         {
             _context = context;
-        }
-        
-        public List<ChatMessage> UnreadMessages { get; set; } = new();
-
-        public async Task OnGetAsync()
-        {
-            try
-            {
-                UnreadMessages = _context.ChatMessages
-                    .Where(m => !m.IsAutoResponse && !m.IsClosed)
-                    .GroupBy(m => m.UserId)
-                    .Where(g => g.Any(msg => !msg.IsAnswered))
-                    .Select(g => g.OrderByDescending(m => m.CreatedAt).First(msg => !msg.IsAnswered))
-                    .ToList();
-            }
-            catch
-            {
-                UnreadMessages = new List<ChatMessage>();
-            }
+            _logger = logger;
         }
 
-        public async Task<IActionResult> OnPostAsync()
+        public List<ChatSession> ChatSessions { get; set; } = new();
+        public List<ChatMessage> Messages { get; set; } = new();
+        public string? SelectedUserId { get; set; }
+        public string? SelectedUserName { get; set; }
+
+        public async Task OnGetAsync(string? userId = null)
         {
-            try
-            {
-                var json = await new StreamReader(Request.Body).ReadToEndAsync();
-                if (string.IsNullOrEmpty(json))
+            // Получаем все уникальные сессии чатов
+            ChatSessions = await _context.ChatMessages
+                .GroupBy(m => m.UserId)
+                .Select(g => new ChatSession
                 {
-                    return new JsonResult(new { success = false, error = "Пустой запрос" });
-                }
-                
-                var data = JsonSerializer.Deserialize<JsonElement>(json);
-            
-            if (data.TryGetProperty("action", out var actionElement) && actionElement.GetString() == "close")
+                    UserId = g.Key,
+                    UserName = g.First().UserName,
+                    LastMessage = g.OrderByDescending(m => m.CreatedAt).First().Message,
+                    LastMessageTime = g.Max(m => m.CreatedAt),
+                    MessageCount = g.Count(),
+                    UnreadCount = g.Count(m => !m.IsAnswered && string.IsNullOrEmpty(m.Response))
+                })
+                .OrderByDescending(s => s.LastMessageTime)
+                .ToListAsync();
+
+            // Если выбран пользователь, загружаем его сообщения
+            if (!string.IsNullOrEmpty(userId))
             {
-                return await CloseChat(data);
-            }
-            
-            var messageId = data.GetProperty("messageId").GetString();
-            var response = data.GetProperty("response").GetString();
-            
-            try
-            {
-                var message = _context.ChatMessages
-                    .FirstOrDefault(m => m.Id.ToString() == messageId);
-                
-                if (message != null)
-                {
-                    message.Response = response;
-                    message.RespondedBy = "Консультант StepLy";
-                    message.RespondedAt = DateTime.Now;
-                    message.IsAnswered = true;
-                    await _context.SaveChangesAsync();
-                }
-            }
-            catch (Exception ex)
-            {
-                return new JsonResult(new { success = false, error = ex.Message });
-            }
-            
-                return new JsonResult(new { success = true });
-            }
-            catch (Exception ex)
-            {
-                return new JsonResult(new { success = false, error = ex.Message });
-            }
-        }
-        
-        private async Task<IActionResult> CloseChat(JsonElement data)
-        {
-            try
-            {
-                var userId = data.GetProperty("userId").GetString();
-                var messages = _context.ChatMessages
+                SelectedUserId = userId;
+                var firstMessage = await _context.ChatMessages
                     .Where(m => m.UserId == userId)
-                    .ToList();
+                    .FirstOrDefaultAsync();
                 
+                SelectedUserName = firstMessage?.UserName ?? "Неизвестный пользователь";
+
+                Messages = await _context.ChatMessages
+                    .Where(m => m.UserId == userId)
+                    .OrderBy(m => m.CreatedAt)
+                    .ToListAsync();
+            }
+        }
+
+        public async Task<IActionResult> OnPostSendResponseAsync(string userId, string response)
+        {
+            try
+            {
+                // Получаем имя пользователя
+                var userMessage = await _context.ChatMessages
+                    .Where(m => m.UserId == userId)
+                    .FirstOrDefaultAsync();
+                
+                var userName = userMessage?.UserName ?? "Гость";
+                
+                // Создаем новое сообщение от администратора
+                var adminMessage = new ChatMessage
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = userId,
+                    UserName = userName,
+                    Message = response,
+                    CreatedAt = DateTime.Now,
+                    IsAnswered = true,
+                    IsAutoResponse = false,
+                    Response = null,
+                    RespondedBy = User.Identity?.Name ?? "Администратор",
+                    RespondedAt = DateTime.Now,
+                    IsClosed = false
+                };
+
+                _context.ChatMessages.Add(adminMessage);
+                
+                // Отмечаем все неотвеченные сообщения как отвеченные
+                var unreadMessages = await _context.ChatMessages
+                    .Where(m => m.UserId == userId && !m.IsAnswered)
+                    .ToListAsync();
+                    
+                foreach (var msg in unreadMessages)
+                {
+                    msg.IsAnswered = true;
+                }
+
+                await _context.SaveChangesAsync();
+
+                return RedirectToPage(new { userId = userId });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error sending response: {ex.Message}");
+                return RedirectToPage(new { userId = userId });
+            }
+        }
+
+        public async Task<IActionResult> OnPostCloseChatAsync(string userId)
+        {
+            try
+            {
+                var messages = await _context.ChatMessages
+                    .Where(m => m.UserId == userId)
+                    .ToListAsync();
+
                 foreach (var message in messages)
                 {
                     message.IsClosed = true;
                 }
-                
+
                 await _context.SaveChangesAsync();
-                return new JsonResult(new { success = true });
+
+                return RedirectToPage();
             }
             catch (Exception ex)
             {
-                return new JsonResult(new { success = false, error = ex.Message });
+                _logger.LogError($"Error closing chat: {ex.Message}");
+                return RedirectToPage();
             }
         }
+    }
+
+    public class ChatSession
+    {
+        public string UserId { get; set; } = "";
+        public string UserName { get; set; } = "";
+        public string LastMessage { get; set; } = "";
+        public DateTime LastMessageTime { get; set; }
+        public int MessageCount { get; set; }
+        public int UnreadCount { get; set; }
     }
 }
