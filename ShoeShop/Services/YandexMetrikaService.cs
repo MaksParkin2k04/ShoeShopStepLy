@@ -8,20 +8,25 @@ namespace ShoeShop.Services
         private readonly string _counterId;
         private readonly string _token;
         private readonly bool _useTestData;
+        private readonly ILogger<YandexMetrikaService> _logger;
 
-        public YandexMetrikaService(HttpClient httpClient, IConfiguration configuration)
+        public YandexMetrikaService(HttpClient httpClient, IConfiguration configuration, ILogger<YandexMetrikaService> logger)
         {
             _httpClient = httpClient;
             _counterId = configuration["YandexMetrika:CounterId"] ?? "98765432";
             _token = configuration["YandexMetrika:OAuthToken"] ?? "test_token";
             _useTestData = configuration.GetValue<bool>("YandexMetrika:UseTestData", true);
+            _logger = logger;
         }
 
         public async Task<MetrikaStats> GetStatsAsync()
         {
-            // Для localhost или тестирования используем тестовые данные
-            if (_useTestData || string.IsNullOrEmpty(_token) || _token == "test_token")
+            _logger.LogInformation($"GetStatsAsync called. UseTestData: {_useTestData}, CounterId: {_counterId}");
+            
+            // Используем тестовые данные только если явно указано
+            if (_useTestData)
             {
+                _logger.LogInformation("Returning test data");
                 return GetTestData();
             }
             
@@ -33,10 +38,11 @@ namespace ShoeShop.Services
                 var url = $"https://api-metrika.yandex.net/stat/v1/data?id={_counterId}&date1={startDate}&date2={endDate}&metrics=ym:s:visits,ym:s:pageviews,ym:s:users&oauth_token={_token}";
                 
                 var response = await _httpClient.GetAsync(url);
+                var responseContent = await response.Content.ReadAsStringAsync();
+                
                 if (response.IsSuccessStatusCode)
                 {
-                    var json = await response.Content.ReadAsStringAsync();
-                    var data = JsonSerializer.Deserialize<MetrikaResponse>(json);
+                    var data = JsonSerializer.Deserialize<MetrikaResponse>(responseContent);
                     
                     return new MetrikaStats
                     {
@@ -46,13 +52,19 @@ namespace ShoeShop.Services
                         Period = $"{startDate} - {endDate} (Реальные данные)"
                     };
                 }
+                else
+                {
+                    _logger.LogError($"Yandex Metrika API Error: {response.StatusCode} - {responseContent}");
+                }
             }
-            catch
+            catch (Exception ex)
             {
-                // В случае ошибки возвращаем тестовые данные
+                _logger.LogError($"Yandex Metrika Exception: {ex.Message}");
             }
             
-            return GetTestData();
+            var errorData = GetTestData();
+            errorData.Period = "Ошибка получения данных Яндекс.Метрики - проверьте токен";
+            return errorData;
         }
         
         private MetrikaStats GetTestData()
@@ -137,7 +149,7 @@ namespace ShoeShop.Services
                 TotalSessions = 1450,
                 PageLoadTime = 1.2,
                 ErrorPages = 12,
-                Period = "Тестовые данные за 30 дней"
+                Period = "Тестовые данные Яндекс.Метрики (UseTestData = true)"
             };
         }
     }
