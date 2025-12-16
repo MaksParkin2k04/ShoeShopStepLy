@@ -78,7 +78,7 @@ namespace ShoeShop.Pages.Admin
         
         private async Task EnsureRolesExist()
         {
-            string[] roles = { "Admin", "Consultant", "User" };
+            string[] roles = { "Admin", "Manager", "Editor", "Consultant", "Analyst", "User" };
             
             foreach (var role in roles)
             {

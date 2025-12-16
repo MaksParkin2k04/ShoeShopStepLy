@@ -20,8 +20,8 @@ namespace ShoeShop.Models {
         Task DeleteAllOrders();
         
         // Быстрые методы с кешированием
-        Task<IEnumerable<Order>> GetOrdersFast(OrderStatusFilter filter, OrderSorting sorting, int skip, int take);
-        Task<int> OrderCountFast(OrderStatusFilter filter);
+        Task<IEnumerable<Order>> GetOrdersFast(OrderStatusFilter filter, OrderSorting sorting, int skip, int take, string search = "");
+        Task<int> OrderCountFast(OrderStatusFilter filter, string search = "");
         Task<Dictionary<OrderStatus, int>> GetOrderStatsCache();
         Task<Order?> GetOrderByNumber(string orderNumber);
 

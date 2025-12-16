@@ -17,6 +17,18 @@
     </div>
 </div>
 
+@* Информация о расходах *@
+<div class="alert alert-info mb-4">
+    <h6><i class="fas fa-info-circle me-2"></i>О расчете затрат</h6>
+    <p class="mb-0">
+        <strong>Затраты:</strong> общие вложения в товары (остатки + проданные)<br>
+        <strong>Выручка:</strong> сумма всех оплаченных заказов<br>
+        <strong>Прибыль:</strong> выручка минус затраты (может быть отрицательной)<br>
+        Для корректного расчета указывайте закупочную цену в 
+        <a asp-page="/Admin/Stock" class="alert-link">разделе управления остатками</a>.
+    </p>
+</div>
+
 @* Фильтры по датам *@
 <div class="card mb-4">
     <div class="card-header">
@@ -63,6 +75,7 @@
             <div class="card-body">
                 <h5 class="card-title text-danger">@Model.Statistics.TotalCosts.ToString("F2") ₽</h5>
                 <p class="card-text">Затраты</p>
+                <small class="text-muted">Общие вложения в товары</small>
             </div>
         </div>
     </div>
@@ -354,20 +367,26 @@ new Chart(statusCtx, {
 // График продаж по дням
 const dailySalesCtx = document.getElementById('dailySalesChart').getContext('2d');
 const dailyData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.DailySalesData));
+
 new Chart(dailySalesCtx, {
     type: 'line',
     data: {
-        labels: dailyData.map(d => new Date(d.date).toLocaleDateString('ru-RU')),
+        labels: dailyData.map(d => {
+            const date = new Date(d.Date || d.date);
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            return `${day}.${month}`;
+        }),
         datasets: [{
             label: 'Выручка (₽)',
-            data: dailyData.map(d => d.revenue),
+            data: dailyData.map(d => d.Revenue || d.revenue || 0),
             borderColor: '#007bff',
             backgroundColor: 'rgba(0, 123, 255, 0.1)',
             tension: 0.4,
             fill: true
         }, {
             label: 'Количество заказов',
-            data: dailyData.map(d => d.orderCount),
+            data: dailyData.map(d => d.OrderCount || d.orderCount || 0),
             borderColor: '#28a745',
             backgroundColor: 'rgba(40, 167, 69, 0.1)',
             tension: 0.4,
@@ -378,16 +397,12 @@ new Chart(dailySalesCtx, {
         responsive: true,
         scales: {
             y: {
-                type: 'linear',
-                display: true,
-                position: 'left',
-                beginAtZero: true
+                beginAtZero: true,
+                position: 'left'
             },
             y1: {
-                type: 'linear',
-                display: true,
-                position: 'right',
                 beginAtZero: true,
+                position: 'right',
                 grid: {
                     drawOnChartArea: false
                 }
@@ -506,7 +521,14 @@ new Chart(dailySalesCtx, {
                 </div>
             }
             
-            @if (Model.Statistics.TotalQuantitySold < 50) {
+            @if (Model.Statistics.TotalQuantitySold == 0) {
+                <div class="col-md-6 mb-3">
+                    <div class="alert alert-warning">
+                        <strong>🚨 Нет оплаченных продаж</strong><br>
+                        Проверьте статусы заказов в разделе "Заказы". Отметьте заказы как "Оплачено" для отображения в статистике.
+                    </div>
+                </div>
+            } else if (Model.Statistics.TotalQuantitySold < 50) {
                 <div class="col-md-6 mb-3">
                     <div class="alert alert-info">
                         <strong>📈 Низкие продажи</strong><br>
@@ -515,14 +537,23 @@ new Chart(dailySalesCtx, {
                 </div>
             }
             
+            @if (Model.Statistics.TotalCosts > 0) {
+                <div class="col-md-6 mb-3">
+                    <div class="alert alert-success">
+                        <strong>💰 Товары на складе</strong><br>
+                        Общие вложения: @Model.Statistics.TotalCosts.ToString("F0") ₽. Начните продавать и отмечайте заказы как оплаченные!
+                    </div>
+                </div>
+            }
+            
             <div class="col-12">
                 <div class="alert alert-light border">
                     <strong>💡 Общие рекомендации:</strong>
                     <ul class="mb-0 mt-2">
-                        <li>Анализируйте сезонность продаж для планирования закупок</li>
+                        <li>Для отображения в статистике отмечайте заказы как "Оплачено"</li>
+                        <li>Указывайте закупочную цену при поступлении товаров</li>
                         <li>Отслеживайте остатки популярных размеров</li>
-                        <li>Рассмотрите программу лояльности для постоянных клиентов</li>
-                        <li>Изучайте отзывы покупателей для улучшения ассортимента</li>
+                        <li>Анализируйте сезонность продаж для планирования закупок</li>
                     </ul>
                 </div>
             </div>

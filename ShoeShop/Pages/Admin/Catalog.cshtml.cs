@@ -7,7 +7,7 @@ using ShoeShop.Models;
 namespace ShoeShop.Pages.Admin {
 
     [Authorize]
-    [AdminAuth]
+    [AdminAuth("Admin", "Manager", "Editor")]
     public class CatalogModel : PageModel {
         /// <summary>
         /// ������������ ���������� ��������� �� ��������

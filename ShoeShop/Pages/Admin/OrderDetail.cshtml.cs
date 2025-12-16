@@ -6,8 +6,10 @@ using ShoeShop.Data;
 using ShoeShop.Models;
 
 namespace ShoeShop.Pages.Admin {
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,Manager,Consultant")]
     public class OrderDetailModel : PageModel {
+        
+        public bool CanEditOrder => User.IsInRole("Admin") || User.IsInRole("Manager");
         public OrderDetailModel(IAdminRepository repository, ApplicationContext context, IEmailSender emailSender) {
             this.repository = repository;
             _context = context;

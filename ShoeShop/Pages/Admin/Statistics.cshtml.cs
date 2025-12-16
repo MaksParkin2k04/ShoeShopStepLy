@@ -6,7 +6,7 @@ using ShoeShop.Services;
 using static ShoeShop.Services.ForecastService;
 
 namespace ShoeShop.Pages.Admin {
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,Manager,Analyst")]
     public class StatisticsModel : PageModel {
         private readonly SalesStatisticsService _statisticsService;
         private readonly ExportService _exportService;

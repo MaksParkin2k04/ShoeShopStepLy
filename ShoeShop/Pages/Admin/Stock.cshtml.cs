@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using ShoeShop.Attributes;
 using ShoeShop.Models;
 using ShoeShop.Services;
+using ShoeShop.Infrastructure;
 
 namespace ShoeShop.Pages.Admin {
     [Authorize]
@@ -12,15 +13,20 @@ namespace ShoeShop.Pages.Admin {
         private readonly IProductRepository _productRepository;
         private readonly IProductStockRepository _stockRepository;
         private readonly StockService _stockService;
+        private readonly IAdminRepository _adminRepository;
+        private readonly IProductManager _productManager;
 
-        public StockModel(IProductRepository productRepository, IProductStockRepository stockRepository, StockService stockService) {
+        public StockModel(IProductRepository productRepository, IProductStockRepository stockRepository, StockService stockService, IAdminRepository adminRepository, IProductManager productManager) {
             _productRepository = productRepository;
             _stockRepository = stockRepository;
             _stockService = stockService;
+            _adminRepository = adminRepository;
+            _productManager = productManager;
         }
 
         public IEnumerable<Product> Products { get; set; } = new List<Product>();
         public IEnumerable<ProductStock> ProductStocks { get; set; } = new List<ProductStock>();
+        public IEnumerable<Category> Categories { get; set; } = new List<Category>();
         public string? Message { get; set; }
         public string? SearchQuery { get; set; }
         public string? StatusFilter { get; set; }
@@ -36,6 +42,7 @@ namespace ShoeShop.Pages.Admin {
             
             // Получаем все товары для выпадающих списков
             Products = await _productRepository.GetProducts(ProductSorting.Default, 0, 1000);
+            Categories = await _adminRepository.GetCategories();
             
             // Получаем остатки с поиском и фильтрацией
             if (!string.IsNullOrEmpty(search) || !string.IsNullOrEmpty(status)) {
@@ -75,6 +82,35 @@ namespace ShoeShop.Pages.Admin {
                 Message = $"Цена закупки обновлена: {purchasePrice:F2} ₽";
             } catch (Exception ex) {
                 Message = $"Ошибка при обновлении цены: {ex.Message}";
+            }
+
+            return RedirectToPage();
+        }
+
+        public async Task<IActionResult> OnPostCreateProductAsync(string name, bool isSale, double price, string description, string content, Guid categoryId, ulong[]? sizes) {
+            try {
+                var editProduct = new EditProduct {
+                    Name = name,
+                    IsSale = isSale,
+                    Price = price,
+                    Description = description,
+                    Content = content,
+                    CategoryId = categoryId,
+                    Sizes = ProductSize.Not
+                };
+
+                if (sizes != null && sizes.Length > 0) {
+                    ProductSize combinedSizes = ProductSize.Not;
+                    foreach (ulong size in sizes) {
+                        combinedSizes |= (ProductSize)size;
+                    }
+                    editProduct.Sizes = combinedSizes;
+                }
+
+                Guid productId = await _productManager.Add(editProduct);
+                return RedirectToPage("/Admin/EditProduct", new { productId = productId });
+            } catch (Exception ex) {
+                Message = $"Ошибка при создании товара: {ex.Message}";
             }
 
             return RedirectToPage();

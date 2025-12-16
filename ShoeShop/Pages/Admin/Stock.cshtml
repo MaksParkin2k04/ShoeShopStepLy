@@ -7,7 +7,7 @@
 }
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Управление остатками</h2>
+    <h2>Управление товарами и остатками</h2>
     <a asp-page="/Admin/Index" class="btn btn-outline-secondary">
         <i class="fas fa-arrow-left me-2"></i>Админ панель
     </a>
@@ -63,7 +63,7 @@
 </div>
 
 <div class="row">
-    <div class="col-md-6">
+    <div class="col-md-4">
         <div class="card">
             <div class="card-header">
                 <h5>Приход товара</h5>
@@ -98,6 +98,10 @@
                     <div class="mb-3">
                         <label class="form-label">Цена закупки (руб.)</label>
                         <input type="number" name="purchasePrice" class="form-control" min="0" step="0.01" placeholder="0.00">
+                        <div class="form-text">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Эта цена будет учтена в статистике расходов
+                        </div>
                     </div>
                     <button type="submit" class="btn btn-success">Добавить приход</button>
                 </form>
@@ -105,7 +109,7 @@
         </div>
     </div>
     
-    <div class="col-md-6">
+    <div class="col-md-4">
         <div class="card">
             <div class="card-header">
                 <h5>Списание товара</h5>
@@ -138,6 +142,65 @@
                         <input type="number" name="quantity" class="form-control" min="1" required>
                     </div>
                     <button type="submit" class="btn btn-danger">Списать товар</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Создать товар</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" asp-page-handler="CreateProduct">
+                    <div class="mb-2">
+                        <label class="form-label">Название</label>
+                        <input name="name" type="text" class="form-control form-control-sm" required maxlength="30">
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Категория</label>
+                        <select name="categoryId" class="form-select form-select-sm" required>
+                            <option value="">Выберите категорию</option>
+                            @foreach (var category in Model.Categories) {
+                                <option value="@category.Id">@category.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Цена</label>
+                        <input name="price" type="number" class="form-control form-control-sm" step="0.01" min="0" required>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Описание</label>
+                        <textarea name="description" class="form-control form-control-sm" rows="2" required maxlength="300"></textarea>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Подробное описание</label>
+                        <textarea name="content" class="form-control form-control-sm" rows="2" required maxlength="300"></textarea>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Размеры</label>
+                        <div class="row g-1">
+                            @for (int size = 36; size <= 45; size++) {
+                                var sizeFlag = (ulong)Math.Pow(2, size - 1);
+                                <div class="col-3">
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="checkbox" name="sizes" value="@sizeFlag" id="newsize@size">
+                                        <label class="form-check-label" for="newsize@size">@size</label>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="isSale" value="true" id="isSaleCheck" checked>
+                            <label class="form-check-label" for="isSaleCheck">Товар продается</label>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-success btn-sm w-100">Создать и добавить фото</button>
+                    <small class="text-muted mt-1 d-block">После создания откроется страница для добавления фотографий</small>
                 </form>
             </div>
         </div>

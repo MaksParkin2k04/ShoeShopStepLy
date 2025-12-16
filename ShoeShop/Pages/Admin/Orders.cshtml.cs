@@ -9,8 +9,11 @@ using ShoeShop.Models;
 namespace ShoeShop.Pages.Admin {
 
     [Authorize]
-    [AdminAuth]
+    [AdminAuth("Admin", "Manager", "Consultant")]
     public class OrdersModel : PageModel {
+        
+        public bool CanEditOrders => User.IsInRole("Admin") || User.IsInRole("Manager");
+        public bool CanDeleteOrders => User.IsInRole("Admin") || User.IsInRole("Manager");
         public OrdersModel(IAdminRepository repository) {
             this.repository = repository;
         }
@@ -22,19 +25,21 @@ namespace ShoeShop.Pages.Admin {
         public int TotalElementsCount { get; private set; }
         public OrderSorting Sorting { get; private set; }
         public OrderStatusFilter Filter { get; private set; }
+        public string SearchQuery { get; private set; } = string.Empty;
         public IEnumerable<Order>? Orders { get; private set; }
         public Dictionary<OrderStatus, int> OrderStats { get; private set; } = new();
 
-        public async Task OnGetAsync(OrderSorting sorting, OrderStatusFilter filter = OrderStatusFilter.Active, int pageIndex = 1) {
+        public async Task OnGetAsync(OrderSorting sorting, OrderStatusFilter filter = OrderStatusFilter.Active, string search = "", int pageIndex = 1) {
 
             Sorting = sorting;
             Filter = filter;
+            SearchQuery = search ?? string.Empty;
             CurrentPage = pageIndex;
             ElementsPerPage = 3;
             
             // Оптимизированная загрузка с кешированием
-            Orders = await repository.GetOrdersFast(filter, sorting, pageIndex - 1, 3);
-            TotalElementsCount = await repository.OrderCountFast(filter);
+            Orders = await repository.GetOrdersFast(filter, sorting, pageIndex - 1, 3, SearchQuery);
+            TotalElementsCount = await repository.OrderCountFast(filter, SearchQuery);
             OrderStats = await repository.GetOrderStatsCache();
         }
 

@@ -32,8 +32,8 @@
                             <td>@user.UserName</td>
                             <td>@user.Email</td>
                             <td>
-                                <span class="badge bg-@(user.Role == "Admin" ? "danger" : user.Role == "Consultant" ? "warning" : "secondary")">
-                                    @user.Role
+                                <span class="badge bg-@(user.Role == "Admin" ? "danger" : user.Role == "Manager" ? "primary" : user.Role == "Editor" ? "success" : user.Role == "Consultant" ? "warning" : user.Role == "Analyst" ? "info" : "secondary")">
+                                    @(user.Role == "Admin" ? "Админ" : user.Role == "Manager" ? "Менеджер" : user.Role == "Editor" ? "Редактор" : user.Role == "Consultant" ? "Консультант" : user.Role == "Analyst" ? "Аналитик" : "Пользователь")
                                 </span>
                             </td>
                             <td>
@@ -74,14 +74,20 @@
                         <label class="form-label">Выберите роль:</label>
                         <select class="form-select" id="newRole" required>
                             <option value="User">Пользователь</option>
+                            <option value="Analyst">Аналитик</option>
+                            <option value="Editor">Редактор</option>
                             <option value="Consultant">Консультант</option>
+                            <option value="Manager">Менеджер</option>
                             <option value="Admin">Администратор</option>
                         </select>
                     </div>
                     <div class="alert alert-info">
                         <small>
                             <strong>Пользователь</strong> - может делать заказы<br>
-                            <strong>Консультант</strong> - может отвечать в чате<br>
+                            <strong>Аналитик</strong> - доступ к статистике и отчетам<br>
+                            <strong>Редактор</strong> - управление товарами и категориями<br>
+                            <strong>Консультант</strong> - чат с клиентами и просмотр заказов<br>
+                            <strong>Менеджер</strong> - товары, заказы, статистика, чат<br>
                             <strong>Администратор</strong> - полный доступ
                         </small>
                     </div>

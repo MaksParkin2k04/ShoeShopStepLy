@@ -120,10 +120,19 @@ namespace ShoeShop.Data {
         }
         
         // Быстрые методы с минимальными запросами
-        public async Task<IEnumerable<Order>> GetOrdersFast(OrderStatusFilter filter, OrderSorting sorting, int skip, int take) {
-            return await context.Orders
+        public async Task<IEnumerable<Order>> GetOrdersFast(OrderStatusFilter filter, OrderSorting sorting, int skip, int take, string search = "") {
+            var query = context.Orders
                 .Include(o => o.Recipient)
-                .StatusFilter(filter)
+                .StatusFilter(filter);
+                
+            if (!string.IsNullOrEmpty(search)) {
+                query = query.Where(o => o.Id.Contains(search) ||
+                                        o.OrderNumber.Contains(search) || 
+                                        o.Recipient.Name.Contains(search) ||
+                                        o.Recipient.Phone.Contains(search));
+            }
+                
+            return await query
                 .OrderByDate(sorting)
                 .Skip(skip)
                 .Take(take)
@@ -131,11 +140,17 @@ namespace ShoeShop.Data {
                 .ToListAsync();
         }
         
-        public async Task<int> OrderCountFast(OrderStatusFilter filter) {
-            return await context.Orders
-                .StatusFilter(filter)
-                .AsNoTracking()
-                .CountAsync();
+        public async Task<int> OrderCountFast(OrderStatusFilter filter, string search = "") {
+            var query = context.Orders.StatusFilter(filter);
+            
+            if (!string.IsNullOrEmpty(search)) {
+                query = query.Where(o => o.Id.Contains(search) ||
+                                        o.OrderNumber.Contains(search) || 
+                                        o.Recipient.Name.Contains(search) ||
+                                        o.Recipient.Phone.Contains(search));
+            }
+            
+            return await query.AsNoTracking().CountAsync();
         }
         
         private static Dictionary<OrderStatus, int>? _cachedStats;

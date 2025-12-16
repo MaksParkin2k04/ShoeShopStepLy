@@ -123,6 +123,11 @@
                 </div>
                 
                 <div class="filter-group">
+                    <label class="filter-label">Поиск:</label>
+                    <input type="text" name="search" value="@Model.SearchQuery" class="form-control" placeholder="Номер заказа, имя или телефон">
+                </div>
+                
+                <div class="filter-group">
                     <label class="filter-label">Сортировка:</label>
                     <select id="sorting" name="sorting" class="form-select" onchange="document.getElementById('sortingForm').submit()">
                         @foreach (string key in orderSortingDictionary.Keys) {
@@ -133,6 +138,12 @@
                             }
                         }
                     </select>
+                </div>
+                
+                <div class="filter-group">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search me-2"></i>Найти
+                    </button>
                 </div>
                 
                 <div class="filter-group">
@@ -313,7 +324,8 @@
                 page = "/Admin/Orders",
                 routeData = new Dictionary<string, string>([
                     new KeyValuePair<string, string>("sorting", Model.Sorting.ToString()), 
-                    new KeyValuePair<string, string>("filter", Model.Filter.ToString())
+                    new KeyValuePair<string, string>("filter", Model.Filter.ToString()),
+                    new KeyValuePair<string, string>("search", Model.SearchQuery)
                 ])
             })
     </div>

@@ -7,7 +7,7 @@ using ShoeShop.Data;
 
 namespace ShoeShop.Pages.Admin
 {
-    [Authorize(Roles = "Admin,Consultant")]
+    [Authorize(Roles = "Admin,Manager,Consultant")]
     public class ChatModel : PageModel
     {
         private readonly ApplicationContext _context;

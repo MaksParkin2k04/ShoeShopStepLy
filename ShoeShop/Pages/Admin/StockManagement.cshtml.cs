@@ -38,9 +38,9 @@ namespace ShoeShop.Pages.Admin
             CurrentStocks = allStocks;
         }
 
-        public async Task<IActionResult> OnPostAsync(Guid productId, int size, int quantity)
+        public async Task<IActionResult> OnPostAsync(Guid productId, int size, int quantity, double purchasePrice = 0)
         {
-            await stockService.SetStockAsync(productId, size, quantity);
+            await stockService.SetStockAsync(productId, size, quantity, purchasePrice);
             return RedirectToPage();
         }
     }

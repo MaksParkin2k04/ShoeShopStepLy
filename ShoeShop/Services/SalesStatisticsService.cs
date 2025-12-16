@@ -21,7 +21,7 @@ namespace ShoeShop.Services {
         public async Task<SalesStatistics> GetSalesStatisticsAsync(DateTime? fromDate = null, DateTime? toDate = null) {
             var query = _context.Orders
                 .Include(o => o.OrderDetails)
-                .Where(o => o.Status == OrderStatus.Completed);
+                .Where(o => o.Status >= OrderStatus.Paid);
 
             if (fromDate.HasValue) {
                 query = query.Where(o => o.CreatedDate >= fromDate.Value);
@@ -33,17 +33,35 @@ namespace ShoeShop.Services {
             var orders = await query.ToListAsync();
             var statistics = new SalesStatistics();
             
+            // Рассчитываем затраты: остатки + проданные товары
+            var allStocks = await _context.ProductStocks
+                .Where(ps => ps.PurchasePrice > 0)
+                .ToListAsync();
+            
+            // Затраты на остатки
+            foreach (var stock in allStocks) {
+                statistics.TotalCosts += stock.PurchasePrice * stock.Quantity;
+            }
+            
+            // Добавляем затраты на проданные товары
+            foreach (var order in orders) {
+                foreach (var detail in order.OrderDetails) {
+                    var stock = await _context.ProductStocks
+                        .Where(ps => ps.ProductId == detail.ProductId && ps.Size == detail.Size)
+                        .FirstOrDefaultAsync();
+                    
+                    if (stock != null && stock.PurchasePrice > 0) {
+                        statistics.TotalCosts += stock.PurchasePrice;
+                    }
+                }
+            }
+            
             foreach (var order in orders) {
                 foreach (var detail in order.OrderDetails) {
                     statistics.TotalQuantitySold++;
                     statistics.TotalRevenue += detail.Price;
                 }
             }
-
-            // Затраты считаем по всем поступлениям на склад
-            statistics.TotalCosts = await _context.ProductStocks
-                .Where(ps => ps.PurchasePrice > 0)
-                .SumAsync(ps => ps.Quantity * ps.PurchasePrice);
 
             return statistics;
         }
@@ -54,7 +72,7 @@ namespace ShoeShop.Services {
         public async Task<List<ProductSalesStatistics>> GetProductSalesStatisticsAsync(DateTime? fromDate = null, DateTime? toDate = null) {
             var query = _context.Orders
                 .Include(o => o.OrderDetails)
-                .Where(o => o.Status == OrderStatus.Completed);
+                .Where(o => o.Status >= OrderStatus.Paid);
 
             if (fromDate.HasValue) {
                 query = query.Where(o => o.CreatedDate >= fromDate.Value);
@@ -65,6 +83,8 @@ namespace ShoeShop.Services {
 
             var orders = await query.ToListAsync();
             var productStats = new Dictionary<Guid, ProductSalesStatistics>();
+
+
 
             foreach (var order in orders) {
                 foreach (var detail in order.OrderDetails) {
@@ -81,11 +101,40 @@ namespace ShoeShop.Services {
                 }
             }
 
-            // Затраты по товарам считаем по всем поступлениям на склад
-            foreach (var stats in productStats.Values) {
-                stats.Costs = await _context.ProductStocks
-                    .Where(ps => ps.ProductId == stats.ProductId && ps.PurchasePrice > 0)
-                    .SumAsync(ps => ps.Quantity * ps.PurchasePrice);
+            // Добавляем затраты на остатки для всех товаров
+            var allStocks = await _context.ProductStocks
+                .Include(ps => ps.Product)
+                .Where(ps => ps.PurchasePrice > 0)
+                .ToListAsync();
+            
+            foreach (var stock in allStocks) {
+                if (!productStats.ContainsKey(stock.ProductId)) {
+                    productStats[stock.ProductId] = new ProductSalesStatistics {
+                        ProductId = stock.ProductId,
+                        ProductName = stock.Product?.Name ?? "Неизвестный товар",
+                        QuantitySold = 0,
+                        Revenue = 0,
+                        Costs = 0
+                    };
+                }
+                
+                // Затраты на остатки
+                productStats[stock.ProductId].Costs += stock.PurchasePrice * stock.Quantity;
+            }
+            
+            // Добавляем затраты на проданные товары
+            foreach (var order in orders) {
+                foreach (var detail in order.OrderDetails) {
+                    if (productStats.ContainsKey(detail.ProductId)) {
+                        var stock = await _context.ProductStocks
+                            .Where(ps => ps.ProductId == detail.ProductId && ps.Size == detail.Size)
+                            .FirstOrDefaultAsync();
+                        
+                        if (stock != null && stock.PurchasePrice > 0) {
+                            productStats[detail.ProductId].Costs += stock.PurchasePrice;
+                        }
+                    }
+                }
             }
 
             return productStats.Values.OrderByDescending(p => p.Revenue).ToList();
@@ -97,7 +146,7 @@ namespace ShoeShop.Services {
         public async Task<Dictionary<int, int>> GetSizeStatisticsAsync(DateTime? fromDate = null, DateTime? toDate = null) {
             var query = _context.Orders
                 .Include(o => o.OrderDetails)
-                .Where(o => o.Status == OrderStatus.Completed);
+                .Where(o => o.Status >= OrderStatus.Paid);
 
             if (fromDate.HasValue) {
                 query = query.Where(o => o.CreatedDate >= fromDate.Value);
@@ -127,7 +176,7 @@ namespace ShoeShop.Services {
         public async Task<Dictionary<string, decimal>> GetCategoryStatisticsAsync(DateTime? fromDate = null, DateTime? toDate = null) {
             var query = _context.Orders
                 .Include(o => o.OrderDetails)
-                .Where(o => o.Status == OrderStatus.Completed);
+                .Where(o => o.Status >= OrderStatus.Paid);
 
             if (fromDate.HasValue) {
                 query = query.Where(o => o.CreatedDate >= fromDate.Value);
@@ -136,22 +185,22 @@ namespace ShoeShop.Services {
                 query = query.Where(o => o.CreatedDate <= toDate.Value);
             }
 
-            var orders = await query.ToListAsync();
-            var categoryStats = new Dictionary<string, decimal>();
+            // Оптимизированный запрос с JOIN
+            var categoryStats = await query
+                .SelectMany(o => o.OrderDetails)
+                .Join(_context.Products.Include(p => p.Category),
+                    detail => detail.ProductId,
+                    product => product.Id,
+                    (detail, product) => new {
+                        CategoryName = product.Category != null ? product.Category.Name : "Без категории",
+                        Price = (decimal)detail.Price
+                    })
+                .GroupBy(x => x.CategoryName)
+                .Select(g => new { Category = g.Key, Total = g.Sum(x => x.Price) })
+                .OrderByDescending(x => x.Total)
+                .ToDictionaryAsync(x => x.Category, x => x.Total);
 
-            foreach (var order in orders) {
-                foreach (var detail in order.OrderDetails) {
-                    var product = await _context.Products.Include(p => p.Category).FirstOrDefaultAsync(p => p.Id == detail.ProductId);
-                    var categoryName = product?.Category?.Name ?? "Без категории";
-                    
-                    if (!categoryStats.ContainsKey(categoryName)) {
-                        categoryStats[categoryName] = 0;
-                    }
-                    categoryStats[categoryName] += (decimal)detail.Price;
-                }
-            }
-
-            return categoryStats.OrderByDescending(x => x.Value).ToDictionary(x => x.Key, x => x.Value);
+            return categoryStats;
         }
         
         /// <summary>
@@ -160,7 +209,7 @@ namespace ShoeShop.Services {
         public async Task<List<DailySales>> GetDailySalesAsync(DateTime? fromDate = null, DateTime? toDate = null) {
             var query = _context.Orders
                 .Include(o => o.OrderDetails)
-                .Where(o => o.Status == OrderStatus.Completed);
+                .Where(o => o.Status >= OrderStatus.Paid);
 
             if (fromDate.HasValue) {
                 query = query.Where(o => o.CreatedDate >= fromDate.Value);
@@ -171,6 +220,8 @@ namespace ShoeShop.Services {
 
             var orders = await query.ToListAsync();
             var dailyStats = new Dictionary<DateTime, DailySales>();
+
+
 
             foreach (var order in orders) {
                 var date = order.CreatedDate.Date;
@@ -235,7 +286,7 @@ namespace ShoeShop.Services {
             if (toDate.HasValue) query = query.Where(o => o.CreatedDate <= toDate.Value);
             
             var totalOrders = await query.CountAsync();
-            var completedOrders = await query.CountAsync(o => o.Status == OrderStatus.Completed);
+            var completedOrders = await query.CountAsync(o => o.Status >= OrderStatus.Paid);
             
             return totalOrders > 0 ? (decimal)completedOrders / totalOrders * 100 : 0;
         }
@@ -244,7 +295,7 @@ namespace ShoeShop.Services {
         /// Средний чек
         /// </summary>
         public async Task<decimal> GetAverageOrderValueAsync(DateTime? fromDate = null, DateTime? toDate = null) {
-            var query = _context.Orders.Include(o => o.OrderDetails).Where(o => o.Status == OrderStatus.Completed);
+            var query = _context.Orders.Include(o => o.OrderDetails).Where(o => o.Status >= OrderStatus.Paid);
             if (fromDate.HasValue) query = query.Where(o => o.CreatedDate >= fromDate.Value);
             if (toDate.HasValue) query = query.Where(o => o.CreatedDate <= toDate.Value);
             
@@ -259,7 +310,7 @@ namespace ShoeShop.Services {
         /// Топ товары
         /// </summary>
         public async Task<List<TopProduct>> GetTopProductsAsync(DateTime? fromDate = null, DateTime? toDate = null, int limit = 5) {
-            var query = _context.Orders.Include(o => o.OrderDetails).Where(o => o.Status == OrderStatus.Completed);
+            var query = _context.Orders.Include(o => o.OrderDetails).Where(o => o.Status >= OrderStatus.Paid);
             if (fromDate.HasValue) query = query.Where(o => o.CreatedDate >= fromDate.Value);
             if (toDate.HasValue) query = query.Where(o => o.CreatedDate <= toDate.Value);
             

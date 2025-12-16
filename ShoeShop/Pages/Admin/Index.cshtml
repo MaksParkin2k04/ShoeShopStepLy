@@ -6,7 +6,10 @@
 
 <div class="admin-dashboard">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2><i class="fas fa-cogs me-2"></i>Панель администратора</h2>
+        <div>
+            <h2><i class="fas fa-cogs me-2"></i>Панель администратора</h2>
+            <p class="text-muted mb-0">Роль: <span class="badge bg-primary">@Model.UserRole</span></p>
+        </div>
         <form method="post" asp-page-handler="Logout">
             <button type="submit" class="btn btn-outline-danger">
                 <i class="fas fa-sign-out-alt me-2"></i>Выйти
@@ -15,200 +18,203 @@
     </div>
 
     <div class="row g-4">
-        <div class="col-md-6 col-lg-4">
-            <div class="admin-card">
-                <div class="admin-card-icon">
-                    <i class="fas fa-shopping-cart"></i>
-                </div>
-                <div class="admin-card-content">
-                    <h5>Заказы</h5>
-                    <p>Управление заказами клиентов</p>
-                    <a asp-page="/Admin/Orders" class="btn btn-primary">Перейти</a>
+        @if (Model.CanViewOrders)
+        {
+            <div class="col-md-6 col-lg-4">
+                <div class="admin-card">
+                    <div class="admin-card-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <div class="admin-card-content">
+                        <h5>Заказы</h5>
+                        <p>Управление заказами клиентов</p>
+                        <a asp-page="/Admin/Orders" class="btn btn-primary">Перейти</a>
+                    </div>
                 </div>
             </div>
-        </div>
+        }
 
-        <div class="col-md-6 col-lg-4">
-            <div class="admin-card">
-                <div class="admin-card-icon">
-                    <i class="fas fa-edit"></i>
-                </div>
-                <div class="admin-card-content">
-                    <h5>Каталог товаров</h5>
-                    <p>Редактирование товаров</p>
-                    <a asp-page="/Admin/Catalog" class="btn btn-primary">Перейти</a>
+        @if (Model.CanViewProducts)
+        {
+            <div class="col-md-6 col-lg-4">
+                <div class="admin-card">
+                    <div class="admin-card-icon">
+                        <i class="fas fa-edit"></i>
+                    </div>
+                    <div class="admin-card-content">
+                        <h5>Каталог товаров</h5>
+                        <p>Редактирование товаров</p>
+                        <a asp-page="/Admin/Catalog" class="btn btn-primary">Перейти</a>
+                    </div>
                 </div>
             </div>
-        </div>
+        }
 
-        <div class="col-md-6 col-lg-4">
-            <div class="admin-card">
-                <div class="admin-card-icon">
-                    <i class="fas fa-tags"></i>
-                </div>
-                <div class="admin-card-content">
-                    <h5>Категории</h5>
-                    <p>Управление категориями товаров</p>
-                    <a asp-page="/Admin/Categories" class="btn btn-primary">Перейти</a>
+        @if (Model.CanViewCategories)
+        {
+            <div class="col-md-6 col-lg-4">
+                <div class="admin-card">
+                    <div class="admin-card-icon">
+                        <i class="fas fa-tags"></i>
+                    </div>
+                    <div class="admin-card-content">
+                        <h5>Категории</h5>
+                        <p>Управление категориями товаров</p>
+                        <a asp-page="/Admin/Categories" class="btn btn-primary">Перейти</a>
+                    </div>
                 </div>
             </div>
-        </div>
+        }
 
-        <div class="col-md-6 col-lg-4">
-            <div class="admin-card">
-                <div class="admin-card-icon">
-                    <i class="fas fa-boxes"></i>
-                </div>
-                <div class="admin-card-content">
-                    <h5>Остатки товаров</h5>
-                    <p>Управление складскими остатками</p>
-                    <a asp-page="/Admin/Stock" class="btn btn-primary">Перейти</a>
+        @if (Model.CanViewStock)
+        {
+            <div class="col-md-6 col-lg-4">
+                <div class="admin-card">
+                    <div class="admin-card-icon">
+                        <i class="fas fa-boxes"></i>
+                    </div>
+                    <div class="admin-card-content">
+                        <h5>Товары и остатки</h5>
+                        <p>Создание товаров, приход, списание, управление остатками</p>
+                        <a asp-page="/Admin/Stock" class="btn btn-primary">Перейти</a>
+                    </div>
                 </div>
             </div>
-        </div>
+        }
 
-        <div class="col-md-6 col-lg-4">
-            <div class="admin-card">
-                <div class="admin-card-icon">
-                    <i class="fas fa-plus"></i>
-                </div>
-                <div class="admin-card-content">
-                    <h5>Добавить товар</h5>
-                    <p>Создание нового товара</p>
-                    <a asp-page="/Admin/AddProduct" class="btn btn-success">Добавить</a>
-                </div>
-            </div>
-        </div>
 
-        <div class="col-md-6 col-lg-4">
-            <div class="admin-card">
-                <div class="admin-card-icon">
-                    <i class="fas fa-chart-line"></i>
-                </div>
-                <div class="admin-card-content">
-                    <h5>Статистика продаж</h5>
-                    <p>Анализ выручки и прибыли</p>
-                    <a asp-page="/Admin/Statistics" class="btn btn-info">Посмотреть</a>
-                </div>
-            </div>
-        </div>
 
-        <div class="col-md-6 col-lg-4">
-            <div class="admin-card">
-                <div class="admin-card-icon">
-                    <i class="fas fa-percent"></i>
-                </div>
-                <div class="admin-card-content">
-                    <h5>Промокоды</h5>
-                    <p>Управление промокодами и скидками</p>
-                    <a asp-page="/Admin/PromoCodes" class="btn btn-warning">Управлять</a>
-                </div>
-            </div>
-        </div>
 
-        <div class="col-md-6 col-lg-4">
-            <div class="admin-card">
-                <div class="admin-card-icon">
-                    <i class="fas fa-chart-bar"></i>
-                </div>
-                <div class="admin-card-content">
-                    <h5>Аналитика сайта</h5>
-                    <p>Статистика посещений из Яндекс.Метрики</p>
-                    <a asp-page="/Admin/Analytics" class="btn btn-info">Посмотреть</a>
-                </div>
-            </div>
-        </div>
 
-        <div class="col-md-6 col-lg-4">
-            <div class="admin-card">
-                <div class="admin-card-icon">
-                    <i class="fab fa-telegram-plane"></i>
-                </div>
-                <div class="admin-card-content">
-                    <h5>Telegram Бот</h5>
-                    <p>Управление Telegram ботом и пользователями</p>
-                    <a asp-page="/Admin/TelegramManagement" class="btn btn-primary">Управлять</a>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-6 col-lg-4">
-            <div class="admin-card">
-                <div class="admin-card-icon">
-                    <i class="fas fa-mobile-alt"></i>
-                </div>
-                <div class="admin-card-content">
-                    <h5>Telegram Mini App</h5>
-                    <p>Настройка и статистика Telegram приложения</p>
-                    <a asp-page="/Admin/TelegramBot" class="btn btn-primary">Настроить</a>
+        @if (Model.CanViewStatistics)
+        {
+            <div class="col-md-6 col-lg-4">
+                <div class="admin-card">
+                    <div class="admin-card-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="admin-card-content">
+                        <h5>Статистика продаж</h5>
+                        <p>Анализ выручки и прибыли</p>
+                        <a asp-page="/Admin/Statistics" class="btn btn-info">Посмотреть</a>
+                    </div>
                 </div>
             </div>
-        </div>
+        }
 
-        <div class="col-md-6 col-lg-4">
-            <div class="admin-card">
-                <div class="admin-card-icon">
-                    <i class="fas fa-print"></i>
-                </div>
-                <div class="admin-card-content">
-                    <h5>Печать этикеток</h5>
-                    <p>Поиск и печать этикеток товаров</p>
-                    <a asp-page="/Admin/LabelPrinting" class="btn btn-success">Печать</a>
-                </div>
-            </div>
-        </div>
 
-        <div class="col-md-6 col-lg-4">
-            <div class="admin-card">
-                <div class="admin-card-icon">
-                    <i class="fas fa-database"></i>
-                </div>
-                <div class="admin-card-content">
-                    <h5>Тестовые данные</h5>
-                    <p>Добавление тестовых товаров и категорий</p>
-                    <a asp-page="/Admin/TestData" class="btn btn-secondary">Управление</a>
-                </div>
-            </div>
-        </div>
 
-        <div class="col-md-6 col-lg-4">
-            <div class="admin-card">
-                <div class="admin-card-icon">
-                    <i class="fas fa-envelope"></i>
-                </div>
-                <div class="admin-card-content">
-                    <h5>Email рассылки</h5>
-                    <p>Отправка рекламных писем клиентам</p>
-                    <a asp-page="/Admin/EmailCampaigns" class="btn btn-primary">Управлять</a>
+        @if (Model.CanViewPromoCodes)
+        {
+            <div class="col-md-6 col-lg-4">
+                <div class="admin-card">
+                    <div class="admin-card-icon">
+                        <i class="fas fa-percent"></i>
+                    </div>
+                    <div class="admin-card-content">
+                        <h5>Промокоды</h5>
+                        <p>Управление промокодами и скидками</p>
+                        <a asp-page="/Admin/PromoCodes" class="btn btn-warning">Управлять</a>
+                    </div>
                 </div>
             </div>
-        </div>
+        }
 
-        <div class="col-md-6 col-lg-4">
-            <div class="admin-card">
-                <div class="admin-card-icon">
-                    <i class="fas fa-users"></i>
-                </div>
-                <div class="admin-card-content">
-                    <h5>Пользователи</h5>
-                    <p>Управление аккаунтами пользователей</p>
-                    <a asp-page="/Admin/Users" class="btn btn-primary">Управлять</a>
+        @if (Model.CanViewAnalytics)
+        {
+            <div class="col-md-6 col-lg-4">
+                <div class="admin-card">
+                    <div class="admin-card-icon">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <div class="admin-card-content">
+                        <h5>Аналитика сайта</h5>
+                        <p>Статистика посещений из Яндекс.Метрики</p>
+                        <a asp-page="/Admin/Analytics" class="btn btn-info">Посмотреть</a>
+                    </div>
                 </div>
             </div>
-        </div>
+        }
 
-        <div class="col-md-6 col-lg-4">
-            <div class="admin-card">
-                <div class="admin-card-icon">
-                    <i class="fas fa-comments"></i>
-                </div>
-                <div class="admin-card-content">
-                    <h5>Чат с клиентами</h5>
-                    <p>Ответы на вопросы клиентов</p>
-                    <a asp-page="/Admin/Chat" class="btn btn-primary">Отвечать</a>
+        @if (Model.CanViewLabelPrinting)
+        {
+            <div class="col-md-6 col-lg-4">
+                <div class="admin-card">
+                    <div class="admin-card-icon">
+                        <i class="fas fa-print"></i>
+                    </div>
+                    <div class="admin-card-content">
+                        <h5>Печать этикеток</h5>
+                        <p>Поиск и печать этикеток товаров</p>
+                        <a asp-page="/Admin/LabelPrinting" class="btn btn-success">Печать</a>
+                    </div>
                 </div>
             </div>
-        </div>
+        }
+
+        @if (Model.CanViewTestData)
+        {
+            <div class="col-md-6 col-lg-4">
+                <div class="admin-card">
+                    <div class="admin-card-icon">
+                        <i class="fas fa-database"></i>
+                    </div>
+                    <div class="admin-card-content">
+                        <h5>Тестовые ��анные</h5>
+                        <p>Добавление тестовых товаров и категорий</p>
+                        <a asp-page="/Admin/TestData" class="btn btn-secondary">Управление</a>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (Model.CanViewEmailCampaigns)
+        {
+            <div class="col-md-6 col-lg-4">
+                <div class="admin-card">
+                    <div class="admin-card-icon">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <div class="admin-card-content">
+                        <h5>Email рассылки</h5>
+                        <p>Отправка рекламных писем клиентам</p>
+                        <a asp-page="/Admin/EmailCampaigns" class="btn btn-primary">Управлять</a>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (Model.CanViewUsers)
+        {
+            <div class="col-md-6 col-lg-4">
+                <div class="admin-card">
+                    <div class="admin-card-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="admin-card-content">
+                        <h5>Пользователи</h5>
+                        <p>Управление аккаунтами пользователей</p>
+                        <a asp-page="/Admin/Users" class="btn btn-primary">Управлять</a>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (Model.CanViewChat)
+        {
+            <div class="col-md-6 col-lg-4">
+                <div class="admin-card">
+                    <div class="admin-card-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <div class="admin-card-content">
+                        <h5>Чат с клиентами</h5>
+                        <p>Ответы на вопросы клиентов</p>
+                        <a asp-page="/Admin/Chat" class="btn btn-primary">Отвечать</a>
+                    </div>
+                </div>
+            </div>
+        }
     </div>
 </div>
 
