@@ -5,22 +5,26 @@
     ViewData["ActivePage"] = ManageNavPages.Index;
 }
 
-<div class="profile-section">
-    <div class="section-header">
-        <h2 class="section-title">
-            <i class="fas fa-user me-2"></i>
-            Основная информация
-        </h2>
-        <p class="section-subtitle">Обновите свои личные данные</p>
+<div class="hero-section">
+    <div class="hero-content">
+        <div class="hero-badge">Профиль</div>
+        <h1 class="hero-title">Добро пожаловать!</h1>
+        <p class="hero-subtitle">Управляйте своими данными и заказами</p>
     </div>
-    
-    <partial name="_StatusMessage" for="StatusMessage" />
-    
-    <form id="profile-form" method="post" class="profile-form">
-        <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
-        
-        <div class="form-section">
-            <h4 class="form-section-title">Личные данные</h4>
+</div>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <partial name="_StatusMessage" for="StatusMessage" />
+            
+            <div class="card profile-card">
+                <div class="card-body">
+                    <form id="profile-form" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+                        
+                        <div class="form-section">
+                            <h4 class="form-section-title">Личные данные</h4>
             <div class="form-row">
                 <div class="form-group">
                     <label asp-for="Username" class="form-label">Электронная почта</label>
@@ -86,15 +90,128 @@
                 </div>
             </div>
             
-            <div class="form-actions">
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-save me-2"></i>
-                    Сохранить изменения
-                </button>
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-2"></i>
+                                    Сохранить изменения
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
-    </form>
+    </div>
 </div>
+
+<style>
+.profile-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    margin-top: -50px;
+    position: relative;
+    z-index: 10;
+    background: #ffffff;
+}
+
+.form-section {
+    margin-bottom: 2rem;
+}
+
+.form-section-title {
+    color: #1f2937;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 1.1rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.form-group {
+    margin-bottom: 1.25rem;
+}
+
+.form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.form-label {
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.form-control {
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    padding: 0.75rem 1rem;
+    transition: border-color 0.15s ease;
+    background-color: #ffffff;
+    font-size: 0.95rem;
+}
+
+.form-control:focus {
+    border-color: #6b7280;
+    box-shadow: 0 0 0 2px rgba(107, 114, 128, 0.1);
+    outline: none;
+}
+
+.form-control:disabled {
+    background-color: #f9fafb;
+    color: #6b7280;
+}
+
+.form-actions {
+    text-align: center;
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+.btn-primary {
+    background-color: #1f2937;
+    border: 1px solid #1f2937;
+    border-radius: 6px;
+    padding: 0.75rem 2rem;
+    font-weight: 500;
+    color: #ffffff;
+    transition: all 0.15s ease;
+}
+
+.btn-primary:hover {
+    background-color: #111827;
+    border-color: #111827;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.form-text {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-top: 0.25rem;
+}
+
+@@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+    
+    .profile-card {
+        margin-top: -30px;
+        border-radius: 8px 8px 0 0;
+    }
+}
+</style>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
