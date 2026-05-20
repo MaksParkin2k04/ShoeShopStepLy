@@ -14,7 +14,6 @@ namespace ShoeShop.Data {
         public DbSet<OrderDetail> OrderDetails { get; private set; }
         public DbSet<Category> Categories { get; private set; }
         public DbSet<PromoCode> PromoCodes { get; private set; }
-        public DbSet<TelegramUser> TelegramUsers { get; private set; }
         public DbSet<EmailCampaign> EmailCampaigns { get; private set; }
         public DbSet<ChatMessage> ChatMessages { get; private set; }
 
@@ -77,14 +76,6 @@ namespace ShoeShop.Data {
             modelBuilder.Entity<PromoCode>().Property(p => p.DiscountPercent).IsRequired().HasPrecision(5, 2);
             modelBuilder.Entity<PromoCode>().Property(p => p.MaxDiscountAmount).HasPrecision(18, 2);
             modelBuilder.Entity<PromoCode>().HasIndex(p => p.Code).IsUnique();
-
-            modelBuilder.Entity<TelegramUser>().HasKey(t => t.TelegramId);
-            modelBuilder.Entity<TelegramUser>().Property(t => t.FirstName).HasMaxLength(100);
-            modelBuilder.Entity<TelegramUser>().Property(t => t.LastName).HasMaxLength(100);
-            modelBuilder.Entity<TelegramUser>().Property(t => t.Username).HasMaxLength(100);
-            modelBuilder.Entity<TelegramUser>().Property(t => t.Phone).HasMaxLength(20);
-            modelBuilder.Entity<TelegramUser>().Property(t => t.Address).HasMaxLength(500);
-            modelBuilder.Entity<TelegramUser>().Property(t => t.Email).HasMaxLength(256);
 
         }
     }

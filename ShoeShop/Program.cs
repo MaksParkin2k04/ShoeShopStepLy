@@ -67,14 +67,9 @@ namespace ShoeShop {
             builder.Services.AddScoped<IBasketShoppingService, BasketShoppingCookies>();
             builder.Services.AddScoped<PromoCodeService>();
             builder.Services.AddScoped<ReviewService>();
-            builder.Services.AddHttpClient<YooKassaService>();
             builder.Services.AddHttpClient<YandexMetrikaService>();
             builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
             builder.Services.AddSingleton<ICacheService, CacheService>();
-            // Telegram сервисы отключены
-            // builder.Services.AddHttpClient<TelegramBotService>();
-            // builder.Services.AddScoped<TelegramBotHandler>();
-            // builder.Services.AddHostedService<TelegramShopService>();
 
             builder.Services.Configure<IdentityOptions>(options => {
                 // Параметры для требований к паролю..
