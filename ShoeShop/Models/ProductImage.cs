@@ -9,10 +9,12 @@
         /// <param name="id">Идентификатор</param>
         /// <param name="path">Путь к изображению</param>
         /// <param name="alt">Описание изображения</param>
-        private ProductImage(Guid id, string path, string alt) {
+        /// <param name="productId">Идентификатор товара</param>
+        private ProductImage(Guid id, string path, string alt, Guid productId) {
             Id = id;
             Path = path;
             Alt = alt;
+            ProductId = productId;
         }
 
         /// <summary>
@@ -29,6 +31,11 @@
         /// Описание изображения
         /// </summary>
         public string Alt { get; private set; }
+
+        /// <summary>
+        /// Идентификатор товара
+        /// </summary>
+        public Guid ProductId { get; private set; }
 
         /// <summary>
         /// Устоновить путь к изображению
@@ -51,9 +58,10 @@
         /// </summary>
         /// <param name="path">Путь к изображению</param>
         /// <param name="alt">Описание изображения</param>
+        /// <param name="productId">Идентификатор товара</param>
         /// <returns>Созданный объект</returns>
-        public static ProductImage Create(string path, string alt) {
-            return new ProductImage(Guid.Empty, path, alt);
+        public static ProductImage Create(string path, string alt, Guid productId) {
+            return new ProductImage(Guid.NewGuid(), path, alt, productId);
         }
     }
 }

@@ -62,10 +62,11 @@
                                 <h5 class="category-name">@category.Name</h5>
                             </div>
                             <div class="category-actions">
-                                <form asp-page="/Admin/Categories" asp-page-handler="Delete" method="post" class="d-inline">
+                                <form asp-page="/Admin/Categories" asp-page-handler="Delete" method="post" class="d-inline" id="delete-form-@category.Id">
                                     <input type="hidden" name="categoryId" value="@category.Id" />
-                                    <button type="submit" class="btn btn-sm btn-outline-danger" 
-                                            onclick="return confirm('Вы уверены, что хотите удалить категорию?')">
+                                    <button type="button" class="btn btn-sm btn-outline-danger delete-category-btn" 
+                                            data-category-id="@category.Id"
+                                            data-category-name="@category.Name">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </form>
@@ -76,4 +77,131 @@
             </div>
         }
     </div>
+
+    @* Модальное окно подтверждения удаления *@
+    <div class="modal fade" id="deleteCategoryModal" tabindex="-1" aria-labelledby="deleteCategoryModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteCategoryModalLabel">Подтверждение удаления категории</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="noProductsMessage" style="display: none;">
+                        <p>Вы уверены, что хотите удалить категорию <strong id="categoryName"></strong>?</p>
+                    </div>
+                    <div id="hasProductsMessage" style="display: none;">
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Внимание!</strong> В категории <strong id="categoryNameWithProducts"></strong> находится <span id="productCount" class="badge bg-danger"></span> товар(ов).
+                        </div>
+                        <p>Вы не можете удалить категорию, к которой привязаны товары.</p>
+                        <p>Выберите один из вариантов:</p>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" name="deleteOption" id="optionCancel" value="cancel" checked>
+                            <label class="form-check-label" for="optionCancel">
+                                Отменить удаление
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="deleteOption" id="optionDeleteAll" value="deleteAll">
+                            <label class="form-check-label" for="optionDeleteAll">
+                                Удалить категорию вместе со всеми товарами (<span id="productCount2"></span> шт.)
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Удалить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* JavaScript для обработки удаления *@
+    @section Scripts {
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                let currentCategoryId = null;
+                let currentCategoryName = null;
+                let currentProductCount = 0;
+                
+                // Обработчики для кнопок удаления
+                document.querySelectorAll('.delete-category-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        currentCategoryId = this.getAttribute('data-category-id');
+                        currentCategoryName = this.getAttribute('data-category-name');
+                        
+                        // Проверяем наличие товаров через AJAX
+                        checkCategoryHasProducts(currentCategoryId);
+                    });
+                });
+                
+                // Кнопка подтверждения удаления
+                document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+                    if (!currentCategoryId) return;
+                    
+                    const deleteOption = document.querySelector('input[name="deleteOption"]:checked').value;
+                    const form = document.getElementById('delete-form-' + currentCategoryId);
+                    
+                    if (deleteOption === 'deleteAll') {
+                        // Добавляем скрытое поле для forceDelete
+                        const forceDeleteInput = document.createElement('input');
+                        forceDeleteInput.type = 'hidden';
+                        forceDeleteInput.name = 'forceDelete';
+                        forceDeleteInput.value = 'true';
+                        form.appendChild(forceDeleteInput);
+                    }
+                    
+                    form.submit();
+                });
+                
+                // Функция проверки наличия товаров
+                function checkCategoryHasProducts(categoryId) {
+                    fetch('/Admin/Categories?handler=CheckProducts&categoryId=' + categoryId)
+                        .then(response => response.json())
+                        .then(data => {
+                            currentProductCount = data.productCount;
+                            showDeleteModal(data.hasProducts);
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            // Если AJAX не работает, показываем стандартное подтверждение
+                            showDeleteModal(false);
+                        });
+                }
+                
+                // Функция показа модального окна
+                function showDeleteModal(hasProducts) {
+                    const modal = new bootstrap.Modal(document.getElementById('deleteCategoryModal'));
+                    
+                    if (hasProducts) {
+                        // Показываем сообщение с товарами
+                        document.getElementById('noProductsMessage').style.display = 'none';
+                        document.getElementById('hasProductsMessage').style.display = 'block';
+                        document.getElementById('categoryNameWithProducts').textContent = currentCategoryName;
+                        document.getElementById('productCount').textContent = currentProductCount;
+                        document.getElementById('productCount2').textContent = currentProductCount;
+                        document.getElementById('confirmDeleteBtn').disabled = true;
+                        
+                        // Обработчик изменения выбора опции
+                        document.querySelectorAll('input[name="deleteOption"]').forEach(radio => {
+                            radio.addEventListener('change', function() {
+                                document.getElementById('confirmDeleteBtn').disabled = this.value === 'cancel';
+                            });
+                        });
+                    } else {
+                        // Показываем простое сообщение
+                        document.getElementById('noProductsMessage').style.display = 'block';
+                        document.getElementById('hasProductsMessage').style.display = 'none';
+                        document.getElementById('categoryName').textContent = currentCategoryName;
+                        document.getElementById('confirmDeleteBtn').disabled = false;
+                    }
+                    
+                    modal.show();
+                }
+            });
+        </script>
+    }
 </div>

@@ -28,5 +28,7 @@ namespace ShoeShop.Models {
         Task<IEnumerable<Category>> GetCategories();
         Task AddCategory(Category category);
         Task RemoveCategory(Guid categoryId);
+        Task<(bool HasProducts, int ProductCount)> CheckCategoryHasProducts(Guid categoryId);
+        Task RemoveCategoryWithProducts(Guid categoryId);
     }
 }

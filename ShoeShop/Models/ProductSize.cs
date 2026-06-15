@@ -1,7 +1,5 @@
 ﻿namespace ShoeShop.Models {
 
-
-
     [Flags]
     public enum ProductSize : ulong {
         Not = 0b_0000000000000000000000000000000000000000000000000000000000000000,

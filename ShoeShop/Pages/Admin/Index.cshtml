@@ -82,10 +82,6 @@
             </div>
         }
 
-
-
-
-
         @if (Model.CanViewStatistics)
         {
             <div class="col-md-6 col-lg-4">
@@ -102,8 +98,6 @@
             </div>
         }
 
-
-
         @if (Model.CanViewPromoCodes)
         {
             <div class="col-md-6 col-lg-4">
@@ -115,22 +109,6 @@
                         <h5>Промокоды</h5>
                         <p>Управление промокодами и скидками</p>
                         <a asp-page="/Admin/PromoCodes" class="btn btn-warning">Управлять</a>
-                    </div>
-                </div>
-            </div>
-        }
-
-        @if (Model.CanViewAnalytics)
-        {
-            <div class="col-md-6 col-lg-4">
-                <div class="admin-card">
-                    <div class="admin-card-icon">
-                        <i class="fas fa-chart-bar"></i>
-                    </div>
-                    <div class="admin-card-content">
-                        <h5>Аналитика сайта</h5>
-                        <p>Статистика посещений из Яндекс.Метрики</p>
-                        <a asp-page="/Admin/Analytics" class="btn btn-info">Посмотреть</a>
                     </div>
                 </div>
             </div>
@@ -160,25 +138,9 @@
                         <i class="fas fa-database"></i>
                     </div>
                     <div class="admin-card-content">
-                        <h5>Тестовые ��анные</h5>
+                        <h5>Тестовые данные</h5>
                         <p>Добавление тестовых товаров и категорий</p>
                         <a asp-page="/Admin/TestData" class="btn btn-secondary">Управление</a>
-                    </div>
-                </div>
-            </div>
-        }
-
-        @if (Model.CanViewEmailCampaigns)
-        {
-            <div class="col-md-6 col-lg-4">
-                <div class="admin-card">
-                    <div class="admin-card-icon">
-                        <i class="fas fa-envelope"></i>
-                    </div>
-                    <div class="admin-card-content">
-                        <h5>Email рассылки</h5>
-                        <p>Отправка рекламных писем клиентам</p>
-                        <a asp-page="/Admin/EmailCampaigns" class="btn btn-primary">Управлять</a>
                     </div>
                 </div>
             </div>
@@ -200,21 +162,6 @@
             </div>
         }
 
-        @if (Model.CanViewChat)
-        {
-            <div class="col-md-6 col-lg-4">
-                <div class="admin-card">
-                    <div class="admin-card-icon">
-                        <i class="fas fa-comments"></i>
-                    </div>
-                    <div class="admin-card-content">
-                        <h5>Чат с клиентами</h5>
-                        <p>Просматривайте историю чатов и отвечайте клиентам</p>
-                        <a asp-page="/Admin/Chat" class="btn btn-primary">Открыть чат</a>
-                    </div>
-                </div>
-            </div>
-        }
     </div>
 </div>
 

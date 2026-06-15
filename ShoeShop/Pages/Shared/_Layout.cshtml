@@ -11,24 +11,11 @@
     <link rel="stylesheet" href="~/styles/stock-styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/styles/returns-steps.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/styles/profile-styles.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/styles/support-chat.css" asp-append-version="true" />
+  
 
     <link rel="stylesheet" href="~/ShoeShop.styles.css" asp-append-version="true" />
     @await RenderSectionAsync("Styles", required: false)
     
-    <!-- Yandex.Metrika counter -->
-    <script type="text/javascript">
-        (function(m,e,t,r,i,k,a){
-            m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
-            m[i].l=1*new Date();
-            for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
-            k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
-        })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=105873898', 'ym');
-
-        ym(105873898, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", accurateTrackBounce:true, trackLinks:true});
-    </script>
-    <noscript><div><img src="https://mc.yandex.ru/watch/105873898" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
-    <!-- /Yandex.Metrika counter -->
 </head>
 <body>
     <header>
@@ -74,8 +61,6 @@
                     <p class="text-muted">Качественная обувь для всей семьи. Широкий ассортимент, доступные цены, быстрая доставка.</p>
                     <div class="social-links">
                         <a href="#" class="text-primary me-3"><i class="fab fa-vk"></i></a>
-                        <a href="#" class="text-primary me-3"><i class="fab fa-telegram"></i></a>
-                        <a href="#" class="text-primary me-3"><i class="fab fa-instagram"></i></a>
                     </div>
                 </div>
                 <div class="col-md-2">
@@ -91,9 +76,6 @@
                         <li><a asp-page="/Warranty" class="text-muted text-decoration-none">Гарантия</a></li>
                         <li><a asp-page="/Privacy" class="text-muted text-decoration-none">Конфиденциальность</a></li>
                         <li><a asp-page="/Terms" class="text-muted text-decoration-none">Пользовательское соглашение</a></li>
-                        <li><a asp-page="/Support" class="text-muted text-decoration-none">
-                            <i class="fas fa-headset me-1"></i>Поддержка
-                        </a></li>
                     </ul>
                 </div>
                 <div class="col-md-4">
@@ -109,7 +91,7 @@
             <hr class="my-4">
             <div class="row align-items-center">
                 <div class="col-12 text-center">
-                    <p class="text-muted mb-0">&copy; 2024 StepLy. Все права защищены.</p>
+                    <p class="text-muted mb-0">&copy; 2026 StepLy. Все права защищены.</p>
                 </div>
             </div>
         </div>
@@ -118,7 +100,6 @@
     <script src="~/lib/jquery/jquery.min.js"></script>
     <script src="~/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
     <script src="~/scripts/script.js" asp-append-version="true"></script>
-    <!-- <script src="~/scripts/support-chat.js" asp-append-version="true"></script> -->
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>

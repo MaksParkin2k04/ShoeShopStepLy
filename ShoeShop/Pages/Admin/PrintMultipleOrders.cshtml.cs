@@ -48,7 +48,7 @@ namespace ShoeShop.Pages.Admin
             // Генерируем QR-коды для всех заказов
             foreach (var order in Orders)
             {
-                var trackingUrl = $"https://jxpc5n7p-7002.euw.devtunnels.ms/OrderTracking/Track/{order.Id}";
+                var trackingUrl = $"https://q9xdt92j-7002.euw.devtunnels.ms/OrderTracking/Track/{order.Id}";
                 qrCodes[order.Id] = GenerateQRCode(trackingUrl);
             }
 

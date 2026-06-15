@@ -15,7 +15,7 @@
         /// <param name="description">Краткое описание товара</param>
         /// <param name="content">Описание товара</param>
         /// <param name="categoryId">Идентификатор категории</param>
-        private Product(Guid id, string name, bool isSale, double price, ProductSize sizes, DateTime dateAdded, string description, string content, Guid categoryId) {
+        private Product(Guid id, string name, bool isSale, double price, ProductSize sizes, DateTime dateAdded, string description, string content, Guid? categoryId) {
             Id = id;
             Name = name;
             IsSale = isSale;
@@ -84,7 +84,7 @@
         /// <summary>
         /// Идентификатор категории
         /// </summary>
-        public Guid CategoryId { get; private set; }
+        public Guid? CategoryId { get; private set; }
         /// <summary>
         /// Категория товара
         /// </summary>
@@ -155,7 +155,7 @@
         /// <param name="path">Путь к изображению</param>
         /// <param name="alt">Описание изображения</param>
         public void AddImage(string path, string alt) {
-            ProductImage image = ProductImage.Create(path, alt);
+            ProductImage image = ProductImage.Create(path, alt, Id);
             images.Add(image);
         }
 
@@ -202,7 +202,7 @@
         /// Установить категорию
         /// </summary>
         /// <param name="categoryId">Идентификатор категории</param>
-        public void SetCategory(Guid categoryId) {
+        public void SetCategory(Guid? categoryId) {
             CategoryId = categoryId;
         }
 
@@ -218,7 +218,7 @@
         /// <param name="content">Описание товара</param>
         /// <param name="categoryId">Идентификатор категории</param>
         /// <returns>Созданный объект</returns>
-        public static Product Create(string name, bool isSale, double price, ProductSize sizes, DateTime dateAdded, string description, string content, Guid categoryId) {
+        public static Product Create(string name, bool isSale, double price, ProductSize sizes, DateTime dateAdded, string description, string content, Guid? categoryId) {
             return new Product(Guid.NewGuid(), name, isSale, price, sizes, dateAdded, description, content, categoryId);
         }
     }

@@ -111,7 +111,32 @@ namespace ShoeShop.Data {
             await context.SaveChangesAsync();
         }
 
+        public async Task<(bool HasProducts, int ProductCount)> CheckCategoryHasProducts(Guid categoryId) {
+            var productCount = await context.Products.CountAsync(p => p.CategoryId == categoryId);
+            return (productCount > 0, productCount);
+        }
+
         public async Task RemoveCategory(Guid categoryId) {
+            Category? category = await context.Categories.FindAsync(categoryId);
+            if (category != null) {
+                context.Categories.Remove(category);
+                await context.SaveChangesAsync();
+            }
+        }
+
+        public async Task RemoveCategoryWithProducts(Guid categoryId) {
+            // Простой подход: сначала удаляем все продукты в категории
+            var products = await context.Products
+                .Where(p => p.CategoryId == categoryId)
+                .ToListAsync();
+            
+            if (products.Any()) {
+                // Удаляем продукты (каскадное удаление удалит ProductStock и ProductImages)
+                context.Products.RemoveRange(products);
+                await context.SaveChangesAsync();
+            }
+            
+            // Удаляем саму категорию
             Category? category = await context.Categories.FindAsync(categoryId);
             if (category != null) {
                 context.Categories.Remove(category);

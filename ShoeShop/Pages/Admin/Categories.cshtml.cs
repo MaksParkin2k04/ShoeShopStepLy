@@ -27,9 +27,31 @@ namespace ShoeShop.Pages.Admin {
             return RedirectToPage();
         }
 
-        public async Task<IActionResult> OnPostDeleteAsync(Guid categoryId) {
-            await repository.RemoveCategory(categoryId);
+        public async Task<IActionResult> OnPostDeleteAsync(Guid categoryId, bool forceDelete = false) {
+            // Проверяем, есть ли товары в категории
+            var (hasProducts, productCount) = await repository.CheckCategoryHasProducts(categoryId);
+            
+            if (hasProducts && !forceDelete) {
+                // Сохраняем информацию о категории для показа предупреждения
+                TempData["CategoryToDelete"] = categoryId.ToString();
+                TempData["ProductCount"] = productCount;
+                return RedirectToPage();
+            }
+            
+            if (hasProducts && forceDelete) {
+                // Удаляем категорию вместе с товарами
+                await repository.RemoveCategoryWithProducts(categoryId);
+            } else {
+                // Удаляем только категорию (товаров нет)
+                await repository.RemoveCategory(categoryId);
+            }
+            
             return RedirectToPage();
+        }
+
+        public async Task<IActionResult> OnGetCheckProducts(Guid categoryId) {
+            var (hasProducts, productCount) = await repository.CheckCategoryHasProducts(categoryId);
+            return new JsonResult(new { hasProducts, productCount });
         }
     }
 }

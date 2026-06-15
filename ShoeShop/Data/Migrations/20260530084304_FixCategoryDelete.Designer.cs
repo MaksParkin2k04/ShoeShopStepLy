@@ -9,11 +9,11 @@ using ShoeShop.Data;
 
 #nullable disable
 
-namespace ShoeShop.Migrations
+namespace ShoeShop.Data.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    [Migration("20260131064514_AddSalePriceToProducts")]
-    partial class AddSalePriceToProducts
+    [Migration("20260530084304_FixCategoryDelete")]
+    partial class FixCategoryDelete
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -267,50 +267,6 @@ namespace ShoeShop.Migrations
                     b.ToTable("Categories");
                 });
 
-            modelBuilder.Entity("ShoeShop.Models.ChatMessage", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsAnswered")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsAutoResponse")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsClosed")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Message")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("RespondedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("RespondedBy")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Response")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UserName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ChatMessages");
-                });
-
             modelBuilder.Entity("ShoeShop.Models.EmailCampaign", b =>
                 {
                     b.Property<Guid>("Id")
@@ -387,8 +343,6 @@ namespace ShoeShop.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("TelegramUserId");
-
                     b.ToTable("Orders");
                 });
 
@@ -436,7 +390,7 @@ namespace ShoeShop.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("CategoryId")
+                    b.Property<Guid?>("CategoryId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Content")
@@ -571,55 +525,6 @@ namespace ShoeShop.Migrations
                     b.ToTable("PromoCodes");
                 });
 
-            modelBuilder.Entity("ShoeShop.Models.TelegramUser", b =>
-                {
-                    b.Property<long>("TelegramId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("TelegramId"));
-
-                    b.Property<string>("Address")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Email")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<string>("FirstName")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<bool>("IsLinkedToWebsite")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime>("LastActivity")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("LastName")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("Phone")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("Username")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<Guid?>("WebUserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("TelegramId");
-
-                    b.ToTable("TelegramUsers");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
                 {
                     b.HasOne("ShoeShop.Data.ApplicationRole", null)
@@ -673,10 +578,6 @@ namespace ShoeShop.Migrations
 
             modelBuilder.Entity("ShoeShop.Models.Order", b =>
                 {
-                    b.HasOne("ShoeShop.Models.TelegramUser", null)
-                        .WithMany("Orders")
-                        .HasForeignKey("TelegramUserId");
-
                     b.OwnsOne("ShoeShop.Models.OrderRecipient", "Recipient", b1 =>
                         {
                             b1.Property<string>("OrderId")
@@ -742,8 +643,7 @@ namespace ShoeShop.Migrations
                     b.HasOne("ShoeShop.Models.Category", "Category")
                         .WithMany()
                         .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Category");
                 });
@@ -774,11 +674,6 @@ namespace ShoeShop.Migrations
             modelBuilder.Entity("ShoeShop.Models.Product", b =>
                 {
                     b.Navigation("Images");
-                });
-
-            modelBuilder.Entity("ShoeShop.Models.TelegramUser", b =>
-                {
-                    b.Navigation("Orders");
                 });
 #pragma warning restore 612, 618
         }

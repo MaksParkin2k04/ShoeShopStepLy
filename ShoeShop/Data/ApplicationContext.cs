@@ -15,7 +15,6 @@ namespace ShoeShop.Data {
         public DbSet<Category> Categories { get; private set; }
         public DbSet<PromoCode> PromoCodes { get; private set; }
         public DbSet<EmailCampaign> EmailCampaigns { get; private set; }
-        public DbSet<ChatMessage> ChatMessages { get; private set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder) {
             base.OnModelCreating(modelBuilder);
@@ -64,7 +63,7 @@ namespace ShoeShop.Data {
                 .HasOne(p => p.Category)
                 .WithMany()
                 .HasForeignKey(p => p.CategoryId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.SetNull);
 
             modelBuilder.Entity<ProductStock>()
                 .HasOne(s => s.Product)

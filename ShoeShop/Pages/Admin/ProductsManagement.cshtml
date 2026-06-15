@@ -1,0 +1,643 @@
+@page
+@using ShoeShop.Models
+@using ShoeShop.Services
+@model ShoeShop.Pages.Admin.ProductsManagementModel
+@{
+    ViewData["Title"] = "Управление товарами";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Управление товарами</h2>
+    <a asp-page="/Admin/Index" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Админ панель
+    </a>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.Message)) {
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @Model.Message
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@* Вкладки *@
+<ul class="nav nav-tabs mb-4" id="productsTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link @(Model.ActiveTab == "catalog" ? "active" : "")" id="catalog-tab" data-bs-toggle="tab" data-bs-target="#catalog" type="button" role="tab" aria-controls="catalog" aria-selected="@(Model.ActiveTab == "catalog" ? "true" : "false")">
+            <i class="fas fa-list me-2"></i>Каталог товаров
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link @(Model.ActiveTab == "stock" ? "active" : "")" id="stock-tab" data-bs-toggle="tab" data-bs-target="#stock" type="button" role="tab" aria-controls="stock" aria-selected="@(Model.ActiveTab == "stock" ? "true" : "false")">
+            <i class="fas fa-boxes me-2"></i>Остатки и склад
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link @(Model.ActiveTab == "add" ? "active" : "")" id="add-tab" data-bs-toggle="tab" data-bs-target="#add" type="button" role="tab" aria-controls="add" aria-selected="@(Model.ActiveTab == "add" ? "true" : "false")">
+            <i class="fas fa-plus-circle me-2"></i>Создать товар
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link @(Model.ActiveTab == "categories" ? "active" : "")" id="categories-tab" data-bs-toggle="tab" data-bs-target="#categories" type="button" role="tab" aria-controls="categories" aria-selected="@(Model.ActiveTab == "categories" ? "true" : "false")">
+            <i class="fas fa-tags me-2"></i>Категории
+        </button>
+    </li>
+</ul>
+
+<div class="tab-content" id="productsTabsContent">
+    @* Вкладка 1: Каталог *@
+    <div class="tab-pane fade @(Model.ActiveTab == "catalog" ? "show active" : "")" id="catalog" role="tabpanel" aria-labelledby="catalog-tab">
+        @{
+            Dictionary<string, string> sortDictionary = new Dictionary<string, string>(new KeyValuePair<string, string>[] {
+                new KeyValuePair<string, string>("Default", "По умолчанию"),
+                new KeyValuePair<string, string>("Cheaper", "Сначала Дешевле"),
+                new KeyValuePair<string, string>("Expensive", "Сначала Дороже"),
+                new KeyValuePair<string, string>("ByDate", "По дате")
+            });
+
+            Dictionary<string, string> saleFilterDictionary = new Dictionary<string, string>(new KeyValuePair<string, string>[] {
+                new KeyValuePair<string, string>("All", "Все товары"),
+                new KeyValuePair<string, string>("IsSale", "Товары в продаже"),
+                new KeyValuePair<string, string>("IsNotSale", "Товары снятые с продажи")
+            });
+        }
+
+        <div class="row border border-1 mx-2 mb-4">
+            <form id="sortingForm" method="get" enctype="application/x-www-form-urlencoded">
+                <input type="hidden" name="activeTab" value="catalog" />
+                <div class="row p-2 justify-content-end">
+                    <div class="col-md-4">
+                        <label for="saleFilter" class="form-label">Фильтр товаров</label>
+                        <select id="saleFilter" name="saleFilter" class="form-select" onchange="document.getElementById('sortingForm').submit()">
+                            @foreach (string item in Enum.GetNames(typeof(IsSaleFilter))) {
+                                if (Model.IsSaleFilter.ToString() == item) {
+                                    <option value="@item" selected>@saleFilterDictionary[item]</option>
+                                } else {
+                                    <option value="@item">@saleFilterDictionary[item]</option>
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="sortingPrice" class="form-label">Сортировка по цене</label>
+                        <select id="sortingPrice" name="sorting" class="form-select" onchange="document.getElementById('sortingForm').submit()">
+                            @foreach (string item in Enum.GetNames(typeof(ProductSorting))) {
+                                if (Model.Sorting.ToString() == item) {
+                                    <option value="@item" selected>@sortDictionary[item]</option>
+                                } else {
+                                    <option value="@item">@sortDictionary[item]</option>
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label for="partProductName" class="form-label">Поиск по названию</label>
+                        <div class="input-group">
+                            <input id="partProductName" name="partProductName" type="text" value="@Model.PartProductName" class="form-control">
+                            <button class="btn btn-secondary" type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="row mt-3 p-2 text-end">
+            <p>
+                <a href="#add" class="btn btn-lg btn-outline-primary" data-bs-toggle="tab" onclick="switchTab('add')">
+                    <i class="fa-solid fa-circle-plus me-2"></i>Создать товар
+                </a>
+            </p>
+        </div>
+
+        @if (Model.Products == null || Model.Products.Count == 0) {
+            <div class="row mt-3">
+                <p class="text-center display-4">Товары не найдены</p>
+            </div>
+        }
+
+        <div class="row row-cols g-3">
+            @foreach (Product product in Model.Products ?? Enumerable.Empty<Product>()) {
+                <div class="col-sm-12 col-md-6 col-lg-4 col-xl-3">
+                    <div class="col-12 card h-100 d-flex flex-column justify-content-between">
+
+                        <div id="carousel-@product.Id" class="carousel slide" data-bs-ride="false">
+                            <div class="carousel-indicators">
+                                @if (product.Images?.Count > 0) {
+                                    <button type="button" data-bs-target="#carousel-@product.Id" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+                                    @for (int x = 1; x < product.Images.Count; x++) {
+                                        <button type="button" data-bs-target="#carousel-@product.Id" data-bs-slide-to="@x" aria-label="Slide @(x + 1)"></button>
+                                    }
+                                }
+                            </div>
+                            <div class="carousel-inner card-img">
+                                @if (product.Images?.Count > 0) {
+                                    <div class="carousel-item active">
+                                        <img src="../@product.Images[0].Path" class="d-block w-100" alt="@product.Images[0].Alt">
+                                    </div>
+
+                                    @for (int x = 1; x < product.Images.Count; x++) {
+                                        <div class="carousel-item">
+                                            <img src="../@product.Images[x].Path" class="d-block w-100" alt="@product.Images[x].Alt">
+                                        </div>
+                                    }
+                                }
+                            </div>
+                            <button class="carousel-control-prev" type="button" data-bs-target="#carousel-@product.Id" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Предыдущий</span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#carousel-@product.Id" data-bs-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Следующий</span>
+                            </button>
+                        </div>
+
+                        <div class="card-body">
+                            <h5 class="card-title">@product.Name</h5>
+                            <p class="card-text">@product.Description</p>
+                        </div>
+
+                        <h5 class="card-title m-2">@product.Price руб.</h5>
+
+                        <div class="d-flex flex-column gap-2 mx-1">
+                            <div class="d-flex gap-1 justify-content-center">
+                                <a asp-page="/Admin/EditProduct" asp-route-productId="@product.Id" class="btn btn-sm btn-outline-primary"><i class="fa-solid fa-pen-to-square"></i></a>
+                                <a asp-page="/ProductLabel" asp-route-productId="@product.Id" class="btn btn-sm btn-outline-success" target="_blank" title="Печать этикетки"><i class="fa-solid fa-print"></i></a>
+                                <a asp-page="/Admin/DeleteProduct" asp-route-productId="@product.Id" class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-trash-can"></i></a>
+                            </div>
+                            <a asp-page="/Product" asp-route-id="@product.Id" class="btn btn-primary btn-sm">Подробнее</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        @* Панель пагинации *@
+        @if (Model.TotalElementsCount > Model.ElementsPerPage) {
+            <div class="d-flex flex-row-reverse border border-1 p-1 mt-3">
+                @await Component.InvokeAsync(typeof(ShoeShop.Paginations.Components.PaginationViewComponent), new {
+                        currentPage = Model.CurrentPage,
+                        elementsPerPage = Model.ElementsPerPage,
+                        totalElementsCount = Model.TotalElementsCount,
+                        page = "/Admin/ProductsManagement",
+                        routeData = new Dictionary<string, string>([
+                            new KeyValuePair<string, string>("activeTab", "catalog"),
+                            new KeyValuePair<string, string>("sorting", Model.Sorting.ToString()), 
+                            new KeyValuePair<string, string>("saleFilter", Model.IsSaleFilter.ToString()), 
+                            new KeyValuePair<string, string>("partProductName", Model.PartProductName)
+                        ])
+                    })
+            </div>
+        }
+    </div>
+
+    @* Вкладка 2: Остатки *@
+    <div class="tab-pane fade @(Model.ActiveTab == "stock" ? "show active" : "")" id="stock" role="tabpanel" aria-labelledby="stock-tab">
+        <div class="row">
+            @* Поиск и фильтры *@
+            <div class="col-12 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0">Поиск и фильтры остатков</h6>
+                    </div>
+                    <div class="card-body">
+                        <form method="get" class="row g-3">
+                            <input type="hidden" name="activeTab" value="stock" />
+                            <div class="col-md-6">
+                                <label class="form-label">Поиск по названию товара</label>
+                                <input type="text" name="search" class="form-control" placeholder="Введите название товара" value="@Model.SearchQuery">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Статус наличия</label>
+                                <select name="status" class="form-select">
+                                    <option value="">Все статусы</option>
+                                    @if (Model.StatusFilter == "instock") {
+                                        <option value="instock" selected>В наличии (≥ 5)</option>
+                                    } else {
+                                        <option value="instock">В наличии (≥ 5)</option>
+                                    }
+                                    @if (Model.StatusFilter == "lowstock") {
+                                        <option value="lowstock" selected>Мало товара (1-4)</option>
+                                    } else {
+                                        <option value="lowstock">Мало товара (1-4)</option>
+                                    }
+                                    @if (Model.StatusFilter == "outofstock") {
+                                        <option value="outofstock" selected>Нет в наличии (0)</option>
+                                    } else {
+                                        <option value="outofstock">Нет в наличии (0)</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <div class="d-flex gap-2 w-100">
+                                    <button type="submit" class="btn btn-primary">Поиск</button>
+                                    <a href="?activeTab=stock" class="btn btn-outline-secondary">Очистить</a>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            @* Приход товара *@
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-plus-circle me-2 text-success"></i>Приход товара</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" asp-page-handler="AddStock">
+                            <div class="mb-3">
+                                <label class="form-label">Товар</label>
+                                <select name="productId" class="form-select" required>
+                                    <option value="">Выберите товар</option>
+                                    @foreach (var product in Model.AllProducts) {
+                                        <option value="@product.Id">@product.Name</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Размер</label>
+                                <select name="size" class="form-select" required>
+                                    @for (int size = 26; size <= 45; size++) {
+                                        <option value="@size">@size</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Количество</label>
+                                <input type="number" name="quantity" class="form-control" min="1" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Цена закупки (руб.)</label>
+                                <input type="number" name="purchasePrice" class="form-control" min="0" step="0.01" placeholder="0.00">
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Эта цена будет учтена в статистике расходов
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-success w-100">Добавить приход</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            @* Списание товара *@
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-minus-circle me-2 text-danger"></i>Списание товара</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" asp-page-handler="ReduceStock">
+                            <div class="mb-3">
+                                <label class="form-label">Товар</label>
+                                <select name="productId" class="form-select" required>
+                                    <option value="">Выберите товар</option>
+                                    @foreach (var product in Model.AllProducts) {
+                                        <option value="@product.Id">@product.Name</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Размер</label>
+                                <select name="size" class="form-select" required>
+                                    @for (int size = 26; size <= 45; size++) {
+                                        <option value="@size">@size</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Количество</label>
+                                <input type="number" name="quantity" class="form-control" min="1" required>
+                            </div>
+                            <button type="submit" class="btn btn-danger w-100">Списать товар</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            @* Текущие остатки *@
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Текущие остатки</h5>
+                        <span class="badge bg-primary">@Model.ProductStocks.Count() позиций</span>
+                    </div>
+                    <div class="card-body">
+                        @if (Model.ProductStocks.Any()) {
+                            <!-- Десктопная таблица -->
+                            <div class="table-responsive d-none d-md-block">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Товар</th>
+                                            <th>Размер</th>
+                                            <th>Кол-во</th>
+                                            <th>Цена закупки</th>
+                                            <th>Статус</th>
+                                            <th>Действия</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var stock in Model.ProductStocks) {
+                                            var statusClass = stock.Quantity == 0 ? "text-danger" : (stock.Quantity < 5 ? "text-warning" : "text-success");
+                                            var statusText = stock.Quantity == 0 ? "Нет" : (stock.Quantity < 5 ? "Мало" : "Есть");
+                                            var product = Model.AllProducts.FirstOrDefault(p => p.Id == stock.ProductId);
+                                            <tr>
+                                                <td>@(stock.Product?.Name ?? product?.Name ?? "Неизвестный")</td>
+                                                <td>@stock.Size</td>
+                                                <td>@stock.Quantity</td>
+                                                <td>@(stock.PurchasePrice > 0 ? stock.PurchasePrice.ToString("F0") + "₽" : "-")</td>
+                                                <td class="@statusClass">@statusText</td>
+                                                <td>
+                                                    <form method="post" asp-page-handler="UpdatePrice" class="d-inline">
+                                                        <input type="hidden" name="productId" value="@stock.ProductId" />
+                                                        <input type="hidden" name="size" value="@stock.Size" />
+                                                        <div class="input-group input-group-sm" style="width: 100px;">
+                                                            <input type="number" name="purchasePrice" class="form-control" step="0.01" min="0" value="@stock.PurchasePrice" placeholder="0">
+                                                            <button type="submit" class="btn btn-outline-primary btn-sm">
+                                                                <i class="fas fa-check"></i>
+                                                            </button>
+                                                        </div>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <!-- Мобильные карточки -->
+                            <div class="d-md-none">
+                                @foreach (var stock in Model.ProductStocks) {
+                                    var statusClass = stock.Quantity == 0 ? "text-danger" : (stock.Quantity < 5 ? "text-warning" : "text-success");
+                                    var statusText = stock.Quantity == 0 ? "Нет в наличии" : (stock.Quantity < 5 ? "Мало товара" : "В наличии");
+                                    var product = Model.AllProducts.FirstOrDefault(p => p.Id == stock.ProductId);
+                                    <div class="card mb-2">
+                                        <div class="card-body p-3">
+                                            <h6 class="card-title mb-2">@(stock.Product?.Name ?? product?.Name ?? "Неизвестный товар")</h6>
+                                            <div class="row g-2 mb-2">
+                                                <div class="col-4"><small class="text-muted">Размер:</small><br><strong>@stock.Size</strong></div>
+                                                <div class="col-4"><small class="text-muted">Кол-во:</small><br><strong>@stock.Quantity</strong></div>
+                                                <div class="col-4"><small class="text-muted">Статус:</small><br><span class="@statusClass"><strong>@statusText</strong></span></div>
+                                            </div>
+                                            <div class="row g-2">
+                                                <div class="col-6"><small class="text-muted">Цена:</small><br>@(stock.PurchasePrice > 0 ? stock.PurchasePrice.ToString("F0") + " ₽" : "-")</div>
+                                                <div class="col-6">
+                                                    <form method="post" asp-page-handler="UpdatePrice">
+                                                        <input type="hidden" name="productId" value="@stock.ProductId" />
+                                                        <input type="hidden" name="size" value="@stock.Size" />
+                                                        <div class="input-group input-group-sm">
+                                                            <input type="number" name="purchasePrice" class="form-control" step="0.01" min="0" value="@stock.PurchasePrice" placeholder="0">
+                                                            <button type="submit" class="btn btn-outline-primary btn-sm">
+                                                                <i class="fas fa-check"></i>
+                                                            </button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        } else {
+                            <p class="text-muted">Остатки не найдены</p>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* Вкладка 3: Создание товара *@
+    <div class="tab-pane fade @(Model.ActiveTab == "add" ? "show active" : "")" id="add" role="tabpanel" aria-labelledby="add-tab">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-plus-circle me-2"></i>Создание нового товара</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" asp-page-handler="CreateProduct">
+                            <div class="mb-3">
+                                <label class="form-label">Название товара</label>
+                                <input name="name" type="text" class="form-control" required maxlength="100" placeholder="Например: Кроссовки Nike Air Max">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Категория</label>
+                                <select name="categoryId" class="form-select" required>
+                                    <option value="">Выберите категорию</option>
+                                    @foreach (var category in Model.Categories) {
+                                        <option value="@category.Id">@category.Name</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Цена продажи (руб.)</label>
+                                    <input name="price" type="number" class="form-control" step="0.01" min="0" required placeholder="0.00">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Статус продажи</label>
+                                    <div class="form-check mt-2">
+                                        <input class="form-check-input" type="checkbox" name="isSale" value="true" id="isSaleCheck" checked>
+                                        <label class="form-check-label" for="isSaleCheck">Товар доступен для продажи</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Краткое описание</label>
+                                <textarea name="description" class="form-control" rows="3" required maxlength="300" placeholder="Краткое описание товара для карточки"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Подробное описание</label>
+                                <textarea name="content" class="form-control" rows="5" required maxlength="1000" placeholder="Подробное описание товара с характеристиками"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Доступные размеры</label>
+                                <div class="row g-2">
+                                    @{
+                                        var sizeValues = new Dictionary<int, ulong>
+                                        {
+                                            { 36, (ulong)ProductSize.S36 },
+                                            { 37, (ulong)ProductSize.S37 },
+                                            { 38, (ulong)ProductSize.S38 },
+                                            { 39, (ulong)ProductSize.S39 },
+                                            { 40, (ulong)ProductSize.S40 },
+                                            { 41, (ulong)ProductSize.S41 },
+                                            { 42, (ulong)ProductSize.S42 },
+                                            { 43, (ulong)ProductSize.S43 },
+                                            { 44, (ulong)ProductSize.S44 },
+                                            { 45, (ulong)ProductSize.S45 }
+                                        };
+                                    }
+                                    @foreach (var size in sizeValues) {
+                                        <div class="col-3 col-sm-2">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="sizes" value="@size.Value" id="newsize@size.Key">
+                                                <label class="form-check-label" for="newsize@size.Key">@size.Key</label>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-success btn-lg">
+                                    <i class="fas fa-save me-2"></i>Создать товар
+                                </button>
+                                <small class="text-muted text-center mt-2">
+                                    После создания товара вы сможете добавить фотографии на странице редактирования
+                                </small>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* Вкладка 4: Категории *@
+    <div class="tab-pane fade @(Model.ActiveTab == "categories" ? "show active" : "")" id="categories" role="tabpanel" aria-labelledby="categories-tab">
+        <div class="admin-page">
+            <div class="admin-header">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h1 class="admin-title">
+                            <i class="fas fa-tags me-3"></i>
+                            Управление категориями
+                        </h1>
+                        <p class="admin-subtitle">Создание и редактирование категорий товаров</p>
+                    </div>
+                </div>
+            </div>
+
+            @* Add Category Form *@
+            <div class="add-category-section mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Добавить новую категорию</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" asp-page-handler="AddCategory" class="row g-3">
+                            <div class="col-md-8">
+                                <input type="text" name="categoryName" class="form-control" placeholder="Название категории" required>
+                            </div>
+                            <div class="col-md-4">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-plus me-2"></i>
+                                    Добавить
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            @* Categories List *@
+            <div class="categories-list">
+                @if (Model.CategoriesList == null || !Model.CategoriesList.Any()) {
+                    <div class="empty-state">
+                        <div class="empty-icon">
+                            <i class="fas fa-tags fa-4x"></i>
+                        </div>
+                        <h3 class="empty-title">Категории не найдены</h3>
+                        <p class="empty-text">Добавьте первую категорию товаров</p>
+                    </div>
+                } else {
+                    <div class="row g-3">
+                        @foreach (Category category in Model.CategoriesList) {
+                            <div class="col-md-6 col-lg-4">
+                                <div class="category-card">
+                                    <div class="category-info">
+                                        <h5 class="category-name">@category.Name</h5>
+                                    </div>
+                                    <div class="category-actions">
+                                        <form method="post" asp-page-handler="DeleteCategory" class="d-inline">
+                                            <input type="hidden" name="categoryId" value="@category.Id" />
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" 
+                                                    onclick="return confirm('Вы уверены, что хотите удалить категорию?')">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.category-card {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: box-shadow 0.2s;
+}
+
+.category-card:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.category-name {
+    margin: 0;
+    color: #333;
+    font-weight: 500;
+}
+
+.category-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.empty-icon {
+    color: #6c757d;
+    margin-bottom: 20px;
+}
+
+.empty-title {
+    color: #495057;
+    margin-bottom: 10px;
+}
+
+.empty-text {
+    color: #6c757d;
+}
+</style>
+
+<script>
+function switchTab(tabName) {
+    const tabElement = document.getElementById(tabName + '-tab');
+    if (tabElement) {
+        const tab = new bootstrap.Tab(tabElement);
+        tab.show();
+    }
+}
+
+// Сохраняем активную вкладку при обновлении страницы
+document.addEventListener('DOMContentLoaded', function() {
+    const activeTab = '@Model.ActiveTab';
+    if (activeTab) {
+        const tabElement = document.getElementById(activeTab + '-tab');
+        if (tabElement) {
+            const tab = new bootstrap.Tab(tabElement);
+            tab.show();
+        }
+    }
+});
+</script>

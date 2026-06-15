@@ -306,34 +306,7 @@ namespace ShoeShop {
                     // Таблица уже существует
                 }
                 
-                // Создаем таблицу ChatMessages
-                try {
-                    context.Database.ExecuteSqlRaw(
-                        "IF OBJECT_ID('ChatMessages', 'U') IS NULL " +
-                        "CREATE TABLE ChatMessages (" +
-                        "Id uniqueidentifier NOT NULL PRIMARY KEY, " +
-                        "UserId nvarchar(450) NOT NULL, " +
-                        "UserName nvarchar(100) NOT NULL, " +
-                        "Message nvarchar(1000) NOT NULL, " +
-                        "Response nvarchar(1000) NULL, " +
-                        "RespondedBy nvarchar(100) NULL, " +
-                        "CreatedAt datetime2 NOT NULL, " +
-                        "RespondedAt datetime2 NULL, " +
-                        "IsAnswered bit NOT NULL DEFAULT 0, " +
-                        "IsAutoResponse bit NOT NULL DEFAULT 0, " +
-                        "IsClosed bit NOT NULL DEFAULT 0)");
-                    
-                    // Добавляем новые поля если таблица уже существует
-                    context.Database.ExecuteSqlRaw(
-                        "IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'ChatMessages' AND COLUMN_NAME = 'IsAutoResponse') " +
-                        "ALTER TABLE ChatMessages ADD IsAutoResponse bit NOT NULL DEFAULT 0");
-                    
-                    context.Database.ExecuteSqlRaw(
-                        "IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'ChatMessages' AND COLUMN_NAME = 'IsClosed') " +
-                        "ALTER TABLE ChatMessages ADD IsClosed bit NOT NULL DEFAULT 0");
-                } catch {
-                    // Таблица уже существует
-                }
+
                 
                 // Инициализация тестовых данных отключена
                 

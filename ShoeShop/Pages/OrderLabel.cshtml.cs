@@ -31,7 +31,7 @@ namespace ShoeShop.Pages
             }
 
             // Генерируем QR-код
-            var orderUrl = $"https://jxpc5n7p-7002.euw.devtunnels.ms/OrderTracking/Track/{orderId}";
+            var orderUrl = $"https://q9xdt92j-7002.euw.devtunnels.ms/OrderTracking/Track/{orderId}";
             QRCodeBase64 = GenerateQRCode(orderUrl);
 
             return Page();

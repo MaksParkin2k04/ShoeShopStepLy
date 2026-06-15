@@ -340,8 +340,6 @@ namespace ShoeShop.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("TelegramUserId");
-
                     b.ToTable("Orders");
                 });
 
@@ -389,7 +387,7 @@ namespace ShoeShop.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("CategoryId")
+                    b.Property<Guid?>("CategoryId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Content")
@@ -524,55 +522,6 @@ namespace ShoeShop.Migrations
                     b.ToTable("PromoCodes");
                 });
 
-            modelBuilder.Entity("ShoeShop.Models.TelegramUser", b =>
-                {
-                    b.Property<long>("TelegramId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("TelegramId"));
-
-                    b.Property<string>("Address")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Email")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.Property<string>("FirstName")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<bool>("IsLinkedToWebsite")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime>("LastActivity")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("LastName")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("Phone")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<string>("Username")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<Guid?>("WebUserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("TelegramId");
-
-                    b.ToTable("TelegramUsers");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
                 {
                     b.HasOne("ShoeShop.Data.ApplicationRole", null)
@@ -626,10 +575,6 @@ namespace ShoeShop.Migrations
 
             modelBuilder.Entity("ShoeShop.Models.Order", b =>
                 {
-                    b.HasOne("ShoeShop.Models.TelegramUser", null)
-                        .WithMany("Orders")
-                        .HasForeignKey("TelegramUserId");
-
                     b.OwnsOne("ShoeShop.Models.OrderRecipient", "Recipient", b1 =>
                         {
                             b1.Property<string>("OrderId")
@@ -695,8 +640,7 @@ namespace ShoeShop.Migrations
                     b.HasOne("ShoeShop.Models.Category", "Category")
                         .WithMany()
                         .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Category");
                 });
@@ -727,11 +671,6 @@ namespace ShoeShop.Migrations
             modelBuilder.Entity("ShoeShop.Models.Product", b =>
                 {
                     b.Navigation("Images");
-                });
-
-            modelBuilder.Entity("ShoeShop.Models.TelegramUser", b =>
-                {
-                    b.Navigation("Orders");
                 });
 #pragma warning restore 612, 618
         }
